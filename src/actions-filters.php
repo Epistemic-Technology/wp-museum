@@ -298,11 +298,30 @@ add_filter("get_the_excerpt", __NAMESPACE__ . "\mobject_excerpt_filter", 10, 2);
 /**
  * Adds collection breadcrumbs to museum object posts.
  *
- * @see display.php::mobject_collection_breadcrums()
+ * @see display.php::mobject_collection_breadcrumbs()
  */
 add_filter(
     "the_content",
     __NAMESPACE__ . "\mobject_collection_breadcrumbs",
+    10,
+    2
+);
+
+/**
+ * Customizes the oembed response for museum objects.
+ *
+ * @see object-post-types.php::customize_oembed_response()
+ */
+add_filter(
+    "oembed_response_data",
+    __NAMESPACE__ . "\customize_oembed_response",
+    10,
+    4
+);
+
+add_filter(
+    "post_thumbnail_id",
+    __NAMESPACE__ . '\filter_object_thumbnail_id',
     10,
     2
 );
