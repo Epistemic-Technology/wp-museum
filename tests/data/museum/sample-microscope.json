@@ -39,7 +39,7 @@
     },
     "7": {
       "field_id": 7,
-      "slug": "dimensions",
+      "slug": "dimensions-cm",
       "value": "35 x 20 x 15"
     },
     "8": {
@@ -89,5 +89,13 @@
     }
   ],
   "categories": [],
-  "tags": ["microscope", "optics", "victorian", "brass", "leitz", "19th-century", "compound-microscope"]
+  "tags": [
+    "microscope",
+    "optics",
+    "victorian",
+    "brass",
+    "leitz",
+    "19th-century",
+    "compound-microscope"
+  ]
 }

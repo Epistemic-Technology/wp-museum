@@ -101,6 +101,27 @@ add_action(
 );
 add_action("widgets_init", __NAMESPACE__ . '\register_collection_tree_widget');
 
+/**
+ * Add OAI-PMH rewrite rules.
+ *
+ * @see oai-pmh.php::add_oai_pmh_rewrite_rules()
+ */
+add_action("init", __NAMESPACE__ . "\add_oai_pmh_rewrite_rules");
+
+/**
+ * Add OAI-PMH query vars.
+ *
+ * @see oai-pmh.php::add_oai_pmh_query_vars()
+ */
+add_filter("query_vars", __NAMESPACE__ . "\add_oai_pmh_query_vars");
+
+/**
+ * Handle OAI-PMH requests.
+ *
+ * @see oai-pmh.php::handle_oai_pmh_request()
+ */
+add_action("template_redirect", __NAMESPACE__ . "\handle_oai_pmh_request");
+
 /*****************************************************************************
  *
  * Global Filters

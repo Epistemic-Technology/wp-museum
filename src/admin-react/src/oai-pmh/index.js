@@ -79,6 +79,8 @@ const DublinCoreFieldMapping = ({
   kindFields,
   mapping,
   onMappingChange,
+  identifierPrefix,
+  onIdentifierPrefixChange,
 }) => {
   const handleFieldChange = (field) => {
     onMappingChange(dcField.id, {
@@ -132,6 +134,23 @@ const DublinCoreFieldMapping = ({
           />
         </div>
       </div>
+
+      {dcField.id === "identifier" && (
+        <div className="identifier-prefix">
+          <label htmlFor="identifier-prefix">Identifier Prefix:</label>
+          <input
+            type="text"
+            id="identifier-prefix"
+            value={identifierPrefix || ""}
+            onChange={(e) => onIdentifierPrefixChange(e.target.value)}
+            placeholder="Enter prefix to prepend to identifiers..."
+          />
+          <p className="prefix-description">
+            This prefix will be prepended to all identifiers (e.g., "library:" →
+            "library:12345")
+          </p>
+        </div>
+      )}
     </div>
   );
 };
@@ -161,6 +180,7 @@ const OmiPmhAdmin = () => {
   const [selectedKind, setSelectedKind] = useState("");
   const [kindFields, setKindFields] = useState([]);
   const [dcMappings, setDcMappings] = useState({});
+  const [identifierPrefix, setIdentifierPrefix] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -226,8 +246,10 @@ const OmiPmhAdmin = () => {
           // Extract Dublin Core mappings from kind data
           if (kind.oai_pmh_mappings) {
             setDcMappings(kind.oai_pmh_mappings);
+            setIdentifierPrefix(kind.oai_pmh_mappings.identifier_prefix || "");
           } else {
             setDcMappings({});
+            setIdentifierPrefix("");
           }
         } catch (err) {
           setError("Failed to load kind data: " + err.message);
@@ -242,6 +264,7 @@ const OmiPmhAdmin = () => {
     } else {
       setKindFields([]);
       setDcMappings({});
+      setIdentifierPrefix("");
     }
   }, [selectedKind, kinds]);
 
@@ -250,6 +273,10 @@ const OmiPmhAdmin = () => {
       ...prev,
       [dcFieldId]: mapping,
     }));
+  };
+
+  const handleIdentifierPrefixChange = (prefix) => {
+    setIdentifierPrefix(prefix);
   };
 
   const handleSave = async () => {
@@ -294,7 +321,10 @@ const OmiPmhAdmin = () => {
       // Prepare the updated kind data with new DC mappings
       const updatedKind = {
         ...kind,
-        oai_pmh_mappings: dcMappings,
+        oai_pmh_mappings: {
+          ...dcMappings,
+          identifier_prefix: identifierPrefix,
+        },
       };
 
       // Update the kind via the API
@@ -310,7 +340,10 @@ const OmiPmhAdmin = () => {
           k.kind_id.toString() === selectedKind
             ? {
                 ...k,
-                oai_pmh_mappings: dcMappings,
+                oai_pmh_mappings: {
+                  ...dcMappings,
+                  identifier_prefix: identifierPrefix,
+                },
               }
             : k,
         ),
@@ -327,13 +360,14 @@ const OmiPmhAdmin = () => {
   };
 
   const handleReset = () => {
-    if (Object.keys(dcMappings).length > 0) {
+    if (Object.keys(dcMappings).length > 0 || identifierPrefix) {
       if (
         confirm(
           "Are you sure you want to reset all mappings? This action cannot be undone.",
         )
       ) {
         setDcMappings({});
+        setIdentifierPrefix("");
         setError("");
         setSuccessMessage("");
       }
@@ -402,6 +436,8 @@ const OmiPmhAdmin = () => {
                     kindFields={kindFields}
                     mapping={dcMappings[dcField.id]}
                     onMappingChange={handleMappingChange}
+                    identifierPrefix={identifierPrefix}
+                    onIdentifierPrefixChange={handleIdentifierPrefixChange}
                   />
                 ))}
               </div>
@@ -619,6 +655,47 @@ const OmiPmhAdmin = () => {
           background-color: #f5f5f5;
           color: #999;
           cursor: not-allowed;
+        }
+
+        .identifier-prefix {
+          grid-column: 1 / -1;
+          margin-top: 15px;
+          padding: 15px;
+          background: #f9f9f9;
+          border-radius: 4px;
+          border: 1px solid #e0e0e0;
+        }
+
+        .identifier-prefix label {
+          display: block;
+          font-weight: 600;
+          margin-bottom: 6px;
+          font-size: 13px;
+          color: #34495e;
+        }
+
+        .identifier-prefix input {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+          transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+        }
+
+        .identifier-prefix input:focus {
+          outline: none;
+          border-color: #0073aa;
+          box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+        }
+
+        .prefix-description {
+          margin: 8px 0 0 0;
+          font-size: 12px;
+          color: #666;
+          font-style: italic;
         }
 
         .action-buttons {

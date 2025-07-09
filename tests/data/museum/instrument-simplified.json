@@ -10,6 +10,165 @@
   "hierarchical": false,
   "parent_kind_id": null,
   "children": [],
+  "available_fields_for_oai_pmh": [
+    {
+      "id": 1,
+      "slug": "accession-number",
+      "name": "Accession Number",
+      "type": "plain"
+    },
+    {
+      "id": 2,
+      "slug": "name",
+      "name": "Name",
+      "type": "plain"
+    },
+    {
+      "id": 3,
+      "slug": "description",
+      "name": "Description",
+      "type": "rich"
+    },
+    {
+      "id": 4,
+      "slug": "manufacturer",
+      "name": "Manufacturer",
+      "type": "plain"
+    },
+    {
+      "id": 5,
+      "slug": "date-of-manufacture",
+      "name": "Date of Manufacture",
+      "type": "date"
+    },
+    {
+      "id": 6,
+      "slug": "primary-materials",
+      "name": "Primary Materials",
+      "type": "plain"
+    },
+    {
+      "id": 7,
+      "slug": "dimensions-cm",
+      "name": "Dimensions (cm)",
+      "type": "plain"
+    },
+    {
+      "id": 8,
+      "slug": "condition",
+      "name": "Condition",
+      "type": "rich"
+    },
+    {
+      "id": 9,
+      "slug": "location",
+      "name": "Location",
+      "type": "plain"
+    },
+    {
+      "id": 10,
+      "slug": "on-display",
+      "name": "On Display",
+      "type": "flag"
+    },
+    {
+      "id": "wp_post_title",
+      "slug": "wp_post_title",
+      "name": "WordPress Post Title",
+      "type": "wordpress"
+    },
+    {
+      "id": "wp_post_excerpt",
+      "slug": "wp_post_excerpt",
+      "name": "WordPress Post Excerpt",
+      "type": "wordpress"
+    },
+    {
+      "id": "wp_post_author",
+      "slug": "wp_post_author",
+      "name": "WordPress Post Author",
+      "type": "wordpress"
+    },
+    {
+      "id": "wp_post_date",
+      "slug": "wp_post_date",
+      "name": "WordPress Post Date",
+      "type": "wordpress"
+    },
+    {
+      "id": "wp_post_permalink",
+      "slug": "wp_post_permalink",
+      "name": "WordPress Post Permalink",
+      "type": "wordpress"
+    }
+  ],
+  "oai_pmh_mappings": {
+    "title": {
+      "field": "name",
+      "staticValue": ""
+    },
+    "creator": {
+      "field": "manufacturer",
+      "staticValue": ""
+    },
+    "subject": {
+      "field": "",
+      "staticValue": ""
+    },
+    "description": {
+      "field": "description",
+      "staticValue": ""
+    },
+    "publisher": {
+      "field": "",
+      "staticValue": "Museum Collection"
+    },
+    "contributor": {
+      "field": "",
+      "staticValue": ""
+    },
+    "date": {
+      "field": "date-of-manufacture",
+      "staticValue": ""
+    },
+    "type": {
+      "field": "",
+      "staticValue": "Scientific Instrument"
+    },
+    "format": {
+      "field": "primary-materials",
+      "staticValue": ""
+    },
+    "identifier": {
+      "field": "accession-number",
+      "staticValue": ""
+    },
+    "source": {
+      "field": "",
+      "staticValue": ""
+    },
+    "language": {
+      "field": "",
+      "staticValue": "en"
+    },
+    "relation": {
+      "field": "",
+      "staticValue": ""
+    },
+    "coverage": {
+      "field": "",
+      "staticValue": ""
+    },
+    "rights": {
+      "field": "",
+      "staticValue": ""
+    },
+    "identifier_prefix": ""
+  },
+  "must_featured_image": false,
+  "must_gallery": false,
+  "strict_checking": false,
+  "exclude_from_search": false,
   "fields": {
     "1": {
       "field_id": 1,

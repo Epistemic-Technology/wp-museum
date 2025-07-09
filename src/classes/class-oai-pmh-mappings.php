@@ -133,6 +133,13 @@ class OaiPmhMappings
     public $rights;
 
     /**
+     * Identifier prefix to be prepended to all identifiers.
+     *
+     * @var string $identifier_prefix
+     */
+    public $identifier_prefix;
+
+    /**
      * Constructor.
      */
     public function __construct()
@@ -165,6 +172,7 @@ class OaiPmhMappings
         $this->relation = $empty_mapping;
         $this->coverage = $empty_mapping;
         $this->rights = $empty_mapping;
+        $this->identifier_prefix = "";
     }
 
     /**
@@ -270,6 +278,11 @@ class OaiPmhMappings
                 $this->set_mapping($field_name, $data[$field_name]);
             }
         }
+
+        // Handle identifier prefix
+        if (isset($data["identifier_prefix"])) {
+            $this->identifier_prefix = trim($data["identifier_prefix"]);
+        }
     }
 
     /**
@@ -285,6 +298,13 @@ class OaiPmhMappings
             if (isset($mappings_object->$field_name)) {
                 $this->set_mapping($field_name, $mappings_object->$field_name);
             }
+        }
+
+        // Handle identifier prefix
+        if (isset($mappings_object->identifier_prefix)) {
+            $this->identifier_prefix = trim(
+                $mappings_object->identifier_prefix
+            );
         }
     }
 
@@ -435,6 +455,8 @@ class OaiPmhMappings
             $mappings[$field_name] = $this->$field_name;
         }
 
+        $mappings["identifier_prefix"] = $this->identifier_prefix;
+
         return $mappings;
     }
 
@@ -444,6 +466,26 @@ class OaiPmhMappings
     public function clear_mappings()
     {
         $this->initialize_empty_mappings();
+    }
+
+    /**
+     * Get the identifier prefix.
+     *
+     * @return string The identifier prefix.
+     */
+    public function get_identifier_prefix()
+    {
+        return $this->identifier_prefix;
+    }
+
+    /**
+     * Set the identifier prefix.
+     *
+     * @param string $prefix The identifier prefix.
+     */
+    public function set_identifier_prefix($prefix)
+    {
+        $this->identifier_prefix = trim($prefix);
     }
 
     /**
@@ -511,6 +553,8 @@ class OaiPmhMappings
             "wp_post_title",
             "wp_post_excerpt",
             "wp_post_author",
+            "wp_post_date",
+            "wp_post_permalink",
         ];
         $available_slugs = array_merge($available_slugs, $wordpress_fields);
 

@@ -1,0 +1,53 @@
+{
+  "collection_id": 1,
+  "post_id": 100,
+  "title": "Scientific Instruments Collection",
+  "slug": "scientific-instruments",
+  "description": "<p>A comprehensive collection of scientific instruments from the 19th and 20th centuries, including telescopes, microscopes, and other precision optical equipment used in research and education.</p>",
+  "status": "published",
+  "created_date": "2024-01-10T09:00:00Z",
+  "modified_date": "2024-01-10T09:00:00Z",
+  "post_meta": {
+    "wpm_collection_term_id": 1,
+    "wpm_associated_category": -1,
+    "wpm_include_sub_collections": false,
+    "wpm_include_child_categories": false,
+    "wpm_single_page": true,
+    "wpm_auto_collection": false,
+    "object_tags": []
+  },
+  "taxonomy_term": {
+    "term_id": 1,
+    "name": "Scientific Instruments Collection",
+    "slug": "scientific-instruments",
+    "taxonomy": "wpm_collection_tax",
+    "description": "A comprehensive collection of scientific instruments from the 19th and 20th centuries",
+    "parent": 0,
+    "count": 2
+  },
+  "featured_image": {
+    "image_id": 1,
+    "filename": "tests/data/images/test-image-large.jpg",
+    "alt_text": "Scientific instruments collection overview",
+    "caption": "Overview of the scientific instruments collection"
+  },
+  "objects": [
+    {
+      "object_id": 1,
+      "post_id": 101,
+      "title": "Brass Telescope",
+      "accession_number": "2024.SCI.001"
+    },
+    {
+      "object_id": 2,
+      "post_id": 102,
+      "title": "Victorian Microscope",
+      "accession_number": "2024.SCI.002"
+    }
+  ],
+  "oai_pmh_set": {
+    "setSpec": "scientific-instruments",
+    "setName": "Scientific Instruments Collection",
+    "setDescription": "A comprehensive collection of scientific instruments from the 19th and 20th centuries"
+  }
+}

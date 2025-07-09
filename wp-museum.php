@@ -135,6 +135,11 @@ require_once $require_prefix . "rest/class-remote-client-controller.php";
 require_once $require_prefix . "rest/class-site-data-controller.php";
 
 /**
+ * OAI-PMH
+ */
+require_once $require_prefix . "includes/oai-pmh.php";
+
+/**
  * Widgets
  */
 require_once $require_prefix . "widgets/class-associated-collection-widget.php";

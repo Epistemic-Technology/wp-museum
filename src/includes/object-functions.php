@@ -230,10 +230,11 @@ function object_thumbnail_id($post_id)
  *
  * @param ObjectKind / int $kind    Kind or kind id corresponding to the object.
  * @param string           $cat_id  The post's catalog id field.
+ * @param string           $post_status The post's status.
  *
- * @return WP_POST A WordPress post matching that id, or null.
+ * @return WP_Post|null A WordPress post matching that id, or null.
  */
-function get_object_post_from_id($kind, $cat_id)
+function get_object_post_from_id($kind, $cat_id, $post_status = "any")
 {
     if (is_int($kind)) {
         $kind = get_kind($kind);
@@ -242,7 +243,7 @@ function get_object_post_from_id($kind, $cat_id)
 
     $args = [
         "post_type" => $kind->type_name,
-        "post_status" => "any",
+        "post_status" => $post_status,
         "meta_key" => $id_field->slug,
         "meta_value" => $cat_id,
     ];
@@ -252,6 +253,35 @@ function get_object_post_from_id($kind, $cat_id)
     } else {
         return null;
     }
+}
+
+/**
+ * Returns an object post from id.
+ *
+ * @param string $id          The post's id field.
+ * @param string $post_status The post's status.
+ *
+ * @return WP_Post|null A WordPress post matching that id, or null.
+ */
+function get_any_object_post_from_id(
+    string $id,
+    string $post_status = "any"
+): ?\WP_Post {
+    $kinds = get_mobject_kinds();
+    foreach ($kinds as $kind) {
+        $id_field = get_mobject_field($kind->kind_id, $kind->cat_field_id);
+        $args = [
+            "post_type" => $kind->type_name,
+            "post_status" => $post_status,
+            "meta_key" => $id_field->slug,
+            "meta_value" => $id,
+        ];
+        $posts = get_posts($args);
+        if (1 === count($posts)) {
+            return $posts[0];
+        }
+    }
+    return null;
 }
 
 /**

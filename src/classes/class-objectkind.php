@@ -422,7 +422,6 @@ class ObjectKind
         $arr["label_plural"] = $this->label_plural;
         $arr["description"] = $this->description;
         $arr["categorized"] = $this->categorized;
-        $arr["must_gallery"] = $this->must_gallery;
         $arr["hierarchical"] = $this->hierarchical;
         $arr["parent_kind_id"] = $this->parent_kind_id;
         $arr["oai_pmh_mappings"] = $this->get_oai_pmh_mappings()->to_array();
@@ -515,6 +514,20 @@ class ObjectKind
             "type" => "wordpress_post_field",
         ];
 
+        $available_fields[] = [
+            "id" => "wp_post_date",
+            "slug" => "wp_post_date",
+            "name" => "Post Date",
+            "type" => "wordpress_post_field",
+        ];
+
+        $available_fields[] = [
+            "id" => "wp_post_permalink",
+            "slug" => "wp_post_permalink",
+            "name" => "Post Permalink",
+            "type" => "wordpress_post_field",
+        ];
+
         // Add kind fields
         $kind_fields = $this->get_fields();
 
@@ -540,7 +553,7 @@ class ObjectKind
      * Get WordPress post field value for a given post.
      *
      * @param int $post_id The post ID.
-     * @param string $field_slug The WordPress post field slug (wp_post_title, wp_post_excerpt, wp_post_author).
+     * @param string $field_slug The WordPress post field slug (wp_post_title, wp_post_excerpt, wp_post_author, wp_post_date, wp_post_permalink).
      * @return string The field value or empty string if not found.
      */
     public function get_wordpress_post_field_value($post_id, $field_slug)
@@ -554,10 +567,26 @@ class ObjectKind
             case "wp_post_title":
                 return $post->post_title;
             case "wp_post_excerpt":
-                return $post->post_excerpt;
+                $excerpt = get_the_excerpt($post_id);
+                $excerpt = wp_strip_all_tags($excerpt); // Remove HTML tags
+                $excerpt = html_entity_decode(
+                    $excerpt,
+                    ENT_QUOTES | ENT_HTML5,
+                    "UTF-8"
+                ); // Decode entities
+                $xml_safe_excerpt = htmlspecialchars(
+                    $excerpt,
+                    ENT_QUOTES | ENT_XML1,
+                    "UTF-8"
+                );
+                return $xml_safe_excerpt;
             case "wp_post_author":
                 $author = get_userdata($post->post_author);
                 return $author ? $author->display_name : "";
+            case "wp_post_date":
+                return $post->post_date;
+            case "wp_post_permalink":
+                return get_permalink($post_id);
             default:
                 return "";
         }
