@@ -13,7 +13,7 @@ class MuseumTestData
     /**
      * Create a test object kind with OAI-PMH mappings.
      *
-     * @return array The object kind data.
+     * @return ObjectKind The object kind instance.
      */
     public static function create_test_object_kind()
     {
@@ -25,7 +25,27 @@ class MuseumTestData
             true
         );
 
-        return $kind_data;
+        $kind = MikeThicke\WPMuseum\ObjectKind::from_json($kind_data);
+        $existing_kind = MikeThicke\WPMuseum\get_kind_from_typename(
+            $kind->type_name
+        );
+        if (!$existing_kind) {
+            $kind->save_to_db();
+
+            // Create and save the associated fields
+            if (isset($kind_data["fields"]) && is_array($kind_data["fields"])) {
+                foreach ($kind_data["fields"] as $field_id => $field_data) {
+                    // Convert field_data to the format expected by from_rest
+                    $field_data["kind_id"] = $kind->kind_id;
+                    $field = MikeThicke\WPMuseum\MObjectField::from_rest(
+                        $field_data
+                    );
+                    $field->save_to_db();
+                }
+            }
+        }
+
+        return $kind;
     }
 
     /**
@@ -61,7 +81,7 @@ class MuseumTestData
 
         // Add field metadata
         foreach ($object_data["fields"] as $field_id => $field_data) {
-            $meta_key = "wpm_" . $field_data["slug"];
+            $meta_key = $field_data["slug"];
             add_post_meta($post_id, $meta_key, $field_data["value"]);
         }
 
@@ -168,88 +188,25 @@ class MuseumTestData
     }
 
     /**
+     * Get test object kinds for testing.
+     *
+     * @return array Array of ObjectKind instances.
+     */
+    public static function get_test_object_kinds()
+    {
+        $object_kind = self::create_test_object_kind();
+        return [1 => $object_kind];
+    }
+
+    /**
      * Mock the get_mobject_kinds function for testing.
      *
-     * @return array Array of object kind data.
+     * @deprecated Use get_test_object_kinds() instead.
+     * @return array Array of ObjectKind instances.
      */
     public static function mock_get_mobject_kinds()
     {
-        $kind_data = self::create_test_object_kind();
-
-        // Create a mock object kind that simulates the real MObject_Kind class
-        $mock_kind = new class ($kind_data) {
-            private $data;
-
-            public function __construct($data)
-            {
-                $this->data = $data;
-            }
-
-            public function __get($property)
-            {
-                return $this->data[$property] ?? null;
-            }
-
-            public function has_oai_pmh_mappings()
-            {
-                return !empty($this->data["oai_pmh_mappings"]);
-            }
-
-            public function get_oai_pmh_mappings()
-            {
-                if (!$this->has_oai_pmh_mappings()) {
-                    return null;
-                }
-
-                $mappings = new stdClass();
-                foreach ($this->data["oai_pmh_mappings"] as $key => $value) {
-                    $mappings->$key = $value;
-                }
-                return $mappings;
-            }
-
-            public function get_wordpress_post_field_value($post, $field)
-            {
-                switch ($field) {
-                    case "wp_post_title":
-                        return $post->post_title;
-                    case "wp_post_content":
-                        return $post->post_content;
-                    case "wp_post_excerpt":
-                        return $post->post_excerpt;
-                    case "wp_post_author":
-                        return get_the_author_meta(
-                            "display_name",
-                            $post->post_author
-                        );
-                    case "wp_post_date":
-                        return $post->post_date;
-                    case "wp_post_permalink":
-                        return get_permalink($post->ID);
-                    default:
-                        return null;
-                }
-            }
-
-            public function get_field_value($post, $field_slug)
-            {
-                // Look up the field value from post meta
-                $meta_key = "wpm_" . $field_slug;
-                $value = get_post_meta($post->ID, $meta_key, true);
-
-                if (empty($value)) {
-                    // Try WordPress post fields
-                    return $this->get_wordpress_post_field_value(
-                        $post,
-                        $field_slug
-                    );
-                }
-
-                return $value;
-            }
-        };
-
-        return [1 => $mock_kind];
+        return self::get_test_object_kinds();
     }
 
     /**
@@ -260,6 +217,35 @@ class MuseumTestData
      */
     public static function setup_complete_test_environment($factory)
     {
+        // Clean up database before setting up test environment
+        self::cleanup_test_data();
+
+        // Drop all data from museum-specific tables
+        global $wpdb;
+
+        // Drop kinds table data
+        $wpdb->query("DELETE FROM {$wpdb->prefix}wpm_mobject_kinds");
+
+        // Drop fields table data
+        $wpdb->query("DELETE FROM {$wpdb->prefix}wpm_mobject_fields");
+
+        // Drop remote clients table data
+        $wpdb->query("DELETE FROM {$wpdb->prefix}wpm_remote_clients");
+
+        // Reset auto-increment counters
+        $wpdb->query(
+            "ALTER TABLE {$wpdb->prefix}wpm_mobject_kinds AUTO_INCREMENT = 1"
+        );
+        $wpdb->query(
+            "ALTER TABLE {$wpdb->prefix}wpm_mobject_fields AUTO_INCREMENT = 1"
+        );
+        $wpdb->query(
+            "ALTER TABLE {$wpdb->prefix}wpm_remote_clients AUTO_INCREMENT = 1"
+        );
+
+        // Create object kind for testing
+        $object_kind = self::create_test_object_kind();
+
         // Create collection
         $collection = self::create_test_collection($factory);
 
@@ -294,7 +280,7 @@ class MuseumTestData
             "collection" => $collection,
             "telescope" => $telescope,
             "microscope" => $microscope,
-            "kind_data" => self::create_test_object_kind(),
+            "object_kind" => $object_kind,
         ];
     }
 

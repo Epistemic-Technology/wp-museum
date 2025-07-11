@@ -12,6 +12,11 @@ namespace MikeThicke\WPMuseum;
  */
 function db_version_check()
 {
+    // Skip database updates during tests to avoid schema conflicts
+    if (defined("WP_TESTS_DOMAIN")) {
+        return;
+    }
+
     $version = get_site_option("wpm_db_version");
     if (DB_VERSION !== $version) {
         create_mobject_kinds_table();

@@ -248,13 +248,29 @@ const OmiPmhAdmin = () => {
             setDcMappings(kind.oai_pmh_mappings);
             setIdentifierPrefix(kind.oai_pmh_mappings.identifier_prefix || "");
           } else {
-            setDcMappings({});
+            // Set default mappings when none exist
+            const defaultMappings = {
+              title: { field: "wp_post_title", staticValue: "" },
+              creator: { field: "wp_post_author", staticValue: "" },
+              description: { field: "wp_post_excerpt", staticValue: "" },
+              date: { field: "wp_post_date", staticValue: "" },
+              source: { field: "wp_post_permalink", staticValue: "" },
+            };
+            setDcMappings(defaultMappings);
             setIdentifierPrefix("");
           }
         } catch (err) {
           setError("Failed to load kind data: " + err.message);
           setKindFields([]);
-          setDcMappings({});
+          // Set default mappings when there's an error
+          const defaultMappings = {
+            title: { field: "wp_post_title", staticValue: "" },
+            creator: { field: "wp_post_author", staticValue: "" },
+            description: { field: "wp_post_excerpt", staticValue: "" },
+            date: { field: "wp_post_date", staticValue: "" },
+            source: { field: "wp_post_permalink", staticValue: "" },
+          };
+          setDcMappings(defaultMappings);
         } finally {
           setLoading(false);
         }
@@ -282,15 +298,13 @@ const OmiPmhAdmin = () => {
   const handleSave = async () => {
     if (!selectedKind) return;
 
-    // Validate mappings
+    // Validate mappings - with defaults, there should always be mappings
     const hasAnyMapping = Object.values(dcMappings).some(
       (mapping) => mapping?.field || mapping?.staticValue,
     );
 
     if (!hasAnyMapping) {
-      setError(
-        "Please configure at least one Dublin Core mapping before saving.",
-      );
+      setError("No mappings found. Please check your configuration.");
       return;
     }
 
@@ -363,10 +377,17 @@ const OmiPmhAdmin = () => {
     if (Object.keys(dcMappings).length > 0 || identifierPrefix) {
       if (
         confirm(
-          "Are you sure you want to reset all mappings? This action cannot be undone.",
+          "Are you sure you want to reset to default mappings? This action cannot be undone.",
         )
       ) {
-        setDcMappings({});
+        const defaultMappings = {
+          title: { field: "wp_post_title", staticValue: "" },
+          creator: { field: "wp_post_author", staticValue: "" },
+          description: { field: "wp_post_excerpt", staticValue: "" },
+          date: { field: "wp_post_date", staticValue: "" },
+          source: { field: "wp_post_permalink", staticValue: "" },
+        };
+        setDcMappings(defaultMappings);
         setIdentifierPrefix("");
         setError("");
         setSuccessMessage("");
@@ -378,7 +399,11 @@ const OmiPmhAdmin = () => {
     <div className="oai-pmh-admin">
       <div className="admin-header">
         <h1>OAI-PMH Administration</h1>
-        <p>Configure Dublin Core metadata mappings for museum object kinds.</p>
+        <p>
+          Configure Dublin Core metadata mappings for museum object kinds.
+          Default mappings are automatically applied for new object kinds to
+          provide zero-configuration OAI-PMH support.
+        </p>
       </div>
 
       <div className="config-panel">
@@ -406,7 +431,9 @@ const OmiPmhAdmin = () => {
               <h2>Dublin Core Metadata Mappings</h2>
               <p>
                 Map each Dublin Core field to a kind field or specify a static
-                value.
+                value. Default mappings are automatically applied for essential
+                fields: Title → Post Title, Creator → Post Author, Description →
+                Post Excerpt, Date → Post Date, Source → Post Permalink.
               </p>
               <div className="mapping-status">
                 <span className="mapping-count">
@@ -458,7 +485,7 @@ const OmiPmhAdmin = () => {
                 onClick={handleReset}
                 disabled={loading || saving}
               >
-                Reset
+                Reset to Defaults
               </button>
             </div>
           </div>

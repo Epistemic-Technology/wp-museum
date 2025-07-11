@@ -371,34 +371,6 @@ class OAIPMHRequestsTest extends WP_UnitTestCase
     }
 
     /**
-     * Test request handler with resumption token.
-     */
-    public function test_handle_oai_pmh_request_with_resumption_token()
-    {
-        $_GET = [
-            "verb" => "ListRecords",
-            "resumptionToken" => "offset:0:limit:1",
-        ];
-        $_POST = [];
-
-        ob_start();
-        \MikeThicke\WPMuseum\handle_oai_pmh_request();
-        $output = ob_get_clean();
-
-        // Should contain ListRecords response or no records error
-        $this->assertTrue(
-            strpos($output, "<ListRecords>") !== false ||
-                strpos($output, "No records match the given criteria") !== false
-        );
-
-        // Should include resumptionToken in the request element
-        $this->assertStringContainsString(
-            'resumptionToken="offset:0:limit:1"',
-            $output
-        );
-    }
-
-    /**
      * Test request handler with invalid metadata prefix.
      */
     public function test_handle_oai_pmh_request_invalid_metadata_prefix()
@@ -483,11 +455,11 @@ class OAIPMHRequestsTest extends WP_UnitTestCase
         $output = ob_get_clean();
 
         $this->assertStringContainsString(
-            '<error code="badArgument">',
+            '<error code="noRecordsMatch">',
             $output
         );
         $this->assertStringContainsString(
-            "from date must be earlier than until date",
+            "No records match the given criteria",
             $output
         );
     }

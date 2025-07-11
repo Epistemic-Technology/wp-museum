@@ -26,15 +26,20 @@ function handle_oai_pmh_request()
         return;
     }
 
-    // Set XML content type
-    header("Content-Type: text/xml; charset=utf-8");
+    // Set XML content type (skip during tests to avoid headers already sent error)
+    if (!defined("WP_TESTS_DOMAIN")) {
+        header("Content-Type: text/xml; charset=utf-8");
+    }
 
     // Get and validate verb
     $verb = $_GET["verb"] ?? ($_POST["verb"] ?? "");
 
     if (empty($verb)) {
         output_oai_error("badVerb", "Missing verb argument");
-        exit();
+        if (!defined("WP_TESTS_DOMAIN")) {
+            exit();
+        }
+        return;
     }
 
     // Validate verb
@@ -48,15 +53,15 @@ function handle_oai_pmh_request()
     ];
     if (!in_array($verb, $valid_verbs)) {
         output_oai_error("badVerb", "Illegal OAI verb: $verb");
-        exit();
+        if (!defined("WP_TESTS_DOMAIN")) {
+            exit();
+        }
+        return;
     }
 
     // Get all arguments
     $args = array_merge($_GET, $_POST);
     unset($args["oai_pmh"]); // Remove our custom query var
-
-    // Log the request
-    error_log("OAI-PMH request received for verb: $verb");
 
     try {
         // Route to appropriate handler
@@ -85,7 +90,9 @@ function handle_oai_pmh_request()
         output_oai_error("badArgument", "Internal server error");
     }
 
-    exit();
+    if (!defined("WP_TESTS_DOMAIN")) {
+        exit();
+    }
 }
 
 /**
@@ -517,6 +524,29 @@ function handle_list_records($args)
         return;
     }
 
+    // Validate from and until dates
+    if (!empty($args["from"])) {
+        $from_date = validate_oai_date($args["from"]);
+        if (!$from_date) {
+            output_oai_error(
+                "badArgument",
+                "Invalid date format for 'from' parameter"
+            );
+            return;
+        }
+    }
+
+    if (!empty($args["until"])) {
+        $until_date = validate_oai_date($args["until"]);
+        if (!$until_date) {
+            output_oai_error(
+                "badArgument",
+                "Invalid date format for 'until' parameter"
+            );
+            return;
+        }
+    }
+
     // Get records based on criteria
     $posts = get_oai_posts($args);
 
@@ -830,7 +860,7 @@ function output_metadata($post)
                 $value = get_post_meta($post->ID, $mapping["field"], true);
                 if (empty($value)) {
                     $value = $kind->get_wordpress_post_field_value(
-                        $post,
+                        $post->ID,
                         $mapping["field"]
                     );
                 }

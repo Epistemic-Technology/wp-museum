@@ -235,13 +235,9 @@ class OAIPMHSimpleTest extends WP_UnitTestCase
         $telescope = $this->test_data["telescope"];
 
         // Check that metadata was added correctly
-        $accession = get_post_meta(
-            $telescope->ID,
-            "wpm_accession-number",
-            true
-        );
-        $name = get_post_meta($telescope->ID, "wpm_name", true);
-        $manufacturer = get_post_meta($telescope->ID, "wpm_manufacturer", true);
+        $accession = get_post_meta($telescope->ID, "accession-number", true);
+        $name = get_post_meta($telescope->ID, "name", true);
+        $manufacturer = get_post_meta($telescope->ID, "manufacturer", true);
 
         $this->assertEquals("2024.SCI.001", $accession);
         $this->assertEquals("Brass Telescope", $name);

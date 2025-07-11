@@ -5,7 +5,7 @@
 [
   {
     "request": "launch",
-    "adapter": "PHP",
+    "adapter": "Xdebug",
     "label": "Listen to xdebug (PHP-Zed Config)",
     "port": 9003,
     "pathMappings": {

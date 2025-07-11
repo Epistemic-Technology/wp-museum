@@ -274,10 +274,10 @@ class ObjectKind
             } elseif ($kind_row->oai_pmh_mappings instanceof OaiPmhMappings) {
                 $this->oai_pmh_mappings = $kind_row->oai_pmh_mappings;
             } else {
-                $this->oai_pmh_mappings = new OaiPmhMappings();
+                $this->oai_pmh_mappings = OaiPmhMappings::with_defaults();
             }
         } else {
-            $this->oai_pmh_mappings = new OaiPmhMappings();
+            $this->oai_pmh_mappings = OaiPmhMappings::with_defaults();
         }
     }
 
@@ -609,7 +609,7 @@ class ObjectKind
     public function get_oai_pmh_mappings()
     {
         if (is_null($this->oai_pmh_mappings)) {
-            $this->oai_pmh_mappings = new OaiPmhMappings();
+            $this->oai_pmh_mappings = OaiPmhMappings::with_defaults();
         }
         return $this->oai_pmh_mappings;
     }
@@ -651,8 +651,8 @@ class ObjectKind
      */
     public function has_oai_pmh_mappings()
     {
-        return !is_null($this->oai_pmh_mappings) &&
-            $this->oai_pmh_mappings->get_mapping_count() > 0;
+        // With defaults, mappings are always available
+        return true;
     }
 
     /**
@@ -668,5 +668,37 @@ class ObjectKind
 
         $kind_fields = $this->get_fields();
         return $this->oai_pmh_mappings->validate_mappings($kind_fields);
+    }
+
+    /**
+     * Creates an ObjectKind instance from a JSON object.
+     *
+     * @param array|stdClass $json_data The JSON data as an array or stdClass object.
+     * @return ObjectKind A new ObjectKind instance populated with the JSON data.
+     */
+    public static function from_json($json_data): ObjectKind
+    {
+        // Convert array to stdClass if needed
+        if (is_array($json_data)) {
+            $json_data = (object) $json_data;
+        }
+
+        // Create a new instance using the constructor
+        $instance = new self($json_data);
+
+        // Handle OAI-PMH mappings specifically since they need special processing
+        if (isset($json_data->oai_pmh_mappings)) {
+            if (is_array($json_data->oai_pmh_mappings)) {
+                $instance->oai_pmh_mappings = OaiPmhMappings::from_std_object(
+                    (object) $json_data->oai_pmh_mappings
+                );
+            } elseif (is_object($json_data->oai_pmh_mappings)) {
+                $instance->oai_pmh_mappings = OaiPmhMappings::from_std_object(
+                    $json_data->oai_pmh_mappings
+                );
+            }
+        }
+
+        return $instance;
     }
 }

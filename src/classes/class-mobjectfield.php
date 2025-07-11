@@ -152,24 +152,46 @@ class MObjectField
     {
         $instance = new self();
 
-        $instance->field_id = intval($row->field_id);
-        $instance->kind_id = intval($row->kind_id);
-        $instance->name = trim(wp_unslash($row->name));
-        $instance->type = trim(wp_unslash($row->type));
-        $instance->display_order = intval($row->display_order);
-        $instance->public = (bool) intval($row->public);
-        $instance->required = (bool) intval($row->required);
-        $instance->quick_browse = (bool) intval($row->quick_browse);
-        $instance->help_text = trim(wp_unslash($row->help_text));
-        $instance->detailed_instructions = trim(
-            wp_unslash($row->detailed_instructions)
-        );
-        $instance->public_description = trim(
-            wp_unslash($row->public_description)
-        );
-        $instance->field_schema = $row->field_schema;
-        $instance->max_length = intval($row->max_length);
-        $instance->units = trim(wp_unslash($row->units));
+        $instance->field_id = !empty($row->field_id)
+            ? intval($row->field_id)
+            : 0;
+        $instance->kind_id = !empty($row->kind_id) ? intval($row->kind_id) : 0;
+        $instance->name = !empty($row->name)
+            ? trim(wp_unslash($row->name))
+            : "";
+        $instance->type = !empty($row->type)
+            ? trim(wp_unslash($row->type))
+            : "";
+        $instance->display_order = !empty($row->display_order)
+            ? intval($row->display_order)
+            : 0;
+        $instance->public = !empty($row->public)
+            ? (bool) intval($row->public)
+            : false;
+        $instance->required = !empty($row->required)
+            ? (bool) intval($row->required)
+            : false;
+        $instance->quick_browse = !empty($row->quick_browse)
+            ? (bool) intval($row->quick_browse)
+            : false;
+        $instance->help_text = !empty($row->help_text)
+            ? trim(wp_unslash($row->help_text))
+            : "";
+        $instance->detailed_instructions = !empty($row->detailed_instructions)
+            ? trim(wp_unslash($row->detailed_instructions))
+            : "";
+        $instance->public_description = !empty($row->public_description)
+            ? trim(wp_unslash($row->public_description))
+            : "";
+        $instance->field_schema = !empty($row->field_schema)
+            ? $row->field_schema
+            : "";
+        $instance->max_length = !empty($row->max_length)
+            ? intval($row->max_length)
+            : 0;
+        $instance->units = !empty($row->units)
+            ? trim(wp_unslash($row->units))
+            : "";
         $instance->factors = $row->factors
             ? json_decode($row->factors, false, 2)
             : [];
@@ -397,7 +419,20 @@ class MObjectField
 
         $field_array = $this->to_json_array();
 
-        if ($this->field_id < 0) {
+        $field_exists = $this->field_id >= 0;
+        if ($field_exists) {
+            $existing_field = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE field_id = %d",
+                    $this->field_id
+                )
+            );
+            if (!$existing_field) {
+                $field_exists = false;
+            }
+        }
+
+        if (!$field_exists) {
             // New field, so unset field_id placeholder.
             unset($field_array["field_id"]);
             return $wpdb->insert($table_name, $field_array);

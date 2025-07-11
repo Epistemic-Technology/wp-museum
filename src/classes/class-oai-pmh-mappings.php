@@ -176,6 +176,74 @@ class OaiPmhMappings
     }
 
     /**
+     * Initialize all fields with default mappings.
+     */
+    public function initialize_default_mappings()
+    {
+        $this->title = [
+            "field" => "wp_post_title",
+            "staticValue" => "",
+        ];
+        $this->creator = [
+            "field" => "wp_post_author",
+            "staticValue" => "",
+        ];
+        $this->subject = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->description = [
+            "field" => "wp_post_excerpt",
+            "staticValue" => "",
+        ];
+        $this->publisher = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->contributor = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->date = [
+            "field" => "wp_post_date",
+            "staticValue" => "",
+        ];
+        $this->type = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->format = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->identifier = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->source = [
+            "field" => "wp_post_permalink",
+            "staticValue" => "",
+        ];
+        $this->language = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->relation = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->coverage = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->rights = [
+            "field" => "",
+            "staticValue" => "",
+        ];
+        $this->identifier_prefix = "";
+    }
+
+    /**
      * Get list of all Dublin Core field names.
      *
      * @return array Array of field names.
@@ -199,6 +267,18 @@ class OaiPmhMappings
             "coverage",
             "rights",
         ];
+    }
+
+    /**
+     * Create a new instance with default mappings.
+     *
+     * @return OaiPmhMappings A new instance with default mappings.
+     */
+    public static function with_defaults()
+    {
+        $instance = new self();
+        $instance->initialize_default_mappings();
+        return $instance;
     }
 
     /**

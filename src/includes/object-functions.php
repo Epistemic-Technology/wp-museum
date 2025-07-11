@@ -241,6 +241,10 @@ function get_object_post_from_id($kind, $cat_id, $post_status = "any")
     }
     $id_field = get_mobject_field($kind->kind_id, $kind->cat_field_id);
 
+    if (!$id_field) {
+        return null;
+    }
+
     $args = [
         "post_type" => $kind->type_name,
         "post_status" => $post_status,

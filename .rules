@@ -5,6 +5,7 @@
 - The backend is primarily PHP.
 - Never ever use jquery.
 - Strongly favor simplicity and concision when making solutions. Do not over-engineer.
-- When writing playwright tests, use .pressSequentially with a delay of 100ms when inputting text into html elements.
 - WordPress wraps React in @wordpress/element, so that is what should be used for importing things like useState, useEffect, etc.
 - When solving problems, make minimal incremental changes. Don't go wild solving a problem in many different ways. Solve it the simplest way possible. If that doesn't work, we can try a different approach then.
+- If you have tried to make a test pass more than twice and it still fails, stop trying and move on.
+- In PHP, add static types where possible: function arguments and return types, class properties, and class constants. We are targeting PHP 8.4.

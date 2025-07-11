@@ -1,7 +1,9 @@
 <?php
 
 /* Path to the WordPress codebase you'd like to test. Add a forward slash in the end. */
-define("ABSPATH", "/app/wordpress-test/");
+if (!defined("ABSPATH")) {
+    define("ABSPATH", "/app/wordpress-test/");
+}
 
 /*
  * Path to the theme to test with.
