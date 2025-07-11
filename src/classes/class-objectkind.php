@@ -528,6 +528,13 @@ class ObjectKind
             "type" => "wordpress_post_field",
         ];
 
+        $available_fields[] = [
+            "id" => "wp_post_id",
+            "slug" => "wp_post_id",
+            "name" => "Post ID",
+            "type" => "wordpress_post_field",
+        ];
+
         // Add kind fields
         $kind_fields = $this->get_fields();
 
@@ -587,6 +594,8 @@ class ObjectKind
                 return $post->post_date;
             case "wp_post_permalink":
                 return get_permalink($post_id);
+            case "wp_post_id":
+                return (string) $post->ID;
             default:
                 return "";
         }

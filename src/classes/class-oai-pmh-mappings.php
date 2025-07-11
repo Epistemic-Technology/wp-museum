@@ -555,6 +555,7 @@ class OaiPmhMappings
             "wp_post_author",
             "wp_post_date",
             "wp_post_permalink",
+            "wp_post_id",
         ];
         $available_slugs = array_merge($available_slugs, $wordpress_fields);
 
