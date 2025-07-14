@@ -162,6 +162,13 @@ add_filter("posts_where", __NAMESPACE__ . "\post_search_filter", 10, 2);
  */
 add_filter("query_vars", __NAMESPACE__ . "\add_title_content_query_vars");
 
+add_filter(
+    "posts_results",
+    __NAMESPACE__ . "\add_object_results_to_main_search_query",
+    10,
+    2
+);
+
 /*****************************************************************************
  *
  * Admin Actions

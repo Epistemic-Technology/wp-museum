@@ -184,7 +184,7 @@ const AdvancedSearchUI = (props) => {
           path: `${wordPressRestBase}/tags?orderby=count&order=desc&per_page=100`,
         });
         // Filter out tags with zero count
-        const filteredTags = tags.filter(tag => tag.count > 0);
+        const filteredTags = tags.filter((tag) => tag.count > 0);
         setTagsData(filteredTags);
       } catch (error) {
         console.error("Error fetching tags:", error);
@@ -241,17 +241,18 @@ const AdvancedSearchUI = (props) => {
     const newSearchFields = !!searchFields ? [...searchFields] : [];
     let fieldValue = field;
     let searchValue = search;
-    if (typeof newSearchFields[index] !== "undefined") {
-      if (field === null) {
-        if (newSearchFields[index].field === null) {
-          fieldValue = Object.values(fieldData)[0].slug;
-        } else {
-          fieldValue = newSearchFields[index].field;
-        }
+    if (fieldValue === null) {
+      if (
+        typeof newSearchFields[index] !== "undefined" &&
+        newSearchFields[index].field !== null
+      ) {
+        fieldValue = newSearchFields[index].field;
+      } else {
+        fieldValue = Object.values(fieldData)[0].slug;
       }
-      if (search === null) {
-        searchValue = newSearchFields[index].search;
-      }
+    }
+    if (searchValue === null && typeof newSearchFields[index] !== "undefined") {
+      searchValue = newSearchFields[index].search;
     }
     newSearchFields[index] = { field: fieldValue, search: searchValue };
     updateSearchValues({ searchFields: newSearchFields });

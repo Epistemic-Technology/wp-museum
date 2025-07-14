@@ -500,7 +500,6 @@ function do_advanced_search($request)
  */
 function add_object_meta_query_filter($search_terms, $kind)
 {
-    return;
     global $wpdb;
 
     $search_all_fields_sql = [];
@@ -586,8 +585,7 @@ function add_object_meta_query_filter($search_terms, $kind)
                 $search_all_fields_sql,
                 $meta_fields_sql
             ) {
-                $type = $query->query_vars["post_type"];
-                if (!in_array($type, get_object_type_names(), true)) {
+                if (!is_object_query($query)) {
                     return $where;
                 }
                 global $wpdb;
@@ -624,8 +622,7 @@ function add_object_meta_query_filter($search_terms, $kind)
         add_filter(
             "posts_join",
             function ($join, $query) use ($join_clause) {
-                $type = $query->query_vars["post_type"];
-                if (!in_array($type, get_object_type_names(), true)) {
+                if (!is_object_query($query)) {
                     return $join;
                 }
                 return $join . $join_clause;
@@ -636,8 +633,7 @@ function add_object_meta_query_filter($search_terms, $kind)
         add_filter(
             "posts_distinct",
             function ($distinct, $query) {
-                $type = $query->query_vars["post_type"];
-                if (!in_array($type, get_object_type_names(), true)) {
+                if (!is_object_query($query)) {
                     return $distinct;
                 }
                 return " DISTINCT ";
@@ -646,4 +642,52 @@ function add_object_meta_query_filter($search_terms, $kind)
             2
         );
     }
+}
+
+function is_object_query(\WP_Query $query): bool
+{
+    $type = $query->query_vars["post_type"];
+    $object_types = get_object_type_names();
+    if (is_array($type)) {
+        return count(array_intersect($type, $object_types)) > 0;
+    }
+    return in_array($type, $object_types, true);
+}
+
+function add_object_results_to_main_search_query(
+    array $posts,
+    \WP_Query $query
+): array {
+    if (!is_main_query() || !is_search()) {
+        return $posts;
+    }
+    if (!isset($query->query["s"])) {
+        return $posts;
+    }
+    // Prevent infinite recursion
+    if (
+        isset($query->query_vars["post_type"]) &&
+        is_array($query->query_vars["post_type"])
+    ) {
+        foreach ($query->query_vars["post_type"] as $type) {
+            if (in_array($type, get_object_type_names(), true)) {
+                return $posts;
+            }
+        }
+    }
+    add_object_meta_query_filter(
+        ["searchText" => $query->query["s"]],
+        get_mobject_kinds()
+    );
+    $new_posts = get_posts([
+        "post_type" => get_object_type_names(),
+        "s" => $query->query["s"],
+        "suppress_filters" => false,
+    ]);
+    foreach ($new_posts as $new_post) {
+        if (!in_array($new_post, $posts)) {
+            $posts[] = $new_post;
+        }
+    }
+    return $posts;
 }

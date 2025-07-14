@@ -56,5 +56,4 @@ define("WP_CACHE", false);
 define("WP_DISABLE_FATAL_ERROR_HANDLER", true);
 define("WP_MEMORY_LIMIT", "128M");
 define("WP_MAX_MEMORY_LIMIT", "128M");
-
 require_once ABSPATH . "wp-settings.php";

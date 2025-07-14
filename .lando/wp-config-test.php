@@ -1,4 +1,3 @@
-
 <?php
 define("DB_NAME", getenv("TEST_DB_NAME") ?: "wptest");
 define("DB_USER", getenv("TEST_DB_USER") ?: "wptest");
@@ -62,4 +61,3 @@ if (!defined("ABSPATH")) {
     define("ABSPATH", __DIR__ . "/");
 }
 require_once ABSPATH . "wp-settings.php";
-
