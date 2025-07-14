@@ -40,13 +40,18 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
             $mappings->get_field_slug("source")
         );
 
+        // Check that identifier is now mapped by default
+        $this->assertEquals(
+            "wp_post_id",
+            $mappings->get_field_slug("identifier")
+        );
+
         // Check that unmapped fields are empty
         $this->assertEquals("", $mappings->get_field_slug("subject"));
         $this->assertEquals("", $mappings->get_field_slug("publisher"));
         $this->assertEquals("", $mappings->get_field_slug("contributor"));
         $this->assertEquals("", $mappings->get_field_slug("type"));
         $this->assertEquals("", $mappings->get_field_slug("format"));
-        $this->assertEquals("", $mappings->get_field_slug("identifier"));
         $this->assertEquals("", $mappings->get_field_slug("language"));
         $this->assertEquals("", $mappings->get_field_slug("relation"));
         $this->assertEquals("", $mappings->get_field_slug("coverage"));
@@ -58,8 +63,8 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
         $this->assertEquals("wp_post_title", $title_mapping["field"]);
         $this->assertEquals("", $title_mapping["staticValue"]);
 
-        // Check that mapping count includes default mappings
-        $this->assertEquals(5, $mappings->get_mapping_count());
+        // Check that mapping count includes default mappings (now 6 with identifier)
+        $this->assertEquals(6, $mappings->get_mapping_count());
 
         // Check that has_mapping returns true for default mappings
         $this->assertTrue($mappings->has_mapping("title"));
@@ -67,10 +72,16 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
         $this->assertTrue($mappings->has_mapping("description"));
         $this->assertTrue($mappings->has_mapping("date"));
         $this->assertTrue($mappings->has_mapping("source"));
+        $this->assertTrue($mappings->has_mapping("identifier"));
 
         // Check that has_mapping returns false for unmapped fields
         $this->assertFalse($mappings->has_mapping("subject"));
         $this->assertFalse($mappings->has_mapping("publisher"));
+
+        // Check that identifier prefix is set to a default domain-based value
+        $prefix = $mappings->get_identifier_prefix();
+        $this->assertNotEmpty($prefix);
+        $this->assertStringEndsWith(":", $prefix);
     }
 
     /**
@@ -110,12 +121,16 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
             "wp_post_permalink",
             $mappings->get_field_slug("source")
         );
+        $this->assertEquals(
+            "wp_post_id",
+            $mappings->get_field_slug("identifier")
+        );
 
         // Check that has_oai_pmh_mappings returns true with defaults
         $this->assertTrue($kind->has_oai_pmh_mappings());
 
-        // Check that mapping count is correct
-        $this->assertEquals(5, $mappings->get_mapping_count());
+        // Check that mapping count is correct (now 6 with identifier)
+        $this->assertEquals(6, $mappings->get_mapping_count());
     }
 
     /**
@@ -235,6 +250,7 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
         $this->assertArrayHasKey("description", $array);
         $this->assertArrayHasKey("date", $array);
         $this->assertArrayHasKey("source", $array);
+        $this->assertArrayHasKey("identifier", $array);
         $this->assertArrayHasKey("identifier_prefix", $array);
 
         // Check structure of default mappings
@@ -254,6 +270,14 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
             $array["creator"]
         );
 
+        $this->assertEquals(
+            [
+                "field" => "wp_post_id",
+                "staticValue" => "",
+            ],
+            $array["identifier"]
+        );
+
         // Check that unmapped fields are empty
         $this->assertEquals(
             [
@@ -262,6 +286,10 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
             ],
             $array["subject"]
         );
+
+        // Check that identifier prefix is set
+        $this->assertNotEmpty($array["identifier_prefix"]);
+        $this->assertStringEndsWith(":", $array["identifier_prefix"]);
     }
 
     /**
@@ -290,6 +318,10 @@ class TestOaiPmhDefaults extends \WP_UnitTestCase
             "wp_post_author",
             $recreated->get_field_slug("creator")
         );
-        $this->assertEquals(5, $recreated->get_mapping_count());
+        $this->assertEquals(
+            "wp_post_id",
+            $recreated->get_field_slug("identifier")
+        );
+        $this->assertEquals(6, $recreated->get_mapping_count());
     }
 }

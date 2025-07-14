@@ -202,6 +202,11 @@ const OmiPmhAdmin = () => {
           path: `${baseRestPath}/mobject_kinds/`,
         });
         setKinds(kindsData);
+
+        // Auto-select the first kind if available
+        if (kindsData && kindsData.length > 0) {
+          setSelectedKind(kindsData[0].kind_id.toString());
+        }
       } catch (err) {
         setError("Failed to load kinds: " + err.message);
       }
@@ -209,6 +214,30 @@ const OmiPmhAdmin = () => {
 
     fetchKinds();
   }, []);
+
+  // Function to get default identifier prefix
+  const getDefaultIdentifierPrefix = () => {
+    try {
+      const siteUrl = window.location.origin;
+      const parsedUrl = new URL(siteUrl);
+      let domain = parsedUrl.hostname;
+
+      // Remove www. prefix if present
+      if (domain.startsWith("www.")) {
+        domain = domain.substring(4);
+      }
+
+      // Replace dots with hyphens and ensure it's URL-safe
+      const prefix = domain
+        .replace(/\./g, "-")
+        .replace(/[^a-zA-Z0-9\-]/g, "")
+        .replace(/^-+|-+$/g, "");
+
+      return prefix + ":";
+    } catch (err) {
+      return "site:";
+    }
+  };
 
   // Load kind fields and DC mappings when kind is selected
   useEffect(() => {
@@ -255,9 +284,13 @@ const OmiPmhAdmin = () => {
               description: { field: "wp_post_excerpt", staticValue: "" },
               date: { field: "wp_post_date", staticValue: "" },
               source: { field: "wp_post_permalink", staticValue: "" },
+              identifier: { field: "wp_post_id", staticValue: "" },
             };
             setDcMappings(defaultMappings);
-            setIdentifierPrefix("");
+
+            // Set default identifier prefix
+            const defaultPrefix = getDefaultIdentifierPrefix();
+            setIdentifierPrefix(defaultPrefix);
           }
         } catch (err) {
           setError("Failed to load kind data: " + err.message);
@@ -269,8 +302,13 @@ const OmiPmhAdmin = () => {
             description: { field: "wp_post_excerpt", staticValue: "" },
             date: { field: "wp_post_date", staticValue: "" },
             source: { field: "wp_post_permalink", staticValue: "" },
+            identifier: { field: "wp_post_id", staticValue: "" },
           };
           setDcMappings(defaultMappings);
+
+          // Set default identifier prefix even on error
+          const defaultPrefix = getDefaultIdentifierPrefix();
+          setIdentifierPrefix(defaultPrefix);
         } finally {
           setLoading(false);
         }
@@ -386,9 +424,13 @@ const OmiPmhAdmin = () => {
           description: { field: "wp_post_excerpt", staticValue: "" },
           date: { field: "wp_post_date", staticValue: "" },
           source: { field: "wp_post_permalink", staticValue: "" },
+          identifier: { field: "wp_post_id", staticValue: "" },
         };
         setDcMappings(defaultMappings);
-        setIdentifierPrefix("");
+
+        // Reset to default identifier prefix
+        const defaultPrefix = getDefaultIdentifierPrefix();
+        setIdentifierPrefix(defaultPrefix);
         setError("");
         setSuccessMessage("");
       }
@@ -402,7 +444,8 @@ const OmiPmhAdmin = () => {
         <p>
           Configure Dublin Core metadata mappings for museum object kinds.
           Default mappings are automatically applied for new object kinds to
-          provide zero-configuration OAI-PMH support.
+          provide zero-configuration OAI-PMH support. The identifier field
+          defaults to the post ID with a sanitized domain prefix.
         </p>
       </div>
 
@@ -433,7 +476,8 @@ const OmiPmhAdmin = () => {
                 Map each Dublin Core field to a kind field or specify a static
                 value. Default mappings are automatically applied for essential
                 fields: Title → Post Title, Creator → Post Author, Description →
-                Post Excerpt, Date → Post Date, Source → Post Permalink.
+                Post Excerpt, Date → Post Date, Source → Post Permalink,
+                Identifier → Post ID.
               </p>
               <div className="mapping-status">
                 <span className="mapping-count">

@@ -27,9 +27,9 @@ function handle_oai_pmh_request()
     }
 
     // Set XML content type (skip during tests to avoid headers already sent error)
-    if (!defined("WP_TESTS_DOMAIN")) {
-        header("Content-Type: text/xml; charset=utf-8");
-    }
+    // if (!defined("WP_TESTS_DOMAIN")) {
+    //     header("Content-Type: text/xml; charset=utf-8");
+    // }
 
     // Get and validate verb
     $verb = $_GET["verb"] ?? ($_POST["verb"] ?? "");
@@ -730,7 +730,7 @@ function get_oai_identifier($post)
         $value = get_post_meta($post->ID, $identifier_mapping["field"], true);
         if (empty($value)) {
             $value = $kind->get_wordpress_post_field_value(
-                $post,
+                $post->ID,
                 $identifier_mapping["field"]
             );
         }
@@ -936,4 +936,32 @@ function validate_oai_date($date)
     }
 
     return false;
+}
+
+/**
+ * Generate a sanitized domain prefix for OAI-PMH identifiers
+ * Converts domain like "https://utsic.utoronto.ca" to "utsic-utoronto-ca"
+ */
+function get_default_oai_identifier_prefix()
+{
+    $site_url = get_site_url();
+    $parsed_url = parse_url($site_url);
+
+    if (!$parsed_url || !isset($parsed_url["host"])) {
+        return "site";
+    }
+
+    $domain = $parsed_url["host"];
+
+    // Remove www. prefix if present
+    if (strpos($domain, "www.") === 0) {
+        $domain = substr($domain, 4);
+    }
+
+    // Replace dots with hyphens and ensure it's URL-safe
+    $prefix = str_replace(".", "-", $domain);
+    $prefix = preg_replace("/[^a-zA-Z0-9\-]/", "", $prefix);
+    $prefix = trim($prefix, "-");
+
+    return $prefix . ":";
 }

@@ -217,7 +217,7 @@ class OaiPmhMappings
             "staticValue" => "",
         ];
         $this->identifier = [
-            "field" => "",
+            "field" => "wp_post_id",
             "staticValue" => "",
         ];
         $this->source = [
@@ -240,13 +240,49 @@ class OaiPmhMappings
             "field" => "",
             "staticValue" => "",
         ];
-        $this->identifier_prefix = "";
+
+        // Set default identifier prefix to sanitized domain
+        $this->identifier_prefix = $this->get_default_identifier_prefix();
     }
 
     /**
-     * Get list of all Dublin Core field names.
+     * Generate a sanitized domain prefix for OAI-PMH identifiers
+     * Converts domain like "https://utsic.utoronto.ca" to "utsic-utoronto-ca:"
      *
-     * @return array Array of field names.
+     * @return string The sanitized domain prefix with colon
+     */
+    private function get_default_identifier_prefix()
+    {
+        if (!function_exists("get_site_url")) {
+            return "";
+        }
+
+        $site_url = get_site_url();
+        $parsed_url = parse_url($site_url);
+
+        if (!$parsed_url || !isset($parsed_url["host"])) {
+            return "site:";
+        }
+
+        $domain = $parsed_url["host"];
+
+        // Remove www. prefix if present
+        if (strpos($domain, "www.") === 0) {
+            $domain = substr($domain, 4);
+        }
+
+        // Replace dots with hyphens and ensure it's URL-safe
+        $prefix = str_replace(".", "-", $domain);
+        $prefix = preg_replace("/[^a-zA-Z0-9\-]/", "", $prefix);
+        $prefix = trim($prefix, "-");
+
+        return $prefix . ":";
+    }
+
+    /**
+     * Get list of Dublin Core field names
+     *
+     * @return array
      */
     public function get_dc_field_names()
     {
