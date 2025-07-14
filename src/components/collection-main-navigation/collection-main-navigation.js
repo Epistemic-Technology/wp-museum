@@ -1,133 +1,143 @@
-import { useState } from '@wordpress/element';
+/**
+ * Hierarchical navigation tree for collections.
+ */
 
-import { Button } from '@wordpress/components';
+import { useState } from "@wordpress/element";
 
-import { info } from '../../icons';
+import { Button } from "@wordpress/components";
 
-import { isEmpty, sortCollections } from '../../javascript/util';
+import { info } from "../../icons";
 
-const CollectionBox = ( props ) => {
-	const {
-		theCollection,
-		fontSize,
-		fontColor,
-		backgroundColor,
-		borderColor,
-		borderWidth,
-		verticalSpacing,
-		useDefaultFontSize,
-		useDefaultFontColor,
-		useDefaultBackgroundColor,
-		useDefaultBorderColor,
-		useDefaultBorderWidth,
-		useDefaultVerticalSpacing,
-		subCollectionIndent,
-	} = props;
+import { isEmpty, sortCollections } from "../../javascript/util";
 
-	const [ showExcerpt, setShowExcerpt ] = useState( false );
+/**
+ * A single box in the collection tree.
+ */
+const CollectionBox = (props) => {
+  const {
+    theCollection,
+    fontSize,
+    fontColor,
+    backgroundColor,
+    borderColor,
+    borderWidth,
+    verticalSpacing,
+    useDefaultFontSize,
+    useDefaultFontColor,
+    useDefaultBackgroundColor,
+    useDefaultBorderColor,
+    useDefaultBorderWidth,
+    useDefaultVerticalSpacing,
+    subCollectionIndent,
+  } = props;
 
-	const toggleShowExcerpt = () => {
-		setShowExcerpt( ! showExcerpt );
-	};
+  const [showExcerpt, setShowExcerpt] = useState(false);
 
-	const boxStyle = {
-		marginLeft: theCollection.indentLevel * subCollectionIndent + 'em',
-	};
-	const titleStyle = {};
+  const toggleShowExcerpt = () => {
+    setShowExcerpt(!showExcerpt);
+  };
 
-	if ( ! useDefaultFontSize ) {
-		boxStyle.fontSize = `${ fontSize }em`;
-		titleStyle.fontSize = `${ fontSize }em`;
-	}
-	if ( ! useDefaultFontColor ) {
-		titleStyle.color = `${ fontColor }`;
-	}
-	if ( ! useDefaultBackgroundColor ) {
-		titleStyle.backgroundColor = `${ backgroundColor }`;
-	}
-	if ( ! useDefaultBorderColor ) {
-		titleStyle.borderColor = `${ borderColor }`;
-	}
-	if ( ! useDefaultBorderWidth ) {
-		titleStyle.borderWidth = `${ borderWidth }px`;
-		if ( borderWidth > 0 ) {
-			titleStyle.borderStyle = 'solid';
-		}
-	}
-	if ( ! useDefaultVerticalSpacing ) {
-		boxStyle.marginBottom = `${ verticalSpacing }em`;
-	}
+  const boxStyle = {
+    marginLeft: theCollection.indentLevel * subCollectionIndent + "em",
+  };
+  const titleStyle = {};
 
-	const excerptStateClass = showExcerpt ? 'open' : 'closed';
+  if (!useDefaultFontSize) {
+    boxStyle.fontSize = `${fontSize}em`;
+    titleStyle.fontSize = `${fontSize}em`;
+  }
+  if (!useDefaultFontColor) {
+    titleStyle.color = `${fontColor}`;
+  }
+  if (!useDefaultBackgroundColor) {
+    titleStyle.backgroundColor = `${backgroundColor}`;
+  }
+  if (!useDefaultBorderColor) {
+    titleStyle.borderColor = `${borderColor}`;
+  }
+  if (!useDefaultBorderWidth) {
+    titleStyle.borderWidth = `${borderWidth}px`;
+    if (borderWidth > 0) {
+      titleStyle.borderStyle = "solid";
+    }
+  }
+  if (!useDefaultVerticalSpacing) {
+    boxStyle.marginBottom = `${verticalSpacing}em`;
+  }
 
-	return (
-		<div
-			className={ `wpm-collection-main-navigation-collection-box indent-${ theCollection.indentLevel }` }
-			style={ boxStyle }
-		>
-			<div 
-				className = 'wpm-collection-main-navigation-collection-box-title-wrapper'
-				style     = { titleStyle }
-			>
-				<span className = 'wpm-collection-main-navigation-collection-box-title'>
-					<a href= { theCollection.link }>
-						{ theCollection.post_title }
-					</a> 
-				</span>
-				<span>
-					<Button
-						className = 'wpm-collection-main-navigation-collection-box-info-button'
-						icon = { info }
-						onClick = { toggleShowExcerpt }
-					/>
-				</span>
-			</div>
-			<div className = { `wpm-collection-main-navigation-collection-box-excerpt ${ excerptStateClass }` }>
-				{ theCollection.excerpt }
-				<div className = 'wpm-collection-main-navigation-collection-box-excerpt-more' >
-					<a href = { theCollection.link }>More about the { theCollection.post_title } Collection...</a>
-				</div>
-			</div>
-		</div>
-	);
-}
+  const excerptStateClass = showExcerpt ? "open" : "closed";
+  const decodedTitle = (() => {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = theCollection.post_title;
+    return textarea.value;
+  })();
 
-const CollectionMainNavigation = props => {
-	const {
-		collectionData,
-		attributes
-	} = props;
+  return (
+    <div
+      className={`wpm-collection-main-navigation-collection-box indent-${theCollection.indentLevel}`}
+      style={boxStyle}
+    >
+      <div
+        className="wpm-collection-main-navigation-collection-box-title-wrapper"
+        style={titleStyle}
+      >
+        <span className="wpm-collection-main-navigation-collection-box-title">
+          <a href={theCollection.link}>{decodedTitle}</a>
+        </span>
+        <span>
+          <Button
+            className="wpm-collection-main-navigation-collection-box-info-button"
+            icon={info}
+            onClick={toggleShowExcerpt}
+          />
+        </span>
+      </div>
+      <div
+        className={`wpm-collection-main-navigation-collection-box-excerpt ${excerptStateClass}`}
+      >
+        {theCollection.excerpt}
+        <div className="wpm-collection-main-navigation-collection-box-excerpt-more">
+          <a href={theCollection.link}>
+            More about the {theCollection.post_title} Collection...
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-	const {
-		sortBy,
-		sortOrder
-	} = attributes;
-	
-	let collectionBoxes = null;
-	if ( ! isEmpty( collectionData ) ) {
-		const sortedCollections = sortCollections( collectionData, sortBy, sortOrder );
-		collectionBoxes = sortedCollections.map( collection => {
-			return (
-				<CollectionBox { ...attributes }
-					key           = { collection.ID }
-					theCollection = { collection }
-				/>
-			);
-		} );
-	} else {
-		collectionBoxes = Array.from( { length: 3 }, () => {
-			return (
-				<div className = 'wpm-collection-box-placeholder' 
-				>
-					<div className = 'placeholder'>
+const CollectionMainNavigation = (props) => {
+  const { collectionData, attributes } = props;
 
-					</div>
-				</div>
-		 	);
-		} );
-	}
+  const { sortBy, sortOrder } = attributes;
 
-	return collectionBoxes;
-}
+  let collectionBoxes = null;
+  if (!isEmpty(collectionData)) {
+    const sortedCollections = sortCollections(
+      collectionData,
+      sortBy,
+      sortOrder,
+    );
+    collectionBoxes = sortedCollections.map((collection) => {
+      return (
+        <CollectionBox
+          {...attributes}
+          key={collection.ID}
+          theCollection={collection}
+        />
+      );
+    });
+  } else {
+    collectionBoxes = Array.from({ length: 3 }, () => {
+      return (
+        <div className="wpm-collection-box-placeholder">
+          <div className="placeholder"></div>
+        </div>
+      );
+    });
+  }
+
+  return collectionBoxes;
+};
 
 export default CollectionMainNavigation;
