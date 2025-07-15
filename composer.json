@@ -1,0 +1,24 @@
+{
+  "name": "mikethicke/wp-museum",
+  "description": "Museum management plugin for WordPress",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mike Thicke",
+      "email": "mikethicke@gmail.com"
+    }
+  ],
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.8",
+    "wp-coding-standards/wpcs": "^3.0",
+    "phpcompatibility/php-compatibility": "^9.3",
+    "phpunit/phpunit": "^8.4",
+    "yoast/phpunit-polyfills": "^4.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}

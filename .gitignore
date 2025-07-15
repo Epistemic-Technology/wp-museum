@@ -8,8 +8,6 @@
 *.komodotools
 wordpress-4
 .vscode
-composer.json
-composer.lock
 vendor
 sql
 planning
