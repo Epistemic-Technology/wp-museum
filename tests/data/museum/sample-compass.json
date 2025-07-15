@@ -1,0 +1,62 @@
+{
+  "object_id": 10,
+  "kind_id": 1,
+  "title": "Surveyor's Compass",
+  "slug": "surveyors-compass-010",
+  "status": "published",
+  "created_date": "2024-02-01T10:30:00Z",
+  "modified_date": "2024-02-01T10:30:00Z",
+  "fields": {
+    "1": {
+      "field_id": 1,
+      "slug": "accession-number",
+      "value": "2024.SCI.010"
+    },
+    "2": {
+      "field_id": 2,
+      "slug": "name",
+      "value": "Surveyor's Compass"
+    },
+    "3": {
+      "field_id": 3,
+      "slug": "description",
+      "value": "<p>A precision surveyor's compass with vernier scale and telescopic sight. Used for land surveying and mapping in the early 20th century. Features engraved compass rose and adjustable declination.</p>"
+    },
+    "4": {
+      "field_id": 4,
+      "slug": "manufacturer",
+      "value": "W. & L.E. Gurley"
+    },
+    "5": {
+      "field_id": 5,
+      "slug": "date-of-manufacture",
+      "value": "1915-08-22"
+    },
+    "6": {
+      "field_id": 6,
+      "slug": "primary-materials",
+      "value": "Brass, steel, glass"
+    },
+    "7": {
+      "field_id": 7,
+      "slug": "dimensions-cm",
+      "value": "30 x 30 x 12"
+    },
+    "8": {
+      "field_id": 8,
+      "slug": "condition",
+      "value": "<p>Very good condition. Compass needle moves freely, all adjustments functional. Original mahogany case included.</p>"
+    },
+    "9": {
+      "field_id": 9,
+      "slug": "provenance",
+      "value": "<p>Donated by the estate of John Smith, professional surveyor, 2024. Used extensively in mapping the western territories.</p>"
+    },
+    "10": {
+      "field_id": 10,
+      "slug": "display-location",
+      "value": "Navigation Gallery, Case 3"
+    }
+  },
+  "tags": ["navigation", "surveying", "precision instruments", "American made"]
+}

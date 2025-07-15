@@ -1,0 +1,62 @@
+{
+  "object_id": 11,
+  "kind_id": 1,
+  "title": "Persian Astrolabe",
+  "slug": "persian-astrolabe-011",
+  "status": "published",
+  "created_date": "2024-02-02T10:30:00Z",
+  "modified_date": "2024-02-02T10:30:00Z",
+  "fields": {
+    "1": {
+      "field_id": 1,
+      "slug": "accession-number",
+      "value": "2024.SCI.011"
+    },
+    "2": {
+      "field_id": 2,
+      "slug": "name",
+      "value": "Persian Astrolabe"
+    },
+    "3": {
+      "field_id": 3,
+      "slug": "description",
+      "value": "<p>An exquisite 18th century Persian astrolabe with intricate Islamic geometric patterns. The mater and tympan plates are engraved with Arabic inscriptions and constellation markers. This astronomical computer was used for solving problems relating to time and the position of celestial objects.</p>"
+    },
+    "4": {
+      "field_id": 4,
+      "slug": "manufacturer",
+      "value": "Unknown Persian craftsman"
+    },
+    "5": {
+      "field_id": 5,
+      "slug": "date-of-manufacture",
+      "value": "1750-01-01"
+    },
+    "6": {
+      "field_id": 6,
+      "slug": "primary-materials",
+      "value": "Brass with silver inlay"
+    },
+    "7": {
+      "field_id": 7,
+      "slug": "dimensions-cm",
+      "value": "18 diameter x 0.5"
+    },
+    "8": {
+      "field_id": 8,
+      "slug": "condition",
+      "value": "<p>Excellent condition with minor surface patina. All rotating parts move smoothly. Silver inlay intact with no losses.</p>"
+    },
+    "9": {
+      "field_id": 9,
+      "slug": "provenance",
+      "value": "<p>Acquired from private collection in Tehran, 2023. Previously in the collection of the Qajar dynasty.</p>"
+    },
+    "10": {
+      "field_id": 10,
+      "slug": "display-location",
+      "value": "Islamic Science Gallery, Central Display"
+    }
+  },
+  "tags": ["astronomy", "Islamic science", "navigation", "Persian", "brass instruments"]
+}
