@@ -9,7 +9,7 @@
     "label": "Listen to xdebug (PHP-Zed Config)",
     "port": 9003,
     "pathMappings": {
-      "/app/": "/Users/mikethicke/github/wp-museum"
+      "/app/": "/Users/mikethicke/github/wp-museum-oc"
     }
   }
 ]

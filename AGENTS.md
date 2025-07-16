@@ -4,7 +4,7 @@
 - **Build**: `npm run build` (production) or `npm start` (development watch mode)
 - **PHP Tests**: `lando phpunit` or `lando phpunit-debug` (with xdebug)
 - **Single PHP Test**: `lando phpunit tests/phpunit/test-{name}.php`
-- **E2E Tests**: `npm run test:e2e` or `lando playwright`
+- **E2E Tests**: `lando playwright-html`
 - **PHP Linting**: `vendor/bin/phpcs` (uses WordPress-Extra standards)
 - **JS Linting**: Uses @wordpress/scripts ESLint config
 

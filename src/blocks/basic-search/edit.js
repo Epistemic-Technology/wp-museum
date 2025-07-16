@@ -49,6 +49,7 @@ const BasicSearchEdit = props => {
 		resultsPerPage     = 20,
 		advancedSearchLink = '',
 		acceptGETRequest   = true,
+		columns            = 4,
 	} = attributes;
 
 	const [ searchResults, setSearchResults ] = useState( [] );
@@ -88,6 +89,18 @@ const BasicSearchEdit = props => {
 							{ value: -1,  label: 'Unlimited' }
 						] }
 					/>
+					<SelectControl
+						label = 'Grid Columns'
+						value = { columns }
+						onChange = { val => setAttributes( { columns: parseInt( val ) } ) }
+						options = { [
+							{ value: 2, label: '2' },
+							{ value: 3, label: '3' },
+							{ value: 4, label: '4' },
+							{ value: 5, label: '5' },
+							{ value: 6, label: '6' }
+						] }
+					/>
 					<label>
 						Advanced Search Page URL:
 						<input
@@ -116,6 +129,7 @@ const BasicSearchEdit = props => {
 				<PaginatedObjectList
 					objects       = { searchResults }
 					displayImages = { true }
+					columns       = { columns }
 				/>
 			}
 		</div>

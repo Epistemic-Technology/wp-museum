@@ -484,7 +484,7 @@ function do_advanced_search($request)
  *
  * Finally, we add the postmeta table to the JOIN clause.
  *
- * @param Array       $search_terms     Associative array of search terms.
+ * @param array       $search_terms     Associative array of search terms.
  *        boolean     ['onlyTitle']     If true, don't search fields for main search text.
  *                                      (But will search boolean search terms.)
  *        string      ['searchText']    The main search text.

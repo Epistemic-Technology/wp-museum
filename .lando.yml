@@ -16,6 +16,8 @@ services:
         WP_TESTS_PHPUNIT_POLYFILLS_PATH: /app/vendor/yoast/phpunit-polyfills
         WP_TESTS_DIR: /app/tests/
     build_as_root:
+      - npm install
+      - composer install
       - npm run build
       - /app/.lando/build-wordpress.sh
     config:
@@ -128,6 +130,9 @@ tooling:
     cmd:
       - wp-test-server: /app/.lando/reset-test-wordpress.sh
       - playwright: cd /app/tests/playwright && npx playwright test --reporter=html --max-failures=1
+    options:
+      playwright:
+        passthrough: true
   playwright-multi:
     description: Runs Playwright tests against all browsers (chromium, firefox, webkit) with HTML report
     cmd:

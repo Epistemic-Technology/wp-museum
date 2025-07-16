@@ -37,6 +37,12 @@ lando playwright --workers=1
 
 # Run specific test by name
 lando playwright --grep="can activate Museum for WordPress plugin"
+
+# Run utility validation tests
+lando playwright tests/playwright/utils-validation.spec.js
+
+# Run a specific utility test
+lando playwright --grep="createObjectKind creates a complete object kind"
 ```
 
 ## Test Utilities
@@ -99,6 +105,92 @@ test("museum functionality", async ({ page }) => {
 });
 ```
 
+### `deleteAllObjectKinds(page)`
+
+Delete all existing object kinds for test cleanup.
+
+```javascript
+const { deleteAllObjectKinds } = require("./utils");
+
+await deleteAllObjectKinds(page);
+```
+
+### `createObjectKind(page, kindData)`
+
+Create a museum object kind with specified configuration.
+
+```javascript
+const { createObjectKind } = require("./utils");
+
+await createObjectKind(page, {
+  label: "Instrument",
+  labelPlural: "Instruments", 
+  description: "Scientific instruments",
+  categorized: true,
+  fields: [
+    { name: "Manufacturer", type: "plain", required: true },
+    { name: "Date", type: "date", public: true },
+    { name: "Materials", type: "plain", quickBrowse: true }
+  ]
+});
+```
+
+### `createSimpleObjectKind(page, name)`
+
+Create a basic object kind with default fields (Manufacturer, Materials, Accession Number).
+
+```javascript
+const { createSimpleObjectKind } = require("./utils");
+
+const kindSlug = await createSimpleObjectKind(page, "Scientific Instrument");
+// Returns: "scientific-instrument"
+```
+
+### `createMuseumObject(page, postType, objectData)`
+
+Create a museum object of a specific kind.
+
+```javascript
+const { createMuseumObject } = require("./utils");
+
+await createMuseumObject(page, "scientific-instrument", {
+  title: "Victorian Microscope",
+  content: "A brass compound microscope from the Victorian era.",
+  fields: {
+    manufacturer: "Ernst Leitz",
+    materials: "Brass, glass",
+    "accession-number": "2024.001"
+  }
+});
+```
+
+### `createPageWithBlock(page, title, blockName, blockSelector)`
+
+Create a WordPress page with a specific museum block.
+
+```javascript
+const { createPageWithBlock } = require("./utils");
+
+const pageUrl = await createPageWithBlock(
+  page,
+  "Search Page",
+  "Basic Search",
+  ".wp-block-wp-museum-basic-search"
+);
+```
+
+### `dismissEditorModals(page)`
+
+Dismiss WordPress editor modals (pattern inserter, welcome guide) that appear when creating new posts/pages.
+
+```javascript
+const { dismissEditorModals } = require("./utils");
+
+await page.goto("/wp-admin/post-new.php?post_type=page");
+await dismissEditorModals(page);
+// Editor is now ready for interaction
+```
+
 ## Test Files
 
 ### `wordpress-basic-functionality.spec.js`
@@ -114,6 +206,27 @@ Museum for WordPress plugin tests including:
 
 ### `museum-object-kinds.spec.js`
 Tests for Museum object kinds functionality (existing).
+
+### `basic-search-block.spec.js`
+Tests for the Basic Search block including:
+- Adding the block to a page
+- Search with "Only search titles" checked (default)
+- Search with "Only search titles" unchecked (searches title, content, and custom fields)
+- Search results pagination
+- Keyboard navigation (Enter key)
+- Empty search handling
+
+### `utils-validation.spec.js`
+Tests for validating the utility functions including:
+- `createObjectKind` - Creates complex object kinds with multiple fields
+- `createSimpleObjectKind` - Creates basic object kinds with default fields
+- `createMuseumObject` - Creates objects with custom field values
+- `dismissEditorModals` - Properly handles WordPress editor modals
+- `createPage` - Creates pages with content
+- `insertMuseumBlock` - Inserts museum blocks into the editor
+- `createPageWithBlock` - Creates complete pages with museum blocks
+- `deleteAllObjectKinds` - Removes all object kinds for cleanup
+- Error handling and complex workflows using multiple utilities
 
 ## Best Practices
 

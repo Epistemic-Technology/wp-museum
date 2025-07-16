@@ -376,41 +376,44 @@ class Objects_Controller extends \WP_REST_Controller
             "posts_per_page" => $per_page,
             "suppress_filters" => false,
         ];
+        if (!$request->get_param("onlyTitle", false)) {
+            $kinds_field_slugs = [];
+            foreach ($kinds as $kind) {
+                $kind_fields = get_mobject_fields(
+                    $kind->kind_id,
+                    $public_fields_only
+                );
+                $field_slugs = array_map(function ($x) {
+                    return $x->slug;
+                }, $kind_fields);
 
-        $kinds_field_slugs = [];
-        foreach ($kinds as $kind) {
-            $kind_fields = get_mobject_fields(
-                $kind->kind_id,
-                $public_fields_only
-            );
-            $field_slugs = array_map(function ($x) {
-                return $x->slug;
-            }, $kind_fields);
-
-            $kinds_field_slugs = array_merge($kinds_field_slugs, $field_slugs);
-        }
-        $meta_query = ["relation" => "AND"];
-        foreach ($kinds_field_slugs as $slug) {
-            $field_query = sanitize_text_field($request->get_param($slug));
-            if (substr($field_query, 0, 1) === "~") {
-                $comparator = "LIKE";
-                $field_query = substr($field_query, 1);
-            } else {
-                $comparator = "=";
+                $kinds_field_slugs = array_merge(
+                    $kinds_field_slugs,
+                    $field_slugs
+                );
             }
-            if (!empty($field_query)) {
-                $meta_query[] = [
-                    "key" => $slug,
-                    "value" => $field_query,
-                    "compare" => $comparator,
-                ];
+            $meta_query = ["relation" => "AND"];
+            foreach ($kinds_field_slugs as $slug) {
+                $field_query = sanitize_text_field($request->get_param($slug));
+                if (substr($field_query, 0, 1) === "~") {
+                    $comparator = "LIKE";
+                    $field_query = substr($field_query, 1);
+                } else {
+                    $comparator = "=";
+                }
+                if (!empty($field_query)) {
+                    $meta_query[] = [
+                        "key" => $slug,
+                        "value" => $field_query,
+                        "compare" => $comparator,
+                    ];
+                }
+            }
+            if (count($meta_query) > 1) {
+                //phpcs:ignore WordPress.DB.SlowDBQuery --Slow query is not avoidable.
+                $query_args["meta_query"] = $meta_query;
             }
         }
-        if (count($meta_query) > 1) {
-            //phpcs:ignore WordPress.DB.SlowDBQuery --Slow query is not avoidable.
-            $query_args["meta_query"] = $meta_query;
-        }
-
         $search_string = sanitize_text_field($request->get_param("searchText"));
         if (!$search_string) {
             $search_string = sanitize_text_field($request->get_param("s"));
@@ -422,6 +425,10 @@ class Objects_Controller extends \WP_REST_Controller
                 $kinds
             );
         }
+        if ($request->get_param("onlyTitle", false)) {
+            $query_args["search_columns"] = ["post_title"];
+            $query_args["suppress_filters"] = true;
+        }
         $title_query = sanitize_text_field($request->get_param("post_title"));
         if (!empty($title_query)) {
             $query_args["post_title"] = $title_query;
@@ -429,7 +436,7 @@ class Objects_Controller extends \WP_REST_Controller
         $content_query = sanitize_text_field(
             $request->get_param("post_content")
         );
-        if (!empty($content_query)) {
+        if (!empty($content_query) && !$request->get_param("onlyTitle")) {
             $query_args["post_content"] = $content_query;
         }
 
