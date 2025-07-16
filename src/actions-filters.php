@@ -335,18 +335,6 @@ add_filter(
     2
 );
 
-/**
- * Customizes the oembed response for museum objects.
- *
- * @see object-post-types.php::customize_oembed_response()
- */
-add_filter(
-    "oembed_response_data",
-    __NAMESPACE__ . "\customize_oembed_response",
-    10,
-    4
-);
-
 add_filter(
     "post_thumbnail_id",
     __NAMESPACE__ . '\filter_object_thumbnail_id',
