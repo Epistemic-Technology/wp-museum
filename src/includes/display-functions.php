@@ -53,8 +53,8 @@ function mobject_excerpt_length($length)
 function mobject_collection_breadcrumbs($content, $fields = false)
 {
     $post = get_queried_object();
-
-    if (!$post || !in_the_loop() || !is_main_query()) {
+    xdebug_break();
+    if (!$post || !in_the_loop() || !is_main_query() || is_embed()) {
         return $content;
     }
 
