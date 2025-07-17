@@ -73,6 +73,10 @@ zip -r $RELEASE_FILE $SUB_RELEASE_DIR
 cd ..
 echo "Created ${BASE_RELEASE_DIR}/${RELEASE_FILE}"
 
+echo "Tagging release..."
+git tag -a ${VERSION_NUMBER} -m "Release ${VERSION_NUMBER}"
+git push origin --tags
+
 read -p 'Delete release directory (y/n)? ' yn
 if [ $yn = 'y' ] || [ $yn = 'Y' ]
 then
