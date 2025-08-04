@@ -594,6 +594,7 @@ function get_oai_posts($args)
                 return [];
             }
             $date_query["after"] = $from_date;
+            $date_query["inclusive"] = true;
         }
 
         if (!empty($args["until"])) {
@@ -602,6 +603,7 @@ function get_oai_posts($args)
                 return [];
             }
             $date_query["before"] = $until_date;
+            $date_query["inclusive"] = true;
         }
 
         $query_args["date_query"] = [$date_query];
@@ -757,7 +759,7 @@ function output_header($post)
     if (!$identifier) {
         return; // Skip posts without identifiers
     }
-    $datestamp = gmdate("Y-m-d\TH:i:s\Z", strtotime($post->post_modified));
+    $datestamp = gmdate("Y-m-d\TH:i:s\Z", strtotime($post->post_date));
 
     echo "    <header>" . "\n";
     echo "      <identifier>" . esc_html($identifier) . "</identifier>" . "\n";
