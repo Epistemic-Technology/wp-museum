@@ -313,7 +313,7 @@ function handle_list_sets($args)
 function handle_get_record($args)
 {
     $allowed_args = ["verb", "identifier", "metadataPrefix"];
-    $required_args = ["identifier"];
+    $required_args = ["identifier", "metadataPrefix"];
 
     // Check for required arguments
     foreach ($required_args as $arg) {
@@ -331,12 +331,7 @@ function handle_get_record($args)
         }
     }
 
-    // Default metadata prefix to oai_dc if not specified
-    if (empty($args["metadataPrefix"])) {
-        $args["metadataPrefix"] = "oai_dc";
-    }
-
-    // Validate metadata prefix - only error if explicitly specified as non-oai_dc
+    // Validate metadata prefix
     if ($args["metadataPrefix"] !== "oai_dc") {
         output_oai_error(
             "cannotDisseminateFormat",
@@ -383,7 +378,6 @@ function handle_list_identifiers($args)
         "metadataPrefix",
         "resumptionToken",
     ];
-    $required_args = [];
 
     // Handle resumption token
     if (!empty($args["resumptionToken"])) {
@@ -405,6 +399,9 @@ function handle_list_identifiers($args)
         return;
     }
 
+    // metadataPrefix is required when no resumption token
+    $required_args = ["metadataPrefix"];
+
     // Check for required arguments
     foreach ($required_args as $arg) {
         if (empty($args[$arg])) {
@@ -421,18 +418,50 @@ function handle_list_identifiers($args)
         }
     }
 
-    // Default metadata prefix to oai_dc if not specified
-    if (empty($args["metadataPrefix"])) {
-        $args["metadataPrefix"] = "oai_dc";
-    }
-
-    // Validate metadata prefix - only error if explicitly specified as non-oai_dc
+    // Validate metadata prefix
     if ($args["metadataPrefix"] !== "oai_dc") {
         output_oai_error(
             "cannotDisseminateFormat",
             "Unsupported metadata format"
         );
         return;
+    }
+
+    // Validate from and until dates
+    if (!empty($args["from"])) {
+        $from_date = validate_oai_date($args["from"]);
+        if (!$from_date) {
+            output_oai_error(
+                "badArgument",
+                "Invalid date format for 'from' parameter"
+            );
+            return;
+        }
+    }
+
+    if (!empty($args["until"])) {
+        $until_date = validate_oai_date($args["until"]);
+        if (!$until_date) {
+            output_oai_error(
+                "badArgument",
+                "Invalid date format for 'until' parameter"
+            );
+            return;
+        }
+    }
+
+    // Check that from and until have the same granularity
+    if (!empty($args["from"]) && !empty($args["until"])) {
+        $from_is_datetime = strpos($args["from"], "T") !== false;
+        $until_is_datetime = strpos($args["until"], "T") !== false;
+
+        if ($from_is_datetime !== $until_is_datetime) {
+            output_oai_error(
+                "badArgument",
+                "Arguments 'from' and 'until' must have the same granularity"
+            );
+            return;
+        }
     }
 
     // Get records based on criteria
@@ -472,7 +501,6 @@ function handle_list_records($args)
         "metadataPrefix",
         "resumptionToken",
     ];
-    $required_args = [];
 
     // Handle resumption token
     if (!empty($args["resumptionToken"])) {
@@ -494,6 +522,9 @@ function handle_list_records($args)
         return;
     }
 
+    // metadataPrefix is required when no resumption token
+    $required_args = ["metadataPrefix"];
+
     // Check for required arguments
     foreach ($required_args as $arg) {
         if (empty($args[$arg])) {
@@ -510,12 +541,7 @@ function handle_list_records($args)
         }
     }
 
-    // Default metadata prefix to oai_dc if not specified
-    if (empty($args["metadataPrefix"])) {
-        $args["metadataPrefix"] = "oai_dc";
-    }
-
-    // Validate metadata prefix - only error if explicitly specified as non-oai_dc
+    // Validate metadata prefix
     if ($args["metadataPrefix"] !== "oai_dc") {
         output_oai_error(
             "cannotDisseminateFormat",
@@ -542,6 +568,20 @@ function handle_list_records($args)
             output_oai_error(
                 "badArgument",
                 "Invalid date format for 'until' parameter"
+            );
+            return;
+        }
+    }
+
+    // Check that from and until have the same granularity
+    if (!empty($args["from"]) && !empty($args["until"])) {
+        $from_is_datetime = strpos($args["from"], "T") !== false;
+        $until_is_datetime = strpos($args["until"], "T") !== false;
+
+        if ($from_is_datetime !== $until_is_datetime) {
+            output_oai_error(
+                "badArgument",
+                "Arguments 'from' and 'until' must have the same granularity"
             );
             return;
         }
