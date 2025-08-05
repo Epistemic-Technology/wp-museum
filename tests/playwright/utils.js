@@ -51,7 +51,7 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
 
   // First check if we're already logged in by trying to access admin
   await page.goto("/wp-admin/");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
 
   // Check if we're already in admin area
   const currentUrl = page.url();
@@ -70,26 +70,33 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
   }
 
   // Wait for login form to load
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
 
   // Check if login form exists
-  const loginFormExists = await page.locator("#loginform").isVisible();
+  const loginFormExists = await page
+    .locator("#loginform")
+    .isVisible({ timeout: 5000 });
   if (!loginFormExists) {
-    throw new Error("Login form not found on login page");
+    // Try a page refresh in case of loading issues
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+
+    const retryFormExists = await page
+      .locator("#loginform")
+      .isVisible({ timeout: 5000 });
+    if (!retryFormExists) {
+      throw new Error("Login form not found on login page after retry");
+    }
   }
 
   // Clear any existing values and fill in login credentials
-  await page.locator("#user_login").clear();
-  await page.locator("#user_pass").clear();
-  await page.locator("#user_login").type(username, { delay: 100 });
-  await page.locator("#user_pass").type(password, { delay: 100 });
-
+  await page.locator("#user_login").fill(username);
+  await page.waitForTimeout(100);
+  await page.locator("#user_pass").fill(password);
   await page.waitForTimeout(100);
 
   await page.locator("#user_pass").press("Enter");
-
-  //await page.click("#wp-submit");
-  await page.waitForNavigation({ waitUntil: "networkidle" });
+  await page.waitForNavigation({ waitUntil: "domcontentloaded" });
 
   // Check if we're on login page with error
   const currentUrlAfterLogin = page.url();
@@ -102,6 +109,7 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
   }
 
   await page.goto("/wp-admin/");
+  await page.waitForLoadState("domcontentloaded");
 
   // Verify we're in admin area
   const finalUrl = page.url();
@@ -158,7 +166,8 @@ async function activatePlugin(page, pluginName, pluginSlug = null) {
 
   // Navigate to plugins page
   await page.goto("/wp-admin/plugins.php");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForSelector("#the-list", { timeout: 10000 });
 
   // Check if plugin is already active
   const pluginRow = page
@@ -181,11 +190,13 @@ async function activatePlugin(page, pluginName, pluginSlug = null) {
   const activateLinkExists = await activateLink.isVisible();
 
   if (activateLinkExists) {
-    await activateLink.click();
-    await page.waitForLoadState("networkidle");
+    await Promise.all([
+      page.waitForLoadState("domcontentloaded"),
+      activateLink.click(),
+    ]);
 
     // Wait for success message or page reload
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
 
     // Verify activation by checking for success notice or deactivate link
     const successNotice = page.locator(
@@ -290,10 +301,13 @@ async function setupMuseumTest(page, adminUser = null, adminPass = null) {
 async function deleteAllObjectKinds(page) {
   // Navigate to Museum Administration > Objects
   await page.goto("/wp-admin/admin.php?page=wpm-react-admin-objects");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
 
-  // Wait for React app to load
-  await page.waitForSelector(".museum-admin-main", { timeout: 15000 });
+  // Wait for React app to load with optimized selector
+  await page.waitForSelector(
+    ".museum-admin-main, #wpm-react-admin-app-container-objects",
+    { timeout: 10000 },
+  );
 
   // Set up dialog handler to automatically accept deletion confirmations
   // Remove any existing dialog handlers to avoid conflicts
@@ -317,11 +331,11 @@ async function deleteAllObjectKinds(page) {
     // Click the first Delete button
     await deleteButtons.first().click();
 
-    // Wait a moment for the deletion to process and page to update
+    // Wait for deletion to process
     await page.waitForTimeout(200);
 
-    // Wait for any loading states to complete
-    await page.waitForLoadState("networkidle");
+    // Wait for DOM to update
+    await page.waitForLoadState("domcontentloaded");
   }
 }
 
@@ -352,10 +366,13 @@ async function deleteAllObjectKinds(page) {
 async function createObjectKind(page, kindData) {
   // Navigate to Museum Administration > Objects
   await page.goto("/wp-admin/admin.php?page=wpm-react-admin-objects");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
 
-  // Wait for React app to load
-  await page.waitForSelector(".museum-admin-main", { timeout: 15000 });
+  // Wait for React app to load with optimized selector
+  await page.waitForSelector(
+    ".museum-admin-main, #wpm-react-admin-app-container-objects",
+    { timeout: 10000 },
+  );
 
   // Click "Add New Object Type" button
   await page.click('button:has-text("Add New Object Type")');
@@ -364,26 +381,14 @@ async function createObjectKind(page, kindData) {
   await page.waitForSelector(".edit-header h1", { timeout: 10000 });
 
   // Fill in basic information
-  await page.locator(".kind-label-input").click();
-  await page.keyboard.press("ControlOrMeta+a");
-  await page
-    .locator(".kind-label-input")
-    .pressSequentially(kindData.label, { delay: 25 });
+  await page.locator(".kind-label-input").fill(kindData.label);
 
-  await page.locator(".kind-label-plural-input").click();
-  await page.keyboard.press("ControlOrMeta+a");
   await page
     .locator(".kind-label-plural-input")
-    .pressSequentially(kindData.labelPlural || kindData.label + "s", {
-      delay: 25,
-    });
+    .fill(kindData.labelPlural || kindData.label + "s");
 
   if (kindData.description) {
-    await page.locator(".kind-description-textarea").click();
-    await page.keyboard.press("ControlOrMeta+a");
-    await page
-      .locator(".kind-description-textarea")
-      .pressSequentially(kindData.description, { delay: 25 });
+    await page.locator(".kind-description-textarea").fill(kindData.description);
   }
 
   if (kindData.categorized) {
@@ -394,8 +399,8 @@ async function createObjectKind(page, kindData) {
   if (kindData.fields && kindData.fields.length > 0) {
     for (const field of kindData.fields) {
       await page.click('button:has-text("Add New Field")');
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState("domcontentloaded");
+      await page.waitForTimeout(500);
 
       // Wait for the field accordion
       await page.waitForSelector("[id^='field-accordion-']", {
@@ -443,9 +448,7 @@ async function createObjectKind(page, kindData) {
         throw new Error("Could not find field name input");
       }
 
-      await fieldNameInput.click();
-      await page.keyboard.press("ControlOrMeta+a");
-      await fieldNameInput.pressSequentially(field.name, { delay: 25 });
+      await fieldNameInput.fill(field.name);
 
       // Set field type
       const typeSelectors = [
@@ -501,7 +504,7 @@ async function createObjectKind(page, kindData) {
   console.log("Saving object kind...");
   const saveButton = page.locator('button:has-text("Save Changes")');
   await saveButton.click();
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1500);
 
   // Check for success indicator (green "Last saved" message)
   const savedIndicator = page.locator(
@@ -523,8 +526,8 @@ async function createObjectKind(page, kindData) {
     }
   }
 
-  // Wait a bit more for WordPress to process the new post type
-  await page.waitForTimeout(5000);
+  // Wait for WordPress to process the new post type
+  await page.waitForTimeout(2000);
 
   // Verify the post type was created by checking the admin menu or posts list
   let slug = kindData.label.toLowerCase().replace(/\s+/g, "-");
@@ -571,16 +574,19 @@ async function createSimpleObjectKind(page, name = "Test Object") {
 
   // Navigate to Museum Administration > Objects to check if kind already exists
   await page.goto("/wp-admin/admin.php?page=wpm-react-admin-objects");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
 
-  // Wait for React app to load
-  await page.waitForSelector(".museum-admin-main", { timeout: 15000 });
+  // Wait for React app to load with optimized selector
+  await page.waitForSelector(
+    ".museum-admin-main, #wpm-react-admin-app-container-objects",
+    { timeout: 10000 },
+  );
 
   // Check if the object kind already exists by looking for it in the list
   const existingKindSelector = `.object-kind-row:has-text("${name}")`;
   const existingKind = await page.locator(existingKindSelector).first();
 
-  if (await existingKind.isVisible({ timeout: 3000 })) {
+  if (await existingKind.isVisible({ timeout: 1000 })) {
     console.log(`Object kind "${name}" already exists, skipping creation`);
     return slug;
   }
@@ -620,7 +626,7 @@ function postTypeFromSlug(slug) {
 async function createMuseumObject(page, postType, objectData) {
   console.log(`Creating museum object with post type: ${postType}`);
   await page.goto(`/wp-admin/post-new.php?post_type=${postType}`);
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1500);
 
   // Wait for editor to fully load by checking for specific elements
   await page.waitForLoadState("domcontentloaded");
@@ -725,7 +731,7 @@ async function createMuseumObject(page, postType, objectData) {
 
     if (contentArea && objectData.content) {
       await contentArea.click();
-      await page.keyboard.type(objectData.content);
+      await contentArea.fill(objectData.content);
     }
 
     // Fill custom fields if metabox is present (block editor)
@@ -774,7 +780,7 @@ async function createMuseumObject(page, postType, objectData) {
     await page.click('button:has-text("Publish")');
     await page.waitForSelector(".editor-post-publish-panel");
     await page.click('.editor-post-publish-panel button:has-text("Publish")');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
   } else {
     // Classic editor or custom post type editor
     console.log("Using classic editor or custom post type editor");
@@ -909,16 +915,16 @@ async function createMuseumObject(page, postType, objectData) {
  * @returns {Promise<void>}
  */
 async function dismissEditorModals(page) {
-  // Wait a bit for any modals to appear
-  await page.waitForTimeout(1000);
+  // Wait briefly for any modals to appear
+  await page.waitForTimeout(500);
 
   // Try to click "Start blank" if available
   const startBlankButton = page
     .locator('button:has-text("Start blank"), button:has-text("Skip")')
     .first();
-  if (await startBlankButton.isVisible({ timeout: 3000 })) {
+  if (await startBlankButton.isVisible({ timeout: 1500 })) {
     await startBlankButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
   }
 
   // Close any modals with close button
@@ -943,7 +949,7 @@ async function dismissEditorModals(page) {
         }
       }
 
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300);
       attempts++;
     } else {
       break;
@@ -952,10 +958,10 @@ async function dismissEditorModals(page) {
 
   // Try Escape key as final fallback
   await page.keyboard.press("Escape");
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(300);
 
   // Wait for editor to stabilize
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(500);
 }
 
 /**
@@ -1064,7 +1070,7 @@ async function createPage(page, pageData) {
  */
 async function insertMuseumBlock(page, blockName, blockSelector) {
   // Wait for editor to be ready and look for various inserter button variations
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(1000);
 
   let inserterButton = null;
   const inserterSelectors = [
@@ -1079,7 +1085,7 @@ async function insertMuseumBlock(page, blockName, blockSelector) {
 
   for (const selector of inserterSelectors) {
     try {
-      await page.waitForSelector(selector, { timeout: 3000 });
+      await page.waitForSelector(selector, { timeout: 2000 });
       inserterButton = selector;
       console.log(`Found inserter button: ${selector}`);
       break;
@@ -1094,7 +1100,7 @@ async function insertMuseumBlock(page, blockName, blockSelector) {
 
   // Open block inserter
   await page.click(inserterButton);
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(800);
 
   // Wait for inserter panel to open - try multiple selectors
   let searchInput = null;
@@ -1129,7 +1135,7 @@ async function insertMuseumBlock(page, blockName, blockSelector) {
 
   // Search for the block
   await page.fill(searchInput, blockName);
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(800);
 
   // Wait for search results and click the block
   const blockSelectors = [
@@ -1175,12 +1181,12 @@ async function insertMuseumBlock(page, blockName, blockSelector) {
  */
 async function createPageWithBlock(page, title, blockName, blockSelector) {
   await page.goto("/wp-admin/post-new.php?post_type=page");
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1500);
 
   // Wait for editor to be fully loaded - try multiple selectors
   try {
     await page.waitForSelector(".block-editor-writing-flow", {
-      timeout: 15000,
+      timeout: 10000,
     });
   } catch (error) {
     console.log("Block editor not detected, checking for classic editor...");
@@ -1196,12 +1202,12 @@ async function createPageWithBlock(page, title, blockName, blockSelector) {
     throw error;
   }
 
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(1000);
 
   await dismissEditorModals(page);
 
   // Wait for title input to be ready
-  await page.waitForSelector(".editor-post-title__input", { timeout: 15000 });
+  await page.waitForSelector(".editor-post-title__input", { timeout: 10000 });
   await page.fill(".editor-post-title__input", title);
 
   await insertMuseumBlock(page, blockName, blockSelector);

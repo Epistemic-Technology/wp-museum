@@ -6,29 +6,30 @@
  * WordPress dependencies
  */
 import {
-    Button,
-    Modal,
-    ToggleControl,
-    PanelBody,
-    PanelRow
-} from '@wordpress/components';
+  Button,
+  Modal,
+  ToggleControl,
+  PanelBody,
+  PanelRow,
+} from "@wordpress/components";
 
-import {
-    useState,
-    useEffect,
-    useRef,
-} from '@wordpress/element';
+import { useState, useEffect, useRef } from "@wordpress/element";
 
-import apiFetch from '@wordpress/api-fetch';
-
-
+import apiFetch from "@wordpress/api-fetch";
 
 /**
  * The minimum interval between updating search results (ms).
  *
  * @type {number}
  */
-const refreshInterval = 1000;
+const refreshInterval = 300;
+
+// Utility function to decode HTML entities
+const decodeHtmlEntities = (text) => {
+  const textArea = document.createElement("textarea");
+  textArea.innerHTML = text;
+  return textArea.value;
+};
 
 /**
  * A modal search box that live updates through REST api and returns the
@@ -37,7 +38,7 @@ const refreshInterval = 1000;
  * @param {Object}   props                    The component properties.
  * @param {Function} props.fetchSearchResults Callback to fetch results for the search.
  *                           Callback should accept following parameters:
- *                           ( 
+ *                           (
  *                             searchText,         string   The current search text.
  *                             onlyTitle,          boolean  Whether to search just by title.
  *                             updateLastRefresh,  Date     Time of the last refresh.
@@ -46,421 +47,401 @@ const refreshInterval = 1000;
  * @param {Function} props.close              Callback to close the search modal.
  * @param {Function} props.returnCallback     Callback to send results of search on close.
  * @param {string}   props.title              Title for search box, or null for 'Search for Object'.
- * 
+ *
  *
  * @since 0.6.0
  */
-const SearchBox = props => {
+const SearchBox = (props) => {
+  const { close, returnCallback, fetchSearchResults, title } = props;
 
-    const {
-        close,
-        returnCallback,
-        fetchSearchResults,
-        title,
-    } = props;
+  const [searchText, setSearchText] = useState(null);
+  const [onlyTitle, setOnlyTitle] = useState(true);
+  const [results, setResults] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(0);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [timerId, setTimerId] = useState(null);
 
-    const [ searchText, setSearchText ] = useState( null );
-    const [ onlyTitle, setOnlyTitle ] = useState ( true );
-    const [ results, setResults ] = useState ( [] );
-    const [ selectedItem, setSelectedItem ] = useState( 0 );
-    const [ lastRefresh, setLastRefresh ] = useState( new Date() );
-    const [ timerId, setTimerId ] = useState( null );
+  const searchInputRef = useRef(null);
 
-    const searchInputRef = useRef( null );
-
-    /**
-     * Increment the selected item in search results.
-     */
-    const incSelectedItem = () => {
-        if ( results.length === 0 ) {
-            setSelectedItem( 0 );
-        } else if ( selectedItem  < results.length - 1 ) {
-            setSelectedItem( selectedItem + 1 );
-        } else {
-            setSelectedItem( 0 );
-        }
+  /**
+   * Increment the selected item in search results.
+   */
+  const incSelectedItem = () => {
+    if (results.length === 0) {
+      setSelectedItem(0);
+    } else if (selectedItem < results.length - 1) {
+      setSelectedItem(selectedItem + 1);
+    } else {
+      setSelectedItem(0);
     }
+  };
 
-    /**
-     * Decrement the selected item in search results.
-     */
-    const decSelectedItem = () => {
-        if ( results.length === 0 ) {
-            setSelectedItem( 0 );
-        } else if ( selectedItem  > 0 ) {
-            setSelectedItem( selectedItem - 1 );
-        } else {
-            setSelectedItem( results.length - 1 );
-        }
+  /**
+   * Decrement the selected item in search results.
+   */
+  const decSelectedItem = () => {
+    if (results.length === 0) {
+      setSelectedItem(0);
+    } else if (selectedItem > 0) {
+      setSelectedItem(selectedItem - 1);
+    } else {
+      setSelectedItem(results.length - 1);
     }
+  };
 
-    /**
-     * Call the return callback with the WordPress post ID of the selected item,
-     * if there is one, and close the modal.
-     *
-     * @param {int} newSelectedItem The index of the selected item, or null.
-     */
-    const returnResult = ( newSelectedItem = null ) => {
-        const finalSelectedItem = newSelectedItem ? newSelectedItem : selectedItem;
-        if ( results.length > 0 ) {
-            const result = results[ finalSelectedItem ];
-            returnCallback ( result.ID );
-        } else {
-            returnCallback ( null );
-        }
-        close();
+  /**
+   * Call the return callback with the WordPress post ID of the selected item,
+   * if there is one, and close the modal.
+   *
+   * @param {int} newSelectedItem The index of the selected item, or null.
+   */
+  const returnResult = (newSelectedItem = null) => {
+    const finalSelectedItem = newSelectedItem ? newSelectedItem : selectedItem;
+    if (results.length > 0) {
+      const result = results[finalSelectedItem];
+      returnCallback(result.ID);
+    } else {
+      returnCallback(null);
     }
+    close();
+  };
 
-    /**
-     * Callback to fetch search results when input changes.
-     *
-     * Search only fires if the length of the input is at least three. Any pending
-     * searches are cancelled. If it has been at least refreshInterval since the
-     * last search, update search results immediately. Otherwise, update the search
-     * results once refreshInterval has elapsed.
-     * 
-     * @param {Object} event Event generated by <input> element.
-     */
-    const onChangeSearchText = ( event ) => {
-        const currentTime = new Date();
-        const content = event.target.value;
-        setSearchText( content );
-        setSelectedItem( 0 );
+  /**
+   * Callback to fetch search results when input changes.
+   *
+   * Search only fires if the length of the input is at least three. Any pending
+   * searches are cancelled. If it has been at least refreshInterval since the
+   * last search, update search results immediately. Otherwise, update the search
+   * results once refreshInterval has elapsed.
+   *
+   * @param {Object} event Event generated by <input> element.
+   */
+  const onChangeSearchText = (event) => {
+    const currentTime = new Date();
+    const content = event.target.value;
+    setSearchText(content);
+    setSelectedItem(0);
 
-        clearTimeout( timerId );
+    clearTimeout(timerId);
 
-        if ( content.length > 2 ) {
-            if ( currentTime - lastRefresh > refreshInterval ) {
-                fetchSearchResults( content, onlyTitle, setLastRefresh, setResults );
-            } else {
-                setTimerId ( setTimeout(
-                    () => fetchSearchResults( content, onlyTitle ),
-                    refreshInterval - ( currentTime - lastRefresh )
-                ) );
-            }
-        }
+    if (content.length > 2) {
+      if (currentTime - lastRefresh > refreshInterval) {
+        fetchSearchResults(content, onlyTitle, setLastRefresh, setResults);
+      } else {
+        setTimerId(
+          setTimeout(
+            () => fetchSearchResults(content, onlyTitle),
+            refreshInterval - (currentTime - lastRefresh),
+          ),
+        );
+      }
     }
+  };
 
-    /**
-     * Callback to toggle whether only post_title or all fields are searched.
-     */
-    const onTitleToggle = () => {
-        setOnlyTitle( ! onlyTitle );
-        setSelectedItem( 0 );
-        fetchSearchResults( searchText, ! onlyTitle );
+  /**
+   * Callback to toggle whether only post_title or all fields are searched.
+   */
+  const onTitleToggle = () => {
+    setOnlyTitle(!onlyTitle);
+    setSelectedItem(0);
+    fetchSearchResults(searchText, !onlyTitle);
+  };
+
+  /**
+   * Callback to capture keypresses from the search input for navigating the
+   * search results.
+   *
+   * @param {object} event Event generated by <input> element.
+   */
+  const onKeyUp = (event) => {
+    switch (event.key) {
+      case "ArrowDown":
+        event.stopPropagation();
+        incSelectedItem();
+        break;
+      case "ArrowUp":
+        event.stopPropagation();
+        decSelectedItem();
+        break;
+      case "Enter":
+        event.stopPropagation();
+        returnResult();
+        break;
     }
+  };
 
-    /**
-     * Callback to capture keypresses from the search input for navigating the
-     * search results.
-     * 
-     * @param {object} event Event generated by <input> element.
-     */
-    const onKeyUp = ( event ) => {
-        switch ( event.key ) {
-            case 'ArrowDown':
-                event.stopPropagation();
-                incSelectedItem();
-                break;
-            case 'ArrowUp':
-                event.stopPropagation();
-                decSelectedItem();
-                break;
-            case 'Enter':
-                event.stopPropagation();
-                returnResult();
-                break;
-        }
+  /**
+   * Stop Gutenberg from stealing event from the modal and navigating to
+   * another block.
+   *
+   * @param {object} event Event generated by <input> element.
+   */
+  const onKeyDown = (event) => {
+    if (
+      event.key === "ArrowDown" ||
+      event.key === "ArrowUp" ||
+      event.key === "Enter"
+    ) {
+      event.stopPropagation();
     }
+  };
 
-    /**
-     * Stop Gutenberg from stealing event from the modal and navigating to
-     * another block.
-     * 
-     * @param {object} event Event generated by <input> element.
-     */
-    const onKeyDown = ( event ) => {
-        if ( event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' ) {
-            event.stopPropagation();
-        }
-    }
+  /**
+   * Callback to sync selected item with the focused button.
+   *
+   * @param {number} index The array index of the focused item.
+   */
+  const onButtonItemFocus = (index) => {
+    setSelectedItem(index);
+  };
 
-    /**
-     * Callback to sync selected item with the focused button.
-     * 
-     * @param {number} index The array index of the focused item.
-     */
-    const onButtonItemFocus = ( index ) => {
-        setSelectedItem( index );
-    }
+  /**
+   * Callback to set selected item to clicked result and then close the modal.
+   *
+   * @param {number} index The array index of the clicked item.
+   */
+  const onButtonItemClick = (index) => {
+    returnResult(index);
+  };
 
-    /**
-     * Callback to set selected item to clicked result and then close the modal.
-     *
-     * @param {number} index The array index of the clicked item.
-     */
-    const onButtonItemClick = ( index ) => {
-        returnResult( index );
-    }
+  /**
+   * Callback to set focus to the search input when the modal appears.
+   */
+  useEffect(() => {
+    searchInputRef.current.focus();
+  }, []);
 
-    /**
-     * Callback to set focus to the search input when the modal appears.
-     */
-    useEffect( () => {
-        searchInputRef.current.focus();
-    }, [] );
+  const closeModal = () => {
+    clearTimeout(timerId);
+    close();
+  };
 
-    const closeModal = () => {
-        clearTimeout( timerId );
-        close();
-    }
+  const boxTitle = typeof title === "undefined" ? "Search for Object" : title;
 
-    const boxTitle = typeof title === 'undefined' ? 'Search for Object' : title;
-
-    /**
-     * Renders the modal.
-     */
-    return (
-        <Modal
-            className      = 'wpm-search-box'
-            title          = { boxTitle }
-            onRequestClose = { close }
-        >
-            <ToggleControl
-                    className = 'toggle-control'
-                    label     = 'Search only title'
-                    checked   = { onlyTitle }
-                    onChange  = { onTitleToggle }
-                />
-            <input 
-                className    = 'components-text-control__input'
-                placeholder  = 'Type to search...'
-                onChange     = { onChangeSearchText }
-                ref          = { searchInputRef }
-                onKeyUp      = { onKeyUp }
-                onKeyDown    = { onKeyDown }
-            />
-            <SearchResultsList
-                className         = 'search-results-list'
-                results           = { results }
-                selectedItem      = { selectedItem  }
-                onButtonItemFocus = { onButtonItemFocus }
-                onButtonItemClick = { onButtonItemClick }
-                onKeyDown         = { onKeyDown }
-                onKeyUp           = { onKeyUp }
-            />
-            <div
-                className = 'bottom-controls'
-            >
-                <Button
-                    isSecondary
-                    isLarge
-                    className   = 'cancel-button'
-                    onClick     = { close }
-                >
-                    Cancel
-                </Button>
-            </div>
-        </Modal>
-    );
-}
+  /**
+   * Renders the modal.
+   */
+  return (
+    <Modal className="wpm-search-box" title={boxTitle} onRequestClose={close}>
+      <ToggleControl
+        className="toggle-control"
+        label="Search only title"
+        checked={onlyTitle}
+        onChange={onTitleToggle}
+      />
+      <input
+        className="components-text-control__input"
+        placeholder="Type to search..."
+        onChange={onChangeSearchText}
+        ref={searchInputRef}
+        onKeyUp={onKeyUp}
+        onKeyDown={onKeyDown}
+      />
+      <SearchResultsList
+        className="search-results-list"
+        results={results}
+        selectedItem={selectedItem}
+        onButtonItemFocus={onButtonItemFocus}
+        onButtonItemClick={onButtonItemClick}
+        onKeyDown={onKeyDown}
+        onKeyUp={onKeyUp}
+      />
+      <div className="bottom-controls">
+        <Button isSecondary isLarge className="cancel-button" onClick={close}>
+          Cancel
+        </Button>
+      </div>
+    </Modal>
+  );
+};
 
 /**
  * Component to display search results as a list of buttons.
- * 
+ *
  * @param {Object}   props                   Properties of the component.
  * @param {Array}    props.results           Array of results from REST request.
  * @param {number}   props.selectedItem      Index of the currently selected result item.
  * @param {function} props.onButtonItemFocus Callback for when item button receives focus.
  * @param {function} props.onButtonItemClick Callback for when item button is clicked.
  */
-const SearchResultsList = ( props ) => {
-    const {
-        results,
-        selectedItem,
-        onButtonItemFocus,
-        onButtonItemClick,
-        onKeyDown,
-        onKeyUp,
-    } = props;
+const SearchResultsList = (props) => {
+  const {
+    results,
+    selectedItem,
+    onButtonItemFocus,
+    onButtonItemClick,
+    onKeyDown,
+    onKeyUp,
+  } = props;
 
-    if ( results.length > 0 ) {
-        const listItems = results.map( ( result, index ) => (
-                <li
-                    key = { 'results-list-' + index }
-                    className = { index === selectedItem  ? 'search-item selected' : 'search-item unselected' }
-                >
-                    <div
-                        tabIndex  = '0'
-                        className = 'search-result-button'
-                        onFocus   = { ( ) => onButtonItemFocus( index ) }
-                        onClick   = { ( ) => onButtonItemClick( index ) }
-                        onMouseEnter = { () => onButtonItemFocus( index ) }
-                        onKeyUp   = { ( event ) => event.key === 'Enter' ? onButtonItemClick( index ) : onKeyUp( event ) }
-                        onKeyDown = { onKeyDown }
-                    >
-                        <div
-                            className = 'search-result-title'
-                        >
-                            { result['post_title'] }
-                        </div>
-                        { result['cat_field'] &&
-                            <div 
-                                className = 'search-result-cat-id'
-                            >
-                                { result[ result[ 'cat_field' ] ] }
-                            </div>
-                        }
-                    </div>
-                </li>
-            )   
-        );
-        return (
-            <ul className = 'results-list'>{ listItems }</ul>
-        );
-    } else {
-        return null;
-    }
-}
+  if (results.length > 0) {
+    const listItems = results.map((result, index) => (
+      <li
+        key={"results-list-" + index}
+        className={
+          index === selectedItem
+            ? "search-item selected"
+            : "search-item unselected"
+        }
+      >
+        <div
+          tabIndex="0"
+          className="search-result-button"
+          onFocus={() => onButtonItemFocus(index)}
+          onClick={() => onButtonItemClick(index)}
+          onMouseEnter={() => onButtonItemFocus(index)}
+          onKeyUp={(event) =>
+            event.key === "Enter" ? onButtonItemClick(index) : onKeyUp(event)
+          }
+          onKeyDown={onKeyDown}
+        >
+          <div className="search-result-title">
+            {decodeHtmlEntities(result["post_title"])}
+          </div>
+          {result["cat_field"] && (
+            <div className="search-result-cat-id">
+              {result[result["cat_field"]]}
+            </div>
+          )}
+        </div>
+      </li>
+    ));
+    return <ul className="results-list">{listItems}</ul>;
+  } else {
+    return null;
+  }
+};
 
 /**
  * Button to open the modal when clicked.
- * 
+ *
  * @param {object}   props                Properties of the component.
  * @param {function} props.returnCallback Function accepting WordPress post ID returned from search.
  * @param {object}   props.children       Children passed on to Button component.
  */
 const SearchButton = (props) => {
-	const {
-        returnCallback,
-        children,
-        restPath,
-        title,
-    } = props;
-	
-	const [ isOpen, setOpen ] = useState( false );
-    const openModal = () => setOpen( true );
-    const closeModal = () => setOpen( false );
+  const { returnCallback, children, restPath, title } = props;
 
-    return (
-        <>
-            <Button
-                isSecondary 
-                onClick = { openModal }
-            >
-                { children }
-            </Button>
-            { isOpen && (
-                <ObjectSearchBox 
-                    close          = { closeModal }
-                    returnCallback = { returnCallback }
-                    restPath       = { restPath }
-                    title          = { title }
-                />    
-            ) }
-        </>
-    )
-}
+  const [isOpen, setOpen] = useState(false);
+  const openModal = () => setOpen(true);
+  const closeModal = () => setOpen(false);
+
+  return (
+    <>
+      <Button isSecondary onClick={openModal}>
+        {children}
+      </Button>
+      {isOpen && (
+        <ObjectSearchBox
+          close={closeModal}
+          returnCallback={returnCallback}
+          restPath={restPath}
+          title={title}
+        />
+      )}
+    </>
+  );
+};
 
 /**
  * Search box for musem objects
- * @param {*} props 
+ * @param {*} props
  */
-const ObjectSearchBox = props => {
-    const {
-        restPath,
-        close,
-        title,
-        returnCallback
-    } = props;
+const ObjectSearchBox = (props) => {
+  const { restPath, close, title, returnCallback } = props;
 
-    /**
-     * Fetch search results from REST api.
-     *
-     * @see wp-museum/src/general/rest.php
-     *
-     * @param {string}  searchText Current search text to find.
-     * @param {boolean} onlyTitle  Whether to search just the post title or everything.
-     */
-    const fetchSearchResults = ( searchText, onlyTitle, updateLastRefresh, updateResults ) => {
-        const maxResults = 10;
-        const restRoute = ( typeof restPath === 'undefined' ) ? '/wp-museum/v1/all/' : restPath
+  /**
+   * Fetch search results from REST api.
+   *
+   * @see wp-museum/src/general/rest.php
+   *
+   * @param {string}  searchText Current search text to find.
+   * @param {boolean} onlyTitle  Whether to search just the post title or everything.
+   */
+  const fetchSearchResults = (
+    searchText,
+    onlyTitle,
+    updateLastRefresh,
+    updateResults,
+  ) => {
+    const maxResults = 10;
+    const restRoute =
+      typeof restPath === "undefined" ? "/wp-museum/v1/all/" : restPath;
 
-        updateLastRefresh( new Date() );
+    updateLastRefresh(new Date());
 
-        let queryString;
-        if ( onlyTitle ) {
-            queryString = `?post_title=${searchText}&per_page=${maxResults}`;
-        } else {
-            queryString = `?s=${searchText}&per_page=${maxResults}`;
-        }
-
-        apiFetch( { path: restRoute + queryString } ).then( result => {
-            updateResults( result );
-        } );
+    let queryString;
+    if (onlyTitle) {
+      queryString = `?post_title=${searchText}&per_page=${maxResults}`;
+    } else {
+      queryString = `?s=${searchText}&per_page=${maxResults}`;
     }
 
-    return (
-        <SearchBox
-            close = { close }
-            title = { title }
-            fetchSearchResults = { fetchSearchResults }
-            returnCallback = { returnCallback }
-        />
-    );
+    apiFetch({ path: restRoute + queryString }).then((result) => {
+      updateResults(result);
+    });
+  };
 
-}
+  return (
+    <SearchBox
+      close={close}
+      title={title}
+      fetchSearchResults={fetchSearchResults}
+      returnCallback={returnCallback}
+    />
+  );
+};
 
 /**
  * Search box for musem collections
- * @param {*} props 
+ * @param {*} props
  */
-const CollectionSearchBox = props => {
-    const {
-        close,
-        title,
-        returnCallback
-    } = props;
+const CollectionSearchBox = (props) => {
+  const { close, title, returnCallback } = props;
 
-    /**
-     * Fetch search results from REST api.
-     *
-     * @see wp-museum/src/general/rest.php
-     *
-     * @param {string}  searchText Current search text to find.
-     * @param {boolean} onlyTitle  Whether to search just the post title or everything.
-     */
-    const fetchSearchResults = ( searchText, onlyTitle, updateLastRefresh, updateResults ) => {
-        const restRoute = '/wp-museum/v1/collections';
+  /**
+   * Fetch search results from REST api.
+   *
+   * @see wp-museum/src/general/rest.php
+   *
+   * @param {string}  searchText Current search text to find.
+   * @param {boolean} onlyTitle  Whether to search just the post title or everything.
+   */
+  const fetchSearchResults = (
+    searchText,
+    onlyTitle,
+    updateLastRefresh,
+    updateResults,
+  ) => {
+    const restRoute = "/wp-museum/v1/collections";
 
-        updateLastRefresh( new Date() );
+    updateLastRefresh(new Date());
 
-        let queryString;
-        if ( onlyTitle ) {
-            queryString = `?post_title=${searchText}`;
-        } else {
-            queryString = `?s=${searchText}`;
-        }
-
-        apiFetch( { path: restRoute + queryString } ).then( result => {
-            updateResults( result );
-        } );
+    let queryString;
+    if (onlyTitle) {
+      queryString = `?post_title=${searchText}`;
+    } else {
+      queryString = `?s=${searchText}`;
     }
 
-    return (
-        <SearchBox
-            close = { close }
-            title = { title }
-            fetchSearchResults = { fetchSearchResults }
-            returnCallback = { returnCallback }
-        />
-    );
+    apiFetch({ path: restRoute + queryString }).then((result) => {
+      updateResults(result);
+    });
+  };
 
-}
+  return (
+    <SearchBox
+      close={close}
+      title={title}
+      fetchSearchResults={fetchSearchResults}
+      returnCallback={returnCallback}
+    />
+  );
+};
 
 /**
  * Panel to embed or replace existing museum object.
- * 
+ *
  * @param {object}   props                     Properties of the component.
  * @param {function} props.onSearchModalReturn Function accepting WordPress post ID returned from search.
  * @param {string}   props.title               Title of the found object.
@@ -468,98 +449,87 @@ const CollectionSearchBox = props => {
  * @param {number}   props.objectID            The WordPress ID of the found object.
  * @param {string}   props.objectURL           WordPress permalink of the found object.
  */
-const ObjectEmbedPanel = ( props ) => {
-	const { onSearchModalReturn, title, catID, objectID, objectURL, initialOpen } = props;
+const ObjectEmbedPanel = (props) => {
+  const {
+    onSearchModalReturn,
+    title,
+    catID,
+    objectID,
+    objectURL,
+    initialOpen,
+  } = props;
 
-	let objectDescription;
-	if ( objectID === null ) {
-		objectDescription = (
-			<div>
-				Click 'Search' to embed object.
-			</div>
-		);
-	} else {
-		objectDescription = (
-			<div>
-				<div>{ title }</div>
-				<div>{ catID }</div>
-				<div><a href = { objectURL } target='_blank' >View Object</a></div>
-			</div>
-		);
-	}
-	
-	return (
-		<PanelBody
-			title       = "Object"
-			initialOpen = { initialOpen }
-		>
-			<PanelRow>
-				{ objectDescription }
-			</PanelRow>
-			<PanelRow>
-				<SearchButton
-					returnCallback = { onSearchModalReturn }
-				>
-					{ objectID ? 'Replace' : 'Search' }
-				</SearchButton>
-			</PanelRow>
-		</PanelBody>
-	);
-}
+  let objectDescription;
+  if (objectID === null) {
+    objectDescription = <div>Click 'Search' to embed object.</div>;
+  } else {
+    objectDescription = (
+      <div>
+        <div>{title}</div>
+        <div>{catID}</div>
+        <div>
+          <a href={objectURL} target="_blank">
+            View Object
+          </a>
+        </div>
+      </div>
+    );
+  }
 
-const CollectionEmbedPanel = ( props ) => {
-    const {
-        collectionID,
-        title,
-        URL,
-        initialOpen,
-        onSearchModalReturn
-    } = props;
+  return (
+    <PanelBody title="Object" initialOpen={initialOpen}>
+      <PanelRow>{objectDescription}</PanelRow>
+      <PanelRow>
+        <SearchButton returnCallback={onSearchModalReturn}>
+          {objectID ? "Replace" : "Search"}
+        </SearchButton>
+      </PanelRow>
+    </PanelBody>
+  );
+};
 
-    let collectionDescription;
-    if ( collectionID === null ) {
-        collectionDescription = (
-            <div>
-                Click 'Search' to embed Collection.
-            </div>
-        );
-    } else {
-        collectionDescription = (
-            <div>
-                <div>{ title }</div>
-                <div><a href = { URL } target='_blank'>View Collection</a></div>
-            </div>
-        );
-    }
+const CollectionEmbedPanel = (props) => {
+  const { collectionID, title, URL, initialOpen, onSearchModalReturn } = props;
 
-    const restPath = '/wp-museum/v1/collections/';
+  let collectionDescription;
+  if (collectionID === null) {
+    collectionDescription = <div>Click 'Search' to embed Collection.</div>;
+  } else {
+    collectionDescription = (
+      <div>
+        <div>{title}</div>
+        <div>
+          <a href={URL} target="_blank">
+            View Collection
+          </a>
+        </div>
+      </div>
+    );
+  }
 
-    return (
-        <PanelBody
-            title       = "Collection"
-            initialOpen = { initialOpen}
+  const restPath = "/wp-museum/v1/collections/";
+
+  return (
+    <PanelBody title="Collection" initialOpen={initialOpen}>
+      <PanelRow>{collectionDescription}</PanelRow>
+      <PanelRow>
+        <SearchButton
+          returnCallback={onSearchModalReturn}
+          restPath={restPath}
+          title="Search for Collection"
         >
-            <PanelRow>
-                { collectionDescription }
-            </PanelRow>
-            <PanelRow>
-                <SearchButton
-                    returnCallback = { onSearchModalReturn }
-                    restPath       = { restPath }
-                    title          = 'Search for Collection'
-                >
-                    { collectionID ? 'Replace' : 'Search' }
-                </SearchButton>
-            </PanelRow>
-        </PanelBody>
-    )
-}
+          {collectionID ? "Replace" : "Search"}
+        </SearchButton>
+      </PanelRow>
+    </PanelBody>
+  );
+};
 
 export {
-    SearchButton,
-    ObjectSearchBox,
-    ObjectEmbedPanel,
-    CollectionEmbedPanel,
-    SearchBox,
-    CollectionSearchBox
+  SearchButton,
+  ObjectSearchBox,
+  ObjectEmbedPanel,
+  CollectionEmbedPanel,
+  SearchBox,
+  CollectionSearchBox,
 };

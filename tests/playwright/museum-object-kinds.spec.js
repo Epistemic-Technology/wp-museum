@@ -41,10 +41,10 @@ test.describe("Museum Object Kinds", () => {
 
     // Navigate to Museum Administration > Objects
     await page.goto("/wp-admin/admin.php?page=wpm-react-admin-objects");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Wait for React app to load
-    await page.waitForSelector(".museum-admin-main", { timeout: 15000 });
+    await page.waitForSelector(".museum-admin-main, #wpm-react-admin-app-container-objects", { timeout: 10000 });
 
     // Click "Add New Object Type" button
     await page.click('button:has-text("Add New Object Type")');
@@ -57,35 +57,18 @@ test.describe("Museum Object Kinds", () => {
     expect(headerText).toBe("New Object Type");
 
     // Fill in object kind basic information
-    await page.locator(".kind-label-input").click();
-    await page.keyboard.press("ControlOrMeta+a");
-    await page.waitForTimeout(200);
-    await page
-      .locator(".kind-label-input")
-      .pressSequentially("Test Instrument", { delay: 25 });
+    await page.locator(".kind-label-input").fill("Test Instrument");
 
-    await page.locator(".kind-label-plural-input").click();
-    await page.keyboard.press("ControlOrMeta+a");
-    await page.waitForTimeout(200);
-    await page
-      .locator(".kind-label-plural-input")
-      .pressSequentially("Test Instruments", { delay: 25 });
+    await page.locator(".kind-label-plural-input").fill("Test Instruments");
 
-    await page.locator(".kind-description-textarea").click();
-    await page.keyboard.press("ControlOrMeta+a");
-    await page.waitForTimeout(200);
-    await page
-      .locator(".kind-description-textarea")
-      .pressSequentially("A test scientific instrument for automated testing", {
-        delay: 25,
-      });
+    await page.locator(".kind-description-textarea").fill("A test scientific instrument for automated testing");
 
     // Add a basic field
     await page.click('button:has-text("Add New Field")');
 
     // Wait for network operations to complete after field creation
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForTimeout(500);
 
     // Wait for the field accordion to be added and stabilized
     await page.waitForSelector("[id^='field-accordion-']", { timeout: 10000 });
@@ -116,9 +99,7 @@ test.describe("Museum Object Kinds", () => {
       .locator('.field-section:has(label:has-text("Label")) input')
       .first();
     await fieldLabelInput.waitFor({ state: "visible" });
-    await fieldLabelInput.click();
-    await page.keyboard.press("ControlOrMeta+a");
-    await fieldLabelInput.pressSequentially("Test Field", { delay: 25 });
+    await fieldLabelInput.fill("Test Field");
 
     await page.waitForSelector(
       '.field-section:has(label:has-text("Type")) select',
@@ -137,7 +118,7 @@ test.describe("Museum Object Kinds", () => {
     await page.click('button:has-text("← Back to Objects")');
 
     // Wait for main page to load
-    await page.waitForSelector(".museum-admin-main", { timeout: 15000 });
+    await page.waitForSelector(".museum-admin-main, #wpm-react-admin-app-container-objects", { timeout: 10000 });
 
     // Navigate back to main objects page and count object kinds
     const objectKindCount = await countObjectKinds(page);
@@ -170,10 +151,10 @@ test.describe("Museum Object Kinds", () => {
 
       // Navigate to Museum Administration > Objects
       await page.goto("/wp-admin/admin.php?page=wpm-react-admin-objects");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Wait for React app to load
-      await page.waitForSelector(".museum-admin-main", { timeout: 15000 });
+      await page.waitForSelector(".museum-admin-main, #wpm-react-admin-app-container-objects", { timeout: 10000 });
 
       // Click "Add New Object Type" button
       await page.click('button:has-text("Add New Object Type")');
@@ -186,19 +167,19 @@ test.describe("Museum Object Kinds", () => {
       await page.keyboard.press("ControlOrMeta+a");
       await page
         .locator(".kind-label-input")
-        .pressSequentially(expectedSchema.label, { delay: 25 });
+        .fill(expectedSchema.label);
 
       await page.locator(".kind-label-plural-input").click();
       await page.keyboard.press("ControlOrMeta+a");
       await page
         .locator(".kind-label-plural-input")
-        .pressSequentially(expectedSchema.label_plural, { delay: 25 });
+        .fill(expectedSchema.label_plural);
 
       await page.locator(".kind-description-textarea").click();
       await page.keyboard.press("ControlOrMeta+a");
       await page
         .locator(".kind-description-textarea")
-        .pressSequentially(expectedSchema.description, { delay: 25 });
+        .fill(expectedSchema.description);
 
       if (expectedSchema.categorized) {
         await page.locator(".kind-categorized-checkbox").check();
@@ -214,8 +195,8 @@ test.describe("Museum Object Kinds", () => {
         await page.click('button:has-text("Add New Field")');
 
         // Wait for network operations to complete after field creation
-        await page.waitForLoadState("networkidle");
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState("domcontentloaded");
+        await page.waitForTimeout(500);
 
         // Wait for the new field accordion to appear
         await page.waitForSelector("[id^='field-accordion-']", {
@@ -251,9 +232,7 @@ test.describe("Museum Object Kinds", () => {
         const fieldNameInput = fieldContent.locator(
           '.field-section:has(label:has-text("Label")) input',
         );
-        await fieldNameInput.click();
-        await page.keyboard.press("ControlOrMeta+a");
-        await fieldNameInput.pressSequentially(fieldData.name, { delay: 25 });
+        await fieldNameInput.fill(fieldData.name);
 
         await fieldContent
           .locator('.field-section:has(label:has-text("Type")) select')

@@ -14,9 +14,11 @@ module.exports = defineConfig({
   use: {
     baseURL: "https://wp-test.lndo.site",
     ignoreHTTPSErrors: true,
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    video: "on",
+    video: "retain-on-failure",
+    actionTimeout: 10000,
+    navigationTimeout: 15000,
   },
 
   globalSetup: require.resolve("./global-setup.js"),

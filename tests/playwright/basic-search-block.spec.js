@@ -25,7 +25,7 @@ test.describe("Basic Search Block", () => {
 
     // Visit the published page
     await page.goto(pageUrl);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify the search block is rendered
     const searchBlock = await page
@@ -107,7 +107,7 @@ test.describe("Basic Search Block", () => {
 
     // Visit the page
     await page.goto(pageUrl);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Verify the checkbox is checked by default
     const checkbox = page.locator('.wpm-embedded-search-title-toggle input[type="checkbox"]');
@@ -119,7 +119,7 @@ test.describe("Basic Search Block", () => {
     await page.click(".wpm-embedded-search-button.is-primary");
 
     // Wait for search results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should find the Persian Astrolabe
     let results = await page.locator(".object-grid-box-wrapper").count();
@@ -135,7 +135,7 @@ test.describe("Basic Search Block", () => {
     await page.click(".wpm-embedded-search-button.is-primary");
 
     // Wait for potential results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should not find any results when searching only titles
     results = await page.locator(".object-grid-box-wrapper").count();
@@ -188,7 +188,7 @@ test.describe("Basic Search Block", () => {
 
     // Visit the page
     await page.goto(pageUrl);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Uncheck the "Only search titles" checkbox
     const checkbox = page.locator('.wpm-embedded-search-title-toggle input[type="checkbox"]');
@@ -201,7 +201,7 @@ test.describe("Basic Search Block", () => {
     await page.click(".wpm-embedded-search-button.is-primary");
 
     // Wait for search results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should find multiple objects with brass in their content
     const results = await page.locator(".object-grid-box-wrapper").count();
@@ -212,7 +212,7 @@ test.describe("Basic Search Block", () => {
     await page.click(".wpm-embedded-search-button.is-primary");
 
     // Wait for search results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should find the Victorian Microscope
     const microscope = await page
@@ -225,7 +225,7 @@ test.describe("Basic Search Block", () => {
     await page.click(".wpm-embedded-search-button.is-primary");
 
     // Wait for search results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should find the Persian Astrolabe
     const astrolabe = await page
@@ -245,14 +245,14 @@ test.describe("Basic Search Block", () => {
 
     // Visit the page
     await page.goto(pageUrl);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Type search term and press Enter
     await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "Victorian");
     await page.press(".wpm-embedded-search .main-input-area input[type='text']", "Enter");
 
     // Wait for search results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should find results
     const results = await page.locator(".object-grid-box-wrapper").count();
@@ -270,13 +270,13 @@ test.describe("Basic Search Block", () => {
 
     // Visit the page
     await page.goto(pageUrl);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click search without entering any text
     await page.click(".wpm-embedded-search-button.is-primary");
 
     // Wait a moment for potential results
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // Should have no results
     const results = await page.locator(".object-grid-box-wrapper").count();
