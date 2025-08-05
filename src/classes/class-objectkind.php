@@ -154,6 +154,16 @@ class ObjectKind
             $type_name = substr($type_name, 0, 19);
         }
 
+        // Check if the table exists before querying it
+        $table_exists = $wpdb->get_var(
+            $wpdb->prepare("SHOW TABLES LIKE %s", $table_name)
+        );
+
+        // If table doesn't exist (e.g., during tests), just use the basic type name
+        if (!$table_exists) {
+            return $type_name;
+        }
+
         $duplicates = true;
         $duplicate_counter = 0;
         $unique_type_name = $type_name;

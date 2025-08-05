@@ -10,7 +10,7 @@ namespace MikeThicke\WPMuseum;
 /**
  * Test class for default OAI-PMH mappings.
  */
-class TestOaiPmhDefaults extends \WP_UnitTestCase
+class TestOaiPmhDefaults extends WP_Museum_Test_Case
 {
     /**
      * Test that OaiPmhMappings can be created with defaults.

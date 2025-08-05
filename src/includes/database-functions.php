@@ -12,17 +12,17 @@ namespace MikeThicke\WPMuseum;
  */
 function db_version_check()
 {
-    // Skip database updates during tests to avoid schema conflicts
-    if (defined("WP_TESTS_DOMAIN")) {
-        return;
-    }
-
     $version = get_site_option("wpm_db_version");
     if (DB_VERSION !== $version) {
         create_mobject_kinds_table();
         create_mobject_fields_table();
         create_remote_clients_table();
-        update_option("wpm_db_version", DB_VERSION);
+
+        // Only update the version option if not in test environment
+        // This allows tests to run the setup multiple times if needed
+        if (!defined("WP_TESTS_DOMAIN")) {
+            update_option("wpm_db_version", DB_VERSION);
+        }
     }
 }
 
@@ -277,6 +277,18 @@ function get_mobject_kinds()
     $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
     $kinds = wp_cache_get("get_mobject_kinds", CACHE_GROUP);
     if (!$kinds) {
+        // Check if the table exists before querying it
+        $table_exists = $wpdb->get_var(
+            $wpdb->prepare("SHOW TABLES LIKE %s", $table_name)
+        );
+
+        // If table doesn't exist (e.g., during tests), return empty array
+        if (!$table_exists) {
+            $kinds = [];
+            wp_cache_add("get_mobject_kinds", $kinds, CACHE_GROUP);
+            return $kinds;
+        }
+
         $results = $wpdb->get_results(
             $wpdb->prepare("SELECT * FROM %i", $table_name)
         );

@@ -302,6 +302,17 @@ class MObjectField
         $name = preg_replace("/\s+/", "-", $name);
         $name = substr(trim(strtolower($name)), 0, 255);
 
+        // Check if the table exists before querying it
+        $table_exists = $wpdb->get_var(
+            $wpdb->prepare("SHOW TABLES LIKE %s", $table_name)
+        );
+
+        // If table doesn't exist (e.g., during tests), just use the basic slug
+        if (!$table_exists) {
+            $this->slug = $name;
+            return;
+        }
+
         $duplicates = true;
         $duplicate_counter = 0;
         $slug = $name;

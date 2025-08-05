@@ -44,3 +44,7 @@ tests_add_filter("muplugins_loaded", "_manually_load_plugin");
 
 // Start up the WP testing environment.
 require dirname(__FILE__) . "/includes/bootstrap.php";
+
+// Load the WP Museum test base class
+require_once dirname(__FILE__) .
+    "/phpunit/classes/class-wp-museum-test-case.php";

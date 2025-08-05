@@ -7,10 +7,12 @@
 
 require_once plugin_dir_path(__FILE__) . "helpers/museum-test-data.php";
 
+use MikeThicke\WPMuseum\WP_Museum_Test_Case;
+
 /**
  * Test case for OAI-PMH output functions and error handling.
  */
-class OAIPMHOutputTest extends WP_UnitTestCase
+class OAIPMHOutputTest extends WP_Museum_Test_Case
 {
     private $test_data;
 
@@ -39,8 +41,7 @@ class OAIPMHOutputTest extends WP_UnitTestCase
                 "../../src/includes/database-functions.php";
         }
 
-        // Create database tables and real object kinds
-        $this->setup_database_tables();
+        // Create real object kinds (tables are already set up by base class)
         $this->create_test_object_kinds();
 
         // Set up test data
@@ -55,24 +56,6 @@ class OAIPMHOutputTest extends WP_UnitTestCase
                 return ["wpm_object", "wpm_instrument"];
             }
         }
-    }
-
-    /**
-     * Set up database tables for testing.
-     */
-    private function setup_database_tables()
-    {
-        global $wpdb;
-
-        // Disable database error output to prevent headers already sent issues
-        $original_show_errors = $wpdb->show_errors;
-        $wpdb->show_errors = false;
-
-        \MikeThicke\WPMuseum\create_mobject_kinds_table();
-        \MikeThicke\WPMuseum\create_mobject_fields_table();
-
-        // Restore original error reporting
-        $wpdb->show_errors = $original_show_errors;
     }
 
     /**
@@ -579,7 +562,7 @@ class OAIPMHOutputTest extends WP_UnitTestCase
     }
 
     /**
-     * Test get record handler with missing metadata prefix (should default to oai_dc).
+     * Test get record handler with missing metadata prefix (should return badArgument error).
      */
     public function test_handle_get_record_missing_metadata_prefix()
     {
@@ -600,10 +583,10 @@ class OAIPMHOutputTest extends WP_UnitTestCase
         \MikeThicke\WPMuseum\handle_get_record($args);
         $output = ob_get_clean();
 
-        // Should succeed with default oai_dc metadata format
-        $this->assertTrue(
-            strpos($output, "<GetRecord>") !== false ||
-                strpos($output, '<error code="idDoesNotExist">') !== false
+        // Should return badArgument error when metadataPrefix is missing
+        $this->assertStringContainsString(
+            '<error code="badArgument">',
+            $output
         );
     }
 
@@ -679,7 +662,7 @@ class OAIPMHOutputTest extends WP_UnitTestCase
     }
 
     /**
-     * Test list identifiers handler with missing metadata prefix (should default to oai_dc).
+     * Test list identifiers handler with missing metadata prefix (should return badArgument error).
      */
     public function test_handle_list_identifiers_missing_metadata_prefix()
     {
@@ -691,10 +674,10 @@ class OAIPMHOutputTest extends WP_UnitTestCase
         \MikeThicke\WPMuseum\handle_list_identifiers($args);
         $output = ob_get_clean();
 
-        // Should succeed with default oai_dc metadata format (may return noRecordsMatch if no records exist)
-        $this->assertTrue(
-            strpos($output, "<ListIdentifiers>") !== false ||
-                strpos($output, '<error code="noRecordsMatch">') !== false
+        // Should return badArgument error when metadataPrefix is missing
+        $this->assertStringContainsString(
+            '<error code="badArgument">',
+            $output
         );
     }
 
@@ -743,7 +726,7 @@ class OAIPMHOutputTest extends WP_UnitTestCase
     }
 
     /**
-     * Test list records handler with missing metadata prefix (should default to oai_dc).
+     * Test list records handler with missing metadata prefix (should return badArgument error).
      */
     public function test_handle_list_records_missing_metadata_prefix()
     {
@@ -755,10 +738,10 @@ class OAIPMHOutputTest extends WP_UnitTestCase
         \MikeThicke\WPMuseum\handle_list_records($args);
         $output = ob_get_clean();
 
-        // Should succeed with default oai_dc metadata format (may return noRecordsMatch if no records exist)
-        $this->assertTrue(
-            strpos($output, "<ListRecords>") !== false ||
-                strpos($output, '<error code="noRecordsMatch">') !== false
+        // Should return badArgument error when metadataPrefix is missing
+        $this->assertStringContainsString(
+            '<error code="badArgument">',
+            $output
         );
     }
 

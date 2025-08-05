@@ -6,11 +6,12 @@
  */
 
 use MikeThicke\WPMuseum\ObjectKind;
+use MikeThicke\WPMuseum\WP_Museum_Test_Case;
 
 /**
  * Test ObjectKind class.
  */
-class TestObjectKind extends WP_UnitTestCase
+class TestObjectKind extends WP_Museum_Test_Case
 {
     /**
      * Test ObjectKind constructor with complete data.

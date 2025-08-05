@@ -7,10 +7,12 @@
 
 require_once plugin_dir_path(__FILE__) . "helpers/museum-test-data.php";
 
+use MikeThicke\WPMuseum\WP_Museum_Test_Case;
+
 /**
  * Test case for OAI-PMH functionality.
  */
-class OAIPMHTest extends WP_UnitTestCase
+class OAIPMHTest extends WP_Museum_Test_Case
 {
     private $test_data;
 
