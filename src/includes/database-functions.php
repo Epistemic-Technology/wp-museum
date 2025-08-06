@@ -126,12 +126,13 @@ function create_remote_clients_table()
     $wpdb->show_errors = DB_SHOW_ERRORS;
     $sql = "CREATE TABLE $table_name (
 			client_id mediumint(9) NOT NULL AUTO_INCREMENT,
-			uuid VARCHAR(36) UNIQUE,
+			uuid VARCHAR(36),
 			title TEXT,
 			url TEXT,
 			blocked BOOLEAN,
 			registration_time DATETIME,
-			PRIMARY KEY (client_id)
+			PRIMARY KEY (client_id),
+			UNIQUE KEY uuid (uuid)
 		);";
     require_once ABSPATH . "wp-admin/includes/upgrade.php";
     dbDelta($sql);

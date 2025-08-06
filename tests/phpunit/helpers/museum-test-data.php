@@ -31,6 +31,12 @@ class MuseumTestData
         );
         if (!$existing_kind) {
             $kind->save_to_db();
+            
+            // After saving, get the kind from DB to ensure we have the correct ID
+            $saved_kind = MikeThicke\WPMuseum\get_kind_from_typename($kind->type_name);
+            if ($saved_kind) {
+                $kind = $saved_kind;
+            }
 
             // Create and save the associated fields
             if (isset($kind_data["fields"]) && is_array($kind_data["fields"])) {
@@ -43,6 +49,8 @@ class MuseumTestData
                     $field->save_to_db();
                 }
             }
+        } else {
+            $kind = $existing_kind;
         }
 
         return $kind;
