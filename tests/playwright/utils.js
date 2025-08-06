@@ -45,9 +45,12 @@ const { expect } = require("@playwright/test");
  * @throws {Error} If login fails or cannot be verified
  */
 async function loginAsAdmin(page, adminUser = null, adminPass = null) {
+  
   // Get credentials from parameters or environment variables
   const username = adminUser || process.env.TEST_WP_ADMIN_USER || "admin";
   const password = adminPass || process.env.TEST_WP_ADMIN_PASS || "admin";
+  
+  console.log(`Starting login process for user: ${username}`);
 
   // First check if we're already logged in by trying to access admin
   await page.goto("/wp-admin/");
@@ -55,6 +58,7 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
 
   // Check if we're already in admin area
   const currentUrl = page.url();
+  
   if (
     currentUrl.includes("/wp-admin/") &&
     !currentUrl.includes("wp-login.php")
@@ -62,6 +66,7 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
     const adminBarExists = await page.locator("#wpadminbar").isVisible();
     const dashboardExists = await page.locator("#wpbody-content").isVisible();
     const adminMenuExists = await page.locator("#adminmenu").isVisible();
+    
 
     if (adminBarExists || dashboardExists || adminMenuExists) {
       console.log("Already logged in, skipping login process");
@@ -76,7 +81,9 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
   const loginFormExists = await page
     .locator("#loginform")
     .isVisible({ timeout: 5000 });
+  
   if (!loginFormExists) {
+    console.log('Login form not found, attempting reload');
     // Try a page refresh in case of loading issues
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
@@ -88,6 +95,7 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
       throw new Error("Login form not found on login page after retry");
     }
   }
+  
 
   // Clear any existing values and fill in login credentials
   await page.locator("#user_login").fill(username);
@@ -100,10 +108,12 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
 
   // Check if we're on login page with error
   const currentUrlAfterLogin = page.url();
+  
   if (currentUrlAfterLogin.includes("wp-login.php")) {
     const loginError = await page.locator("#login_error").isVisible();
     if (loginError) {
       const errorText = await page.locator("#login_error").textContent();
+      console.error(`Login failed: ${errorText}`);
       throw new Error(`Login failed: ${errorText}`);
     }
   }
@@ -113,6 +123,7 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
 
   // Verify we're in admin area
   const finalUrl = page.url();
+  
   const adminBarExists = await page.locator("#wpadminbar").isVisible();
   const dashboardExists = await page.locator("#wpbody-content").isVisible();
   const adminMenuExists = await page.locator("#adminmenu").isVisible();
@@ -121,12 +132,20 @@ async function loginAsAdmin(page, adminUser = null, adminPass = null) {
     finalUrl.includes("/wp-admin/") &&
     (adminBarExists || dashboardExists || adminMenuExists);
 
+
   if (!isInAdmin) {
+    console.error('Login verification failed', {
+      url: finalUrl,
+      adminBar: adminBarExists,
+      dashboard: dashboardExists,
+      adminMenu: adminMenuExists
+    });
     throw new Error(
       `Login verification failed. Current URL: ${finalUrl}, Admin elements found: bar=${adminBarExists}, dashboard=${dashboardExists}, menu=${adminMenuExists}`,
     );
   }
 
+  console.log(`Successfully logged in as ${username}`);
   return username;
 }
 
@@ -364,6 +383,8 @@ async function deleteAllObjectKinds(page) {
  * });
  */
 async function createObjectKind(page, kindData) {
+  console.log(`Creating object kind: ${kindData.label}`);
+  
   // Navigate to Museum Administration > Objects
   await page.goto("/wp-admin/admin.php?page=wpm-react-admin-objects");
   await page.waitForLoadState("domcontentloaded");
@@ -375,13 +396,22 @@ async function createObjectKind(page, kindData) {
   );
 
   // Click "Add New Object Type" button
-  await page.click('button:has-text("Add New Object Type")');
+  const addButton = page.locator('button:has-text("Add New Object Type")');
+  if (!(await addButton.isVisible({ timeout: 5000 }))) {
+    throw new Error('Could not find Add New Object Type button');
+  }
+  await addButton.click();
 
   // Wait for the edit page to load
   await page.waitForSelector(".edit-header h1", { timeout: 10000 });
 
   // Fill in basic information
-  await page.locator(".kind-label-input").fill(kindData.label);
+  const labelInput = page.locator('.kind-label-input');
+  if (await labelInput.isVisible({ timeout: 5000 })) {
+    await labelInput.fill(kindData.label);
+  } else {
+    throw new Error('Could not find label input');
+  }
 
   await page
     .locator(".kind-label-plural-input")
@@ -697,10 +727,8 @@ async function createMuseumObject(page, postType, objectData) {
       try {
         titleInput = page.locator(selector);
         await titleInput.waitFor({ state: "visible", timeout: 5000 });
-        console.log(`Found title input: ${selector}`);
         break;
       } catch (error) {
-        console.log(`Title selector ${selector} not found, trying next...`);
       }
     }
 
@@ -722,10 +750,8 @@ async function createMuseumObject(page, postType, objectData) {
       try {
         contentArea = page.locator(selector);
         await contentArea.waitFor({ state: "visible", timeout: 5000 });
-        console.log(`Found content area: ${selector}`);
         break;
       } catch (error) {
-        console.log(`Content selector ${selector} not found, trying next...`);
       }
     }
 
@@ -755,23 +781,15 @@ async function createMuseumObject(page, postType, objectData) {
           try {
             fieldInput = page.locator(selector).first();
             if (await fieldInput.isVisible({ timeout: 1000 })) {
-              console.log(`Found field input for ${fieldName}: ${selector}`);
               break;
             }
           } catch (error) {
-            console.log(
-              `Field selector ${selector} not found for ${fieldName}`,
-            );
           }
         }
 
         if (fieldInput && (await fieldInput.isVisible({ timeout: 1000 }))) {
           await fieldInput.fill(fieldValue);
-          console.log(`Filled field ${fieldName} with value: ${fieldValue}`);
         } else {
-          console.log(
-            `Could not find field input for ${fieldName} (slug: ${fieldSlug})`,
-          );
         }
       }
     }
@@ -799,7 +817,6 @@ async function createMuseumObject(page, postType, objectData) {
       try {
         titleInput = page.locator(selector);
         await titleInput.waitFor({ state: "visible", timeout: 5000 });
-        console.log(`Found title input: ${selector}`);
         break;
       } catch (error) {
         console.log(`Title selector ${selector} not found in classic editor`);
@@ -859,23 +876,15 @@ async function createMuseumObject(page, postType, objectData) {
           try {
             fieldInput = page.locator(selector).first();
             if (await fieldInput.isVisible({ timeout: 1000 })) {
-              console.log(`Found field input for ${fieldName}: ${selector}`);
               break;
             }
           } catch (error) {
-            console.log(
-              `Field selector ${selector} not found for ${fieldName}`,
-            );
           }
         }
 
         if (fieldInput && (await fieldInput.isVisible({ timeout: 1000 }))) {
           await fieldInput.fill(fieldValue);
-          console.log(`Filled field ${fieldName} with value: ${fieldValue}`);
         } else {
-          console.log(
-            `Could not find field input for ${fieldName} (slug: ${fieldSlug})`,
-          );
         }
       }
     }
@@ -916,7 +925,51 @@ async function createMuseumObject(page, postType, objectData) {
  */
 async function dismissEditorModals(page) {
   // Wait briefly for any modals to appear
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(1000);
+
+  // Try multiple approaches to close pattern chooser modal
+  const modalExists = await page.locator('.components-modal__screen-overlay').first().isVisible({ timeout: 1000 });
+  if (modalExists) {
+    console.log('Modal overlay detected, attempting to close...');
+    
+    // Try clicking the X button with multiple selectors
+    const closeSelectors = [
+      'button[aria-label="Close"]',
+      '.components-modal__header button',
+      '.components-modal__header .components-button',
+      'button:has-text("×")',
+      'button[aria-label*="Close"]',
+      '[role="button"][aria-label="Close"]'
+    ];
+
+    let modalClosed = false;
+    for (const selector of closeSelectors) {
+      try {
+        const closeButton = page.locator(selector).first();
+        if (await closeButton.isVisible({ timeout: 1000 })) {
+          console.log(`Trying close button: ${selector}`);
+          await closeButton.click({ force: true, timeout: 3000 });
+          await page.waitForTimeout(500);
+          modalClosed = !(await page.locator('.components-modal__screen-overlay').first().isVisible({ timeout: 1000 }));
+          if (modalClosed) {
+            console.log('Modal closed successfully');
+            break;
+          }
+        }
+      } catch (error) {
+        console.log(`Close button ${selector} failed: ${error.message}`);
+      }
+    }
+
+    // If modal still exists, try escape key
+    if (!modalClosed) {
+      console.log('Trying escape key');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    }
+  }
 
   // Try to click "Start blank" if available
   const startBlankButton = page
@@ -927,41 +980,14 @@ async function dismissEditorModals(page) {
     await page.waitForTimeout(500);
   }
 
-  // Close any modals with close button
-  let attempts = 0;
-  const maxAttempts = 5;
-
-  while (attempts < maxAttempts) {
-    const closeButton = page
-      .locator('button[aria-label="Close"]:visible')
-      .first();
-    if (await closeButton.isVisible({ timeout: 1000 })) {
-      try {
-        // First try normal click
-        await closeButton.click({ timeout: 3000 });
-      } catch (error) {
-        try {
-          // Then try force click to bypass overlay issues
-          await closeButton.click({ force: true, timeout: 3000 });
-        } catch (forceError) {
-          // If both fail, try escape key
-          await page.keyboard.press("Escape");
-        }
-      }
-
-      await page.waitForTimeout(300);
-      attempts++;
-    } else {
-      break;
-    }
-  }
-
-  // Try Escape key as final fallback
+  // Final cleanup with escape keys
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(300);
   await page.keyboard.press("Escape");
   await page.waitForTimeout(300);
 
   // Wait for editor to stabilize
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -994,8 +1020,8 @@ async function createPage(page, pageData) {
     }
 
     // Fill custom fields if metabox is present (block editor)
-    if (objectData.fields) {
-      for (const [fieldName, fieldValue] of Object.entries(objectData.fields)) {
+    if (pageData.fields) {
+      for (const [fieldName, fieldValue] of Object.entries(pageData.fields)) {
         // Convert field name to slug format (e.g., \"Accession Number\" -> \"accession-number\")
         const fieldSlug = fieldName.toLowerCase().replace(/\\s+/g, "-");
 
@@ -1014,23 +1040,15 @@ async function createPage(page, pageData) {
           try {
             fieldInput = page.locator(selector).first();
             if (await fieldInput.isVisible({ timeout: 1000 })) {
-              console.log(`Found field input for ${fieldName}: ${selector}`);
               break;
             }
           } catch (error) {
-            console.log(
-              `Field selector ${selector} not found for ${fieldName}`,
-            );
           }
         }
 
         if (fieldInput && (await fieldInput.isVisible({ timeout: 1000 }))) {
           await fieldInput.fill(fieldValue);
-          console.log(`Filled field ${fieldName} with value: ${fieldValue}`);
         } else {
-          console.log(
-            `Could not find field input for ${fieldName} (slug: ${fieldSlug})`,
-          );
         }
       }
     }
@@ -1119,12 +1137,8 @@ async function insertMuseumBlock(page, blockName, blockSelector) {
     try {
       await page.waitForSelector(selector, { timeout: 5000 });
       searchInput = selector;
-      console.log(`Found search input: ${selector}`);
       break;
     } catch (error) {
-      console.log(
-        `Search input selector ${selector} not found, trying next...`,
-      );
     }
   }
 
@@ -1150,12 +1164,8 @@ async function insertMuseumBlock(page, blockName, blockSelector) {
     try {
       blockButton = page.locator(selector).first();
       await blockButton.waitFor({ state: "visible", timeout: 5000 });
-      console.log(`Found block button: ${selector}`);
       break;
     } catch (error) {
-      console.log(
-        `Block button selector ${selector} not found, trying next...`,
-      );
     }
   }
 
