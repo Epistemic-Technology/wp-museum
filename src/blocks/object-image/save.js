@@ -37,6 +37,7 @@ export default function save ( { attributes } ) {
 					src       = { imgURL }
 					height    = { imgDimensions.height }
 					width     = { imgDimensions.width }
+					alt       = { imgAlt || imgTitle || 'Museum object image' }
 				/>
 			}
 			{ displayTitle && title &&

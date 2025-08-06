@@ -32,7 +32,7 @@ const FeaturedCollection = props => {
 				<img
 					className = 'wpm-featured-collection-image'
 					src       = { collectionData.featured_image[0] }
-					alt       = 'Associated collection'
+					alt       = { collectionData.title || 'Featured collection' }
 				/>
 			}
 			<h2>

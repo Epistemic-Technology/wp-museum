@@ -12,9 +12,9 @@ const ObjectEditorTableRow = props => {
 
 	return (
 		<tr>
-			<td>{ postTitle }</td>
-			<td><a href = { editLink }>Edit</a></td>
-			<td><a href = { link }>View</a></td>
+			<th scope="row">{ postTitle }</th>
+			<td><a href = { editLink } aria-label={`Edit ${postTitle}`}>Edit</a></td>
+			<td><a href = { link } aria-label={`View ${postTitle}`}>View</a></td>
 			<td>{ postStatus }</td>
 		</tr>
 	);
@@ -26,11 +26,21 @@ const ObjectEditorTable = props => {
 	} = props;
 
 	const mObjectRows = mObjects.map( mObject =>
-		<ObjectEditorTableRow mObject = { mObject } /> );
+		<ObjectEditorTableRow key={mObject.ID || mObject.post_title} mObject = { mObject } /> );
 
 	return (
-		<table class='wp-list-table widefat'>
-			{ mObjectRows }
+		<table className='wp-list-table widefat' role='table' aria-label='Museum objects list'>
+			<thead>
+				<tr>
+					<th scope='col'>Object Title</th>
+					<th scope='col'>Edit</th>
+					<th scope='col'>View</th>
+					<th scope='col'>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{ mObjectRows }
+			</tbody>
 		</table>
 	);
 }

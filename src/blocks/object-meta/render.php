@@ -106,12 +106,12 @@ if ( $child_kinds && $child_ids ) {
 				ob_start();
 				?>
 				<div class='child-object'>
-					<img class='child-object-thumb' src='<?= $thumbnail[0] ?>' />
+					<img class='child-object-thumb' src='<?= $thumbnail[0] ?>' alt='<?= esc_attr( $title ) ?>' />
 					<div class='child-object-content'>
 						<h3><?= $title ?></h3>
 						<?= get_the_excerpt( $child_post ) ?>
 						<div class='child-view-link'>
-							<a href='<?= $link ?>'>View</a>
+							<a href='<?= $link ?>' aria-label='View <?= esc_attr( $title ) ?>'>View</a>
 						</div>
 					</div>
 				</div>

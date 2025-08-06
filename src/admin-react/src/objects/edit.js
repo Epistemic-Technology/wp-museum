@@ -346,6 +346,7 @@ const Edit = (props) => {
     const hasChanges = kindForm.isDirty || fieldsSaveState.hasUnsavedChanges;
     if (hasChanges) {
       if (
+        // TODO: Replace with accessible modal dialog
         confirm("You have unsaved changes. Are you sure you want to leave?")
       ) {
         navigateToMain();

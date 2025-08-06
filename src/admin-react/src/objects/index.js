@@ -206,6 +206,7 @@ const ObjectAdminControl = () => {
   };
 
   const deleteKind = (kindItem) => {
+    // TODO: Replace with accessible modal dialog for better accessibility
     let confirmDelete = confirm(
       "Really delete kind? Objects associated with this kind will remain in database but will be inaccessible.",
     );

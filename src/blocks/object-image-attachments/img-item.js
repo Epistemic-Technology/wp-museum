@@ -122,7 +122,7 @@ const ImgItem = ( props ) => {
 				title = 'Remove Image'
 			/>
 			<div className = 'img-attach-thumbnail'>
-				<img src = { thumbnail[0] } />
+				<img src = { thumbnail[0] } alt = { alt || title || 'Image attachment' } />
 			</div>
 			<div className = 'img-attach-fields'>
 				<div>

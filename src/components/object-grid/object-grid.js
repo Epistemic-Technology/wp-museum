@@ -54,7 +54,7 @@ const ObjectGridBox = (props) => {
       >
         <div className="object-grid-box">
           <div className="object-grid-thumbnail-div">
-            {!!useImgURL && <img src={useImgURL} title={decodedPostTitle} />}
+            {!!useImgURL && <img src={useImgURL} title={decodedPostTitle} alt={decodedPostTitle} />}
             {!useImgURL && <div className="placeholder"></div>}
           </div>
           <div className="object-grid-caption-div">

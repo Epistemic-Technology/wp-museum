@@ -82,22 +82,25 @@ const CollectionBox = (props) => {
         style={titleStyle}
       >
         <span className="wpm-collection-main-navigation-collection-box-title">
-          <a href={theCollection.link}>{decodedTitle}</a>
+          <a href={theCollection.link} aria-label={`View ${decodedTitle} collection`}>{decodedTitle}</a>
         </span>
         <span>
           <Button
             className="wpm-collection-main-navigation-collection-box-info-button"
             icon={info}
+            aria-label={`${showExcerpt ? 'Hide' : 'Show'} information about ${decodedTitle} collection`}
+            aria-expanded={showExcerpt}
             onClick={toggleShowExcerpt}
           />
         </span>
       </div>
       <div
         className={`wpm-collection-main-navigation-collection-box-excerpt ${excerptStateClass}`}
+        aria-hidden={!showExcerpt}
       >
         {theCollection.excerpt}
         <div className="wpm-collection-main-navigation-collection-box-excerpt-more">
-          <a href={theCollection.link}>
+          <a href={theCollection.link} aria-label={`View full details about the ${theCollection.post_title} collection`}>
             More about the {theCollection.post_title} Collection...
           </a>
         </div>
@@ -137,7 +140,11 @@ const CollectionMainNavigation = (props) => {
     });
   }
 
-  return collectionBoxes;
+  return (
+    <nav aria-label="Collection navigation" role="navigation">
+      {collectionBoxes}
+    </nav>
+  );
 };
 
 export default CollectionMainNavigation;

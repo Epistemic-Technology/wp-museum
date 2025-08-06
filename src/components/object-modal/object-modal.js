@@ -46,22 +46,26 @@ const ImageScroll = props => {
 	const bestImage = getBestImage( imgArray[ imgIndex ], imgDimensions );
 
 	return (
-		<div className = 'object-modal-image-scroll'>
+		<div className = 'object-modal-image-scroll' aria-label={`Image gallery showing ${imgArray.length} images`}>
 			<Button
 				className = 'image-scroll-button dec'
 				icon      = { chevronLeft }
+				label     = 'Previous image'
+				aria-label = 'View previous image'
 				onClick   = { () => updateImgIndex( -1 ) }
 			/>
 			<Button
 				className = 'image-scroll-button inc'
 				icon      = { chevronRight }
+				label     = 'Next image'
+				aria-label = 'View next image'
 				onClick   = { () => updateImgIndex( 1 ) }
 			/>
-			<div className = 'img-wrapper'>
+			<div className = 'img-wrapper' aria-live='polite' aria-atomic='true'>
 				<img
 					src   = { bestImage.URL }
 					title = { imgArray[imgIndex].title || '' }
-					alt   = { imgArray[imgIndex].alt || '' }
+					alt   = { imgArray[imgIndex].alt || imgArray[imgIndex].title || 'Museum object image' }
 				/>
 			</div>
 		</div>
@@ -93,7 +97,7 @@ const ObjectModal = props => {
 					</div>
 					<div className = 'object-modal-info'>
 						<div className = 'read-more-link'>
-								<a href = { url }>{ linkText }</a>
+								<a href = { url } aria-label={`View full details for ${title}`}>{ linkText }</a>
 						</div>
 						<div className = 'modal-content'>{ content }</div>	
 					</div>

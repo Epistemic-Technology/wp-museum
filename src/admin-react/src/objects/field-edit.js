@@ -216,7 +216,7 @@ const FieldEdit = (props) => {
   const dimensionsData = dimensions ? dimensions : dimensionsDefault;
 
   const deleteThisField = () => {
-    // TODO: Replace with a proper React confirmation modal for better UX
+    // TODO: Replace with a proper React confirmation modal for better UX and accessibility
     const confirmDelete = confirm(
       "Really delete field? This cannot be undone. Deleting field will not remove data from database, but it will be inaccessible unless a new field with the same name is created.",
     );

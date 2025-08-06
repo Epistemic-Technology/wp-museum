@@ -151,6 +151,8 @@ function object_image_box_contents($post_id = null)
                 esc_html($image_thumbnail[1]) .
                 "' height='" .
                 esc_html($image_thumbnail[2]) .
+                "' alt='" .
+                esc_attr(get_post_meta($attachment_id, '_wp_attachment_image_alt', true) ?: 'Museum object image') .
                 "'></a>";
             echo "<a id='delete-" .
                 esc_html($image_id) .

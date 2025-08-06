@@ -58,7 +58,7 @@ $percent_width = round( 1 / $columns * 100 );
 	<div class = 'collection-block-upper-content img-<?= $imgAlignment ?>'>
 		<?php if ( $displayThumbnail && ! is_null( $thumbnailURL ) ): ?>
 			<div class = 'thumbnail-wrapper'>
-				<img src = '<?= $thumbnailURL ?>'/>
+				<img src = '<?= $thumbnailURL ?>' alt='<?= esc_attr( $collection->post_title ) ?>'/>
 			</div>
 		<?php endif; ?>
 		<div class = 'collection-info'>
@@ -90,6 +90,7 @@ $percent_width = round( 1 / $columns * 100 );
 					<img
 						src   = '<?= $object_data['imgURL'] ?>'
 						title = '<?= $object_data['title'] ?>'
+						alt   = '<?= esc_attr( $object_data['title'] ) ?>'
 					/>
 					<?php if ( $linkToObjects ): ?>
 						</a>

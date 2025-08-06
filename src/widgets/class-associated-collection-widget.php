@@ -76,7 +76,7 @@ class Associated_Collection_Widget extends \WP_Widget {
 							<img
 								class='wpm-associated-collection-imgage' 
 								src='<?= $featured_image[0] ?>' 
-								alt='Associated collection'
+								alt='<?= esc_attr( $title ) ?>'
 							/>
 						</a>
 						<?php

@@ -88,7 +88,10 @@ const BasicSearchFront = (props) => {
         onlyTitleDefault={onlyTitle}
       />
       {!!advancedSearchLink && (
-        <a href={`${advancedSearchLink}?searchText=${currentSearchText}`}>
+        <a 
+          href={`${advancedSearchLink}?searchText=${currentSearchText}`}
+          aria-label={`Go to advanced search page${currentSearchText ? ` with search term: ${currentSearchText}` : ''}`}
+        >
           Advanced Search
         </a>
       )}

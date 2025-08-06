@@ -19,7 +19,7 @@ const ObjectRow = props => {
 			<div className = 'object-row-content'>
 				{ displayImage && 
 					<div className = 'object-row-image'>
-						<a href = { link }><img src={thumbnail[0]} /></a>
+						<a href = { link }><img src={thumbnail[0]} alt={decodedPostTitle} /></a>
 					</div>
 				}
 				<div className = 'object-info'>

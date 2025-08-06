@@ -81,12 +81,15 @@ const EmbeddedSearch = props => {
 	}
 
 	return (
-		<div className = 'wpm-embedded-search'>
+		<div className = 'wpm-embedded-search' role='search'>
 			<div className = 'embedded-search-input'>
 				<div className = 'main-input-area'>
+					<label htmlFor="wpm-embedded-search-input" className="screen-reader-text">Search</label>
 					<input
+						id          = 'wpm-embedded-search-input'
 						type        = 'text'
 						placeholder = { placeholderText }
+						aria-label  = { placeholderText || 'Search' }
 						onKeyPress  = { handleKeyPress }
 						value       = { searchText }
 						onChange    = { event => setSearchText( event.target.value ) }
@@ -109,7 +112,7 @@ const EmbeddedSearch = props => {
 						}
 						{ !! advancedSearchURL &&
 							<div className = 'wpm-embedded-search-advanced-search-link'>
-								<a href = { advancedSearchURL }>Advanced Search</a>
+								<a href = { advancedSearchURL } aria-label="Go to advanced search page">Advanced Search</a>
 							</div>
 						}
 					</div>
@@ -117,6 +120,7 @@ const EmbeddedSearch = props => {
 				<Button
 					isPrimary
 					className = 'wpm-embedded-search-button'
+					aria-label = { `${searchButtonText} museum objects` }
 					onClick   = { () => doSearch() }
 				>
 					{ searchButtonText }
@@ -125,6 +129,7 @@ const EmbeddedSearch = props => {
 					<Button
 						isSecondary
 						className = 'wpm-embedded-search-button'
+						aria-label = 'Clear search and reset results'
 						onClick   = { resetSearch }
 					>
 						{ resetButtonText }

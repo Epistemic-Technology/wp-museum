@@ -43,6 +43,7 @@ const ChildObject = props => {
 	}
 
 	const deleteObject = () => {
+		// TODO: Replace with accessible modal dialog for better accessibility
 		const confirmDelete = confirm( `Are you sure you want to delete ${post_title}? This cannot be undone.`);
 		if ( ! confirmDelete ) return;
 		deleteChildObject( objectData );
@@ -55,12 +56,14 @@ const ChildObject = props => {
 				icon      = { trash }
 				onClick   = { deleteObject }
 				title     = 'Delete Object'
+				aria-label = {`Delete ${decodedPostTitle} object`}
 			/>
 			<div className = 'child-object-image-div'>
 				{ thumbnail && thumbnail[0] ?
 					<img
 						className = 'child-object-image'
 						src       = { thumbnail[0] }
+						alt       = { decodedPostTitle }
 					/>
 					:
 					<div className = 'child-object-image-placeholder'></div>

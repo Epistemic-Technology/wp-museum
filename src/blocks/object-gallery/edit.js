@@ -90,6 +90,7 @@ const GalleryGrid = ( props ) => {
 			>
 				<img
 					src = { imgItem.imgURL }
+					alt = { imgItem.alt || imgItem.title || 'Gallery image' }
 				/>
 			</div>
 		);

@@ -93,6 +93,7 @@ foreach ( $fieldList as $field ) {
 					src    = '<?= $imgURL ?>'
 					height = '<?= $height ?>'
 					width  = '<?= $width  ?>'
+					alt    = '<?= esc_attr( $post_title ) ?>'
 				/>
 			</div>
 		<?php endif; ?>

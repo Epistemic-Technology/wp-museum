@@ -216,44 +216,60 @@ const SearchBox = (props) => {
     close();
   };
 
-  const boxTitle = typeof title === "undefined" ? "Search for Object" : title;
+    const boxTitle = typeof title === 'undefined' ? 'Search for Object' : title;
 
-  /**
-   * Renders the modal.
-   */
-  return (
-    <Modal className="wpm-search-box" title={boxTitle} onRequestClose={close}>
-      <ToggleControl
-        className="toggle-control"
-        label="Search only title"
-        checked={onlyTitle}
-        onChange={onTitleToggle}
-      />
-      <input
-        className="components-text-control__input"
-        placeholder="Type to search..."
-        onChange={onChangeSearchText}
-        ref={searchInputRef}
-        onKeyUp={onKeyUp}
-        onKeyDown={onKeyDown}
-      />
-      <SearchResultsList
-        className="search-results-list"
-        results={results}
-        selectedItem={selectedItem}
-        onButtonItemFocus={onButtonItemFocus}
-        onButtonItemClick={onButtonItemClick}
-        onKeyDown={onKeyDown}
-        onKeyUp={onKeyUp}
-      />
-      <div className="bottom-controls">
-        <Button isSecondary isLarge className="cancel-button" onClick={close}>
-          Cancel
-        </Button>
-      </div>
-    </Modal>
-  );
-};
+    /**
+     * Renders the modal.
+     */
+    return (
+        <Modal
+            className      = 'wpm-search-box'
+            title          = { boxTitle }
+            onRequestClose = { close }
+        >
+            <ToggleControl
+                    className = 'toggle-control'
+                    label     = 'Search only title'
+                    checked   = { onlyTitle }
+                    onChange  = { onTitleToggle }
+                />
+            <label htmlFor="wpm-search-input" className="screen-reader-text">Search for objects</label>
+            <input
+                id           = 'wpm-search-input'
+                className    = 'components-text-control__input'
+                placeholder  = 'Type to search...'
+                aria-label   = 'Search for objects'
+                aria-describedby = 'wpm-search-help'
+                onChange     = { onChangeSearchText }
+                ref          = { searchInputRef }
+                onKeyUp      = { onKeyUp }
+                onKeyDown    = { onKeyDown }
+            />
+            <span id="wpm-search-help" className="screen-reader-text">Type at least 3 characters to search. Use arrow keys to navigate results.</span>
+            <SearchResultsList
+                className         = 'search-results-list'
+                results           = { results }
+                selectedItem      = { selectedItem  }
+                onButtonItemFocus = { onButtonItemFocus }
+                onButtonItemClick = { onButtonItemClick }
+                onKeyDown         = { onKeyDown }
+                onKeyUp           = { onKeyUp }
+            />
+            <div
+                className = 'bottom-controls'
+            >
+                <Button
+                    isSecondary
+                    isLarge
+                    className   = 'cancel-button'
+                    onClick     = { close }
+                >
+                    Cancel
+                </Button>
+            </div>
+        </Modal>
+    );
+}
 
 /**
  * Component to display search results as a list of buttons.
@@ -274,43 +290,47 @@ const SearchResultsList = (props) => {
     onKeyUp,
   } = props;
 
-  if (results.length > 0) {
-    const listItems = results.map((result, index) => (
-      <li
-        key={"results-list-" + index}
-        className={
-          index === selectedItem
-            ? "search-item selected"
-            : "search-item unselected"
-        }
-      >
-        <div
-          tabIndex="0"
-          className="search-result-button"
-          onFocus={() => onButtonItemFocus(index)}
-          onClick={() => onButtonItemClick(index)}
-          onMouseEnter={() => onButtonItemFocus(index)}
-          onKeyUp={(event) =>
-            event.key === "Enter" ? onButtonItemClick(index) : onKeyUp(event)
-          }
-          onKeyDown={onKeyDown}
-        >
-          <div className="search-result-title">
-            {decodeHtmlEntities(result["post_title"])}
-          </div>
-          {result["cat_field"] && (
-            <div className="search-result-cat-id">
-              {result[result["cat_field"]]}
-            </div>
-          )}
-        </div>
-      </li>
-    ));
-    return <ul className="results-list">{listItems}</ul>;
-  } else {
-    return null;
-  }
-};
+    if ( results.length > 0 ) {
+        const listItems = results.map( ( result, index ) => (
+                <li
+                    key = { 'results-list-' + index }
+                    className = { index === selectedItem  ? 'search-item selected' : 'search-item unselected' }
+                    role = 'option'
+                    aria-selected = { index === selectedItem }
+                >
+                    <button
+                        type      = 'button'
+                        className = 'search-result-button'
+                        aria-label = { `Select ${result['post_title']}${result['cat_field'] && result[result['cat_field']] ? `, ${result[result['cat_field']]}` : ''}` }
+                        onFocus   = { ( ) => onButtonItemFocus( index ) }
+                        onClick   = { ( ) => onButtonItemClick( index ) }
+                        onMouseEnter = { () => onButtonItemFocus( index ) }
+                        onKeyUp   = { ( event ) => event.key === 'Enter' ? onButtonItemClick( index ) : onKeyUp( event ) }
+                        onKeyDown = { onKeyDown }
+                    >
+                        <div
+                            className = 'search-result-title'
+                        >
+                            { result['post_title'] }
+                        </div>
+                        { result['cat_field'] &&
+                            <div
+                                className = 'search-result-cat-id'
+                            >
+                                { result[ result[ 'cat_field' ] ] }
+                            </div>
+                        }
+                    </button>
+                </li>
+            )
+        );
+        return (
+            <ul className = 'results-list' role='listbox' aria-label='Search results'>{ listItems }</ul>
+        );
+    } else {
+        return null;
+    }
+}
 
 /**
  * Button to open the modal when clicked.
@@ -459,22 +479,41 @@ const ObjectEmbedPanel = (props) => {
     initialOpen,
   } = props;
 
-  let objectDescription;
-  if (objectID === null) {
-    objectDescription = <div>Click 'Search' to embed object.</div>;
-  } else {
-    objectDescription = (
-      <div>
-        <div>{title}</div>
-        <div>{catID}</div>
-        <div>
-          <a href={objectURL} target="_blank">
-            View Object
-          </a>
-        </div>
-      </div>
-    );
-  }
+	let objectDescription;
+	if ( objectID === null ) {
+		objectDescription = (
+			<div>
+				Click 'Search' to embed object.
+			</div>
+		);
+	} else {
+		objectDescription = (
+			<div>
+				<div>{ title }</div>
+				<div>{ catID }</div>
+				<div><a href = { objectURL } target='_blank' rel='noopener noreferrer' aria-label={`View ${title} (opens in new tab)`}>View Object</a></div>
+			</div>
+		);
+	}
+
+	return (
+		<PanelBody
+			title       = "Object"
+			initialOpen = { initialOpen }
+		>
+			<PanelRow>
+				{ objectDescription }
+			</PanelRow>
+			<PanelRow>
+				<SearchButton
+					returnCallback = { onSearchModalReturn }
+				>
+					{ objectID ? 'Replace' : 'Search' }
+				</SearchButton>
+			</PanelRow>
+		</PanelBody>
+	);
+}
 
   return (
     <PanelBody title="Object" initialOpen={initialOpen}>
@@ -488,8 +527,21 @@ const ObjectEmbedPanel = (props) => {
   );
 };
 
-const CollectionEmbedPanel = (props) => {
-  const { collectionID, title, URL, initialOpen, onSearchModalReturn } = props;
+    let collectionDescription;
+    if ( collectionID === null ) {
+        collectionDescription = (
+            <div>
+                Click 'Search' to embed Collection.
+            </div>
+        );
+    } else {
+        collectionDescription = (
+            <div>
+                <div>{ title }</div>
+                <div><a href = { URL } target='_blank' rel='noopener noreferrer' aria-label={`View ${title} collection (opens in new tab)`}>View Collection</a></div>
+            </div>
+        );
+    }
 
   let collectionDescription;
   if (collectionID === null) {

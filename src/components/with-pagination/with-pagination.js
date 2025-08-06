@@ -38,17 +38,19 @@ const withPagination = BaseComponent => props => {
 		if ( startPage > 1 && totalPages > pagesToShow ) {
 			pageItems.push(
 				<li key = { -1 }>
-					<a
+					<button
+						type = "button"
+						aria-label = "Go to page 1"
 						onClick = { () => doSearch( 1 ) }
 					>
 						{ 1 }
-					</a>
+					</button>
 				</li>
 			);
 		}
 		if ( startPage > 2 && totalPages > pagesToShow ) {
 			pageItems.push( 
-				<li key = { 0 }>
+				<li key = { 0 } aria-hidden="true">
 					...
 				</li>
 			);
@@ -61,68 +63,83 @@ const withPagination = BaseComponent => props => {
 						'page-list-selected' : 'page-list-unselected'
 					}
 				>
-					<a
+					<button
+						type = "button"
+						aria-label = { `Go to page ${pageCounter}` }
+						aria-current = { pageCounter == currentPage ? 'page' : undefined }
 						onClick = { () => doSearch( pageCounter ) }
 					>
 						{ pageCounter }
-					</a>
+					</button>
 				</li>
 			);
 		}
 		if ( endPage < totalPages && totalPages > pagesToShow ) {
 			pageItems.push( 
-				<li key = { endPage + 1 }>
+				<li key = { endPage + 1 } aria-hidden="true">
 					...
 				</li>
 			);
 			pageItems.push(
 				<li key = { endPage + 2 }>
-					<a
+					<button
+						type = "button"
+						aria-label = { `Go to page ${totalPages}` }
 						onClick = { () => doSearch( totalPages ) }
 					>
 						{ totalPages }
-					</a>
+					</button>
 				</li>
 			);
 		}
 
 		return (
-			<ol>
+			<ol role="navigation" aria-label="Pagination Navigation">
 				{ totalPages > pagesToShow &&
 					<li>
-						<a
+						<button
+							type = "button"
+							aria-label = "Go to first page"
 							onClick = { () => doSearch( 1 ) }
 						>
-								<span className = 'pagination-symbol'>&laquo;</span>
-						</a>
+								<span className = 'pagination-symbol' aria-hidden="true">&laquo;</span>
+						</button>
 					</li>
 				}
 				{ totalPages > pagesToShow &&
 					<li>
-						<a
-							onClick = { () => doSearch( currentPage - 1) }
+						<button
+							type = "button"
+							aria-label = "Go to previous page"
+							disabled = { currentPage <= 1 }
+							onClick = { () => doSearch( Math.max(1, currentPage - 1) ) }
 						>
-							<span className = 'pagination-symbol'>&lsaquo;</span>
-						</a>
+							<span className = 'pagination-symbol' aria-hidden="true">&lsaquo;</span>
+						</button>
 					</li>
 				}
 				{ pageItems }
 				{ totalPages > pagesToShow &&
 					<li>
-						<a
-							onClick = { () => doSearch( currentPage + 1 ) }
+						<button
+							type = "button"
+							aria-label = "Go to next page"
+							disabled = { currentPage >= totalPages }
+							onClick = { () => doSearch( Math.min(totalPages, currentPage + 1) ) }
 						>
-							<span className = 'pagination-symbol'>&rsaquo;</span>
-						</a>
+							<span className = 'pagination-symbol' aria-hidden="true">&rsaquo;</span>
+						</button>
 					</li>
 				}
 				{ totalPages > pagesToShow &&
 					<li>
-						<a
+						<button
+							type = "button"
+							aria-label = "Go to last page"
 							onClick = { () => doSearch( totalPages ) }
 						>
-							<span className = 'pagination-symbol'>&raquo;</span>
-						</a>
+							<span className = 'pagination-symbol' aria-hidden="true">&raquo;</span>
+						</button>
 					</li>
 				}
 			</ol>

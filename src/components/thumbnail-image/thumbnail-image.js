@@ -8,7 +8,7 @@ const ThumbnailImage = props => {
 	} = props;
 
 	const thumbnailImageOrPlaceholder = thumbnailURL ?
-		<img src = { thumbnailURL } /> :
+		<img src = { thumbnailURL } alt = { alt || title || 'Thumbnail image' } /> :
 		<div
 			className = 'thumbnail-placeholder'
 			style     = { { height: imgDimensions.height, width: imgDimensions.width } }

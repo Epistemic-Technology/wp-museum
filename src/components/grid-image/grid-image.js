@@ -118,17 +118,21 @@ const GridImage = ( props ) => {
 						imgURL        = { imgURL }
 						setImgData    = { setImgData }
 					/>
-					<a
+					<button
+						type      = 'button'
 						className = 'removeImageLink'
+						aria-label = 'Remove image from grid'
 						onClick   = { () => updateObjectIDCallback( null ) }
 					>
 						[X]
-					</a>
+					</button>
 				</div>
 				:
 				<>
-				<div
+				<button
+					type      = 'button'
 					className = 'grid-image-placeholder'
+					aria-label = 'Add image to grid'
 					onClick   = { () => setModalOpen( true ) } 
 				>
 					<div
@@ -136,7 +140,7 @@ const GridImage = ( props ) => {
 					>
 						+
 					</div>
-				</div>
+				</button>
 				{ modalOpen &&
 					<ObjectSearchBox
 						close          = { () => setModalOpen( false ) }

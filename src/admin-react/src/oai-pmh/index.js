@@ -414,6 +414,7 @@ const OmiPmhAdmin = () => {
   const handleReset = () => {
     if (Object.keys(dcMappings).length > 0 || identifierPrefix) {
       if (
+        // TODO: Replace with accessible modal dialog for better accessibility
         confirm(
           "Are you sure you want to reset to default mappings? This action cannot be undone.",
         )

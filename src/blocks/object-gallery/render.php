@@ -53,7 +53,7 @@ foreach ( $imgData as $imgItem ) {
 		class = 'gallery-image-wrapper'
 		style = 'flex-basis: <?= $percentWidth ?>'
 	>
-		<img src = '<?= $imgItem['imgURL'] ?>' />
+		<img src = '<?= $imgItem['imgURL'] ?>' alt = '<?= esc_attr( $imgItem['alt'] ?: $imgItem['title'] ?: 'Gallery image' ) ?>' />
 	</div>
 	<?php
 	$grid .= ob_get_contents();
