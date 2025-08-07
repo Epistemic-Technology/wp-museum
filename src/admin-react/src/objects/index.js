@@ -304,6 +304,21 @@ const Main = (props) => {
     handleKindDoubleClick,
   } = props;
 
+  const handleExportCSV = (kindItem) => {
+    const nonce = window.wpmAdminData?.csvExportNonce;
+    if (!nonce) {
+      console.error('CSV export nonce not available');
+      return;
+    }
+    
+    const url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('wpm_ot_csv', kindItem.kind_id);
+    url.searchParams.set('wpm-objects-admin-nonce', nonce);
+    url.searchParams.set('sort_col', 'post_title');
+    url.searchParams.set('sort_dir', 'asc');
+    window.location.href = url.toString();
+  };
+
   if (objectKinds) {
     const kindRows = objectKinds
       .filter(
@@ -325,7 +340,11 @@ const Main = (props) => {
             <Button isLarge isSecondary onClick={() => deleteKind(kindItem)}>
               Delete
             </Button>
-            <Button isLarge isSecondary>
+            <Button
+              isLarge
+              isSecondary
+              onClick={() => handleExportCSV(kindItem)}
+            >
               Export CSV
             </Button>
             <Button isLarge isSecondary>

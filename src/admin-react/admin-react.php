@@ -28,6 +28,15 @@ function enqueue_admin_react($hook_suffix)
         true
     );
 
+    wp_localize_script(
+        WPM_PREFIX . "admin-react",
+        'wpmAdminData',
+        array(
+            'csvExportNonce' => wp_create_nonce('d78HG@YsELh2KByUgCTuDCepW'),
+            'ajaxUrl' => admin_url('admin-ajax.php')
+        )
+    );
+
     wp_enqueue_style(
         WPM_PREFIX . "admin-react-style",
         WPM_BUILD_URL . "admin.css",

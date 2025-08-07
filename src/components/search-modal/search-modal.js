@@ -513,35 +513,19 @@ const ObjectEmbedPanel = (props) => {
 			</PanelRow>
 		</PanelBody>
 	);
-}
-
-  return (
-    <PanelBody title="Object" initialOpen={initialOpen}>
-      <PanelRow>{objectDescription}</PanelRow>
-      <PanelRow>
-        <SearchButton returnCallback={onSearchModalReturn}>
-          {objectID ? "Replace" : "Search"}
-        </SearchButton>
-      </PanelRow>
-    </PanelBody>
-  );
 };
 
-    let collectionDescription;
-    if ( collectionID === null ) {
-        collectionDescription = (
-            <div>
-                Click 'Search' to embed Collection.
-            </div>
-        );
-    } else {
-        collectionDescription = (
-            <div>
-                <div>{ title }</div>
-                <div><a href = { URL } target='_blank' rel='noopener noreferrer' aria-label={`View ${title} collection (opens in new tab)`}>View Collection</a></div>
-            </div>
-        );
-    }
+/**
+ * Panel to embed or replace existing collection.
+ */
+const CollectionEmbedPanel = (props) => {
+  const {
+    onSearchModalReturn,
+    title,
+    collectionID,
+    URL,
+    initialOpen,
+  } = props;
 
   let collectionDescription;
   if (collectionID === null) {
@@ -551,7 +535,7 @@ const ObjectEmbedPanel = (props) => {
       <div>
         <div>{title}</div>
         <div>
-          <a href={URL} target="_blank">
+          <a href={URL} target="_blank" rel="noopener noreferrer" aria-label={`View ${title} collection (opens in new tab)`}>
             View Collection
           </a>
         </div>
