@@ -11,12 +11,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing
 - `lando phpunit` - Run PHPUnit tests (requires WordPress test environment)
-- `lando playwright-html` - Run Playwright end-to-end tests for testing blocks, frontend 
+- `lando phpunit-debug` - Run PHPUnit with xdebug enabled
+- `lando test` - Reset test environment and run PHPUnit tests
+- `lando test-reset` - Reset test WordPress to clean state
+- `lando playwright` - Run Playwright end-to-end tests (includes automatic reset)
+- `lando npm run test:e2e` - Alternative Playwright test command
+- `lando npm run test:e2e:ui` - Run Playwright with interactive UI
+- `lando npm run test:e2e:debug` - Debug Playwright tests
+- `lando npm run test:e2e:headed` - Run Playwright with visible browser
 
 ### Code Quality
 - `vendor/bin/phpcs` - Run PHP CodeSniffer with WordPress coding standards
 - `vendor/bin/phpcs --standard=phpcs.xml.dist` - Full linting with custom rules
 - PHP 8.2+ compatibility enforced via phpcs.xml.dist
+
+### WordPress CLI
+- `lando wp` - Run WP-CLI commands
+- `lando wpd` - Run WP-CLI with xdebug enabled
+- `lando wp-install` - Install WordPress (admin/admin credentials)
 
 ## Plugin Architecture Overview
 
@@ -25,9 +37,10 @@ This is a WordPress plugin called "Museum for WordPress" that manages museum obj
 
 **Main Plugin File**: `wp-museum.php` (namespace: `MikeThicke\WPMuseum`)
 - Entry point with constants and autoloading
-- New php fils need to be explicity required in wp-museum.php
+- New PHP files need to be explicitly required in wp-museum.php
 - DEV_BUILD constant controls development vs production structure
-- Version 0.6.70 with WordPress 6.2+ requirement
+- Version 0.6.73 with WordPress 6.2+ requirement
+- PHP 8.4 compatibility in development environment
 
 ### Key Directories
 - **`src/`** - Core plugin code organized by function
@@ -77,9 +90,13 @@ Comprehensive REST API with controllers for:
 
 ### Testing Environment
 - **Playwright tests**: Use utilities in `tests/playwright/utils.js`
-- **Test site**: https://wp-test.lndo.site
+- **Test site**: https://wp-test.lndo.site (credentials: admin/admin)
 - **Helper functions**: Object creation, plugin activation, admin login
 - **PHPUnit**: WordPress test framework integration
+- **Available test specs**: 
+  - CSV export, HTML entities handling
+  - Basic search block, museum object kinds
+  - WordPress and plugin basic functionality
 
 ## Development Patterns
 
@@ -117,3 +134,5 @@ Webpack build process with:
 ### Testing
 - Playwright tests require WordPress test environment
 - Tests use comprehensive utilities for object/collection creation
+- Use `lando playwright` for automatic test environment reset before tests
+- Test environment runs on separate database (wptest) and server instance
