@@ -463,11 +463,13 @@ class ObjectKind
             $this->update_type_name();
         }
 
-        if (is_null($saved_kind)) {
+        wp_cache_delete("get_mobject_kinds", CACHE_GROUP);
+        if ($saved_kind === null) {
             $insert_array = $this->to_array();
             unset($insert_array["kind_id"]);
             return $wpdb->insert($table_name, $insert_array);
         } else {
+            wp_cache_delete("get_kind_" . $saved_kind->kind_id, CACHE_GROUP);
             return $wpdb->update($table_name, $this->to_array(), [
                 "kind_id" => $this->kind_id,
             ]);
@@ -482,7 +484,7 @@ class ObjectKind
         global $wpdb;
         $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
 
-        if (is_null($this->kind_id) || 0 > $this->kind_id) {
+        if ($this->kind_id === null || 0 > $this->kind_id) {
             return false;
         }
 
@@ -710,5 +712,14 @@ class ObjectKind
         }
 
         return $instance;
+    }
+
+    public function is_valid(): bool
+    {
+        if (!$this->label) {
+            return false;
+        }
+
+        return true;
     }
 }

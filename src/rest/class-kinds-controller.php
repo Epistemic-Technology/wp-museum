@@ -219,6 +219,18 @@ class Kinds_Controller extends \WP_REST_Controller
         if ($updated_kinds) {
             foreach ($updated_kinds as $kind_data) {
                 $kind = new ObjectKind($kind_data);
+                if (!$kind || !$kind->is_valid()) {
+                    return new \WP_Error(
+                        "rest_invalid_kind",
+                        __("Invalid object kind data."),
+                        [
+                            "status" => 400,
+                            "data" => [
+                                "kind" => $kind_data,
+                            ],
+                        ]
+                    );
+                }
                 if (isset($kind_data->delete) && true === $kind_data->delete) {
                     $kind->delete_from_db();
                 } elseif (false === $kind->save_to_db()) {

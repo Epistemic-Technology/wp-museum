@@ -1,5 +1,5 @@
 import apiFetch from "@wordpress/api-fetch";
-import { useState, useEffect, useCallback } from "@wordpress/element";
+import { useState, useEffect, useCallback, useRef } from "@wordpress/element";
 import { Button } from "@wordpress/components";
 
 import Edit from "./edit";
@@ -168,6 +168,70 @@ const ObjectAdminControl = () => {
     }
   };
 
+  const importKind = async (file) => {
+    try {
+      const text = await file.text();
+      const importedData = JSON.parse(text);
+
+      // Extract kind data and fields
+      const { fields, ...kindData } = importedData;
+
+      // Reset IDs for the new kind
+      kindData.kind_id = 0 - newKindCount;
+      kindData.cat_field_id = null;
+
+      // Add the new kind to the list
+      const newObjectKinds = objectKinds.concat([kindData]);
+      setObjectKinds(newObjectKinds);
+
+      // Save the kind first
+      await saveKindData();
+
+      // After save, the kind will have a real ID
+      // We need to refresh and then add fields
+      await refreshKindData();
+
+      // Import fields if present
+      if (fields && fields.length > 0) {
+        // Wait for the new kind to be created
+        setTimeout(async () => {
+          const updatedKinds = await apiFetch({
+            path: `${baseRestPath}/mobject_kinds`,
+          });
+          const newKind = updatedKinds.find(
+            (k) => k.type_name === kindData.type_name,
+          );
+
+          if (newKind && fields) {
+            // Update field kind_ids to match the new kind
+            const updatedFields = fields.map((field) => ({
+              ...field,
+              field_id: null, // Reset field ID
+              kind_id: newKind.kind_id,
+            }));
+
+            // Save fields
+            await apiFetch({
+              path: `${baseRestPath}/${newKind.type_name}/fields`,
+              method: "POST",
+              data: updatedFields,
+            });
+          }
+
+          // Refresh to show the imported kind
+          refreshKindData();
+        }, 1000);
+      }
+
+      updateNewKindCount(newKindCount + 1);
+      return true;
+    } catch (error) {
+      console.error("Error importing kind:", error);
+      alert("Failed to import kind. Please check the file format.");
+      return false;
+    }
+  };
+
   const defaultKind = {
     kind_id: 0 - newKindCount,
     cat_field_id: null,
@@ -275,6 +339,7 @@ const ObjectAdminControl = () => {
           newKind={newKind}
           deleteKind={deleteKind}
           exportKind={exportKind}
+          importKind={importKind}
           handleKindDoubleClick={handleKindDoubleClick}
         />
       );
@@ -301,21 +366,36 @@ const Main = (props) => {
     newKind,
     deleteKind,
     exportKind,
+    importKind,
     handleKindDoubleClick,
   } = props;
+  const fileInputRef = useRef(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      importKind(file);
+      // Reset the input so the same file can be selected again
+      event.target.value = "";
+    }
+  };
 
   const handleExportCSV = (kindItem) => {
     const nonce = window.wpmAdminData?.csvExportNonce;
     if (!nonce) {
-      console.error('CSV export nonce not available');
+      console.error("CSV export nonce not available");
       return;
     }
-    
+
     const url = new URL(window.location.origin + window.location.pathname);
-    url.searchParams.set('wpm_ot_csv', kindItem.kind_id);
-    url.searchParams.set('wpm-objects-admin-nonce', nonce);
-    url.searchParams.set('sort_col', 'post_title');
-    url.searchParams.set('sort_dir', 'asc');
+    url.searchParams.set("wpm_ot_csv", kindItem.kind_id);
+    url.searchParams.set("wpm-objects-admin-nonce", nonce);
+    url.searchParams.set("sort_col", "post_title");
+    url.searchParams.set("sort_dir", "asc");
     window.location.href = url.toString();
   };
 
@@ -372,6 +452,16 @@ const Main = (props) => {
           <Button onClick={newKind} isLarge isPrimary>
             Add New Object Type
           </Button>
+          <Button onClick={handleImportClick} isLarge isSecondary>
+            Import Object Type
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: "none" }}
+            onChange={handleFileSelect}
+          />
         </div>
       </div>
     );
