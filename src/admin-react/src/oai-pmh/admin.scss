@@ -1,0 +1,160 @@
+// OAI-PMH specific styles
+// Common styles are in parent admin.scss
+
+.oai-pmh-admin {
+  // Kind selector dropdown
+  .kind-selector {
+    margin-bottom: 30px;
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    select {
+      width: 300px;
+      max-width: 100%;
+    }
+  }
+
+  // Dublin Core mappings section
+  .dc-mappings-section {
+    border-top: 1px solid #eee;
+    padding-top: 30px;
+  }
+
+  // Mapping status indicator
+  .mapping-status {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+
+    .mapping-count {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .mapping-progress {
+      color: #666;
+    }
+  }
+
+  // Dublin Core fields list
+  .dc-fields-list {
+    margin-bottom: 30px;
+  }
+
+  // Field mapping cards
+  .dc-field-mapping {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background: #fbfbfb;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: #d0d0d0;
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+  }
+
+  // Dublin Core field information
+  .dc-field-info {
+    padding-right: 20px;
+
+    @media (max-width: 768px) {
+      padding-right: 0;
+    }
+  }
+
+  .dc-field-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-size: 15px;
+  }
+
+  .dc-field-description {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  // Mapping controls grid
+  .mapping-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+  }
+
+  // Field dropdown and static value inputs
+  .field-dropdown,
+  .static-value {
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #34495e;
+    }
+
+    select,
+    input {
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+      }
+    }
+  }
+
+  // Identifier prefix section
+  .identifier-prefix {
+    grid-column: 1 / -1;
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #34495e;
+    }
+
+    input {
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+      }
+    }
+  }
+
+  .prefix-description {
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+  }
+}

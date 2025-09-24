@@ -307,7 +307,7 @@ function collection_redirect()
     }
 
     // Check if the option to override taxonomy archives is enabled
-    if (!get_option(WPM_PREFIX . "collection_override_taxonomy", false)) {
+    if (!get_option("collection_override_taxonomy", false)) {
         return;
     }
 

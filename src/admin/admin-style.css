@@ -1,131 +1,238 @@
 #wpm-edit-object {
-    font-size: 1.2em;
-    width: 100%;
+  font-size: 1.2em;
+  width: 100%;
 }
 
 #wpm-edit-object th,
 #wpm-edit-object td {
-    padding: 5px;
+  padding: 5px;
 }
 
 #wpm-edit-object th {
-    width: 10em;
-    text-align: left;
-    vertical-align: top;
+  width: 10em;
+  text-align: left;
+  vertical-align: top;
 }
 
-.wpm-object input[type=text] {
-    width: 100%;
-    padding: 5px;
+.wpm-object input[type="text"] {
+  width: 100%;
+  padding: 5px;
 }
 
 .wpm-object textarea {
-    width: 100%;
-    height: 10em;
-    padding: 5px;
+  width: 100%;
+  height: 10em;
+  padding: 5px;
 }
 
 #wpm-object-fields-table textarea {
-    height: 5em;
+  height: 5em;
 }
 
 .wpm-object select {
-    width: 100%;
+  width: 100%;
 }
 
 #wpm-field-edit select {
-    width: auto;
+  width: auto;
 }
 
 .empty-table-notification {
-    background-color: rgb(229, 229, 229);
-    font-style: italic;
-    padding: 10px;
+  background-color: rgb(229, 229, 229);
+  font-style: italic;
+  padding: 10px;
 }
 
 .wpm-admin-bottom-buttons {
-    margin: 5px;
+  margin: 5px;
 }
 
 #wpm-object-top-buttons {
-    margin: 5px;
-    float: right;
+  margin: 5px;
+  float: right;
 }
 
 td.wpm-object-field-label {
-    width: 10em;
-    word-wrap: normal;
+  width: 10em;
+  word-wrap: normal;
 }
 
 .wpm-object-field-label label {
-    width: auto;
+  width: auto;
 }
 
 tr.wpm-object-help-text td {
-    background-color: #C9FFB8;
+  background-color: #c9ffb8;
 }
 
 tr.wpm-quick-row-draft td {
-    background-color: #F8FFB8;
+  background-color: #f8ffb8;
 }
 
 tr.wpm-quick-row-pending td {
-    background-color: #B8FFBE;
+  background-color: #b8ffbe;
 }
 
 a.clickable {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #image-backup-status {
-    background: #fff;
-    border-left: 4px solid #ffb900;
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
-    margin: 5px 15px 2px;
-    padding: 1px 12px;
-    display: none;
+  background: #fff;
+  border-left: 4px solid #ffb900;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+  margin: 5px 15px 2px;
+  padding: 1px 12px;
+  display: none;
 }
 
 #image-backup-status p {
-    margin: 0.5em 0;
-    padding: 2px;
+  margin: 0.5em 0;
+  padding: 2px;
 }
-
 
 /*
  * Image gallery on object pages.
  */
 
 div.inline-image-box {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 a.wpm-image-delete {
-    position: absolute;
-    left: 140px;
-    top: 30px;
-    font-size: 1.5em;
-    cursor: pointer;
+  position: absolute;
+  left: 140px;
+  top: 30px;
+  font-size: 1.5em;
+  cursor: pointer;
 }
 
 a.wpm-image-moveup {
-    position: absolute;
-    left: 20px;
-    top: 30px;
-    font-size: 1.5em;
-    cursor: pointer;
+  position: absolute;
+  left: 20px;
+  top: 30px;
+  font-size: 1.5em;
+  cursor: pointer;
 }
 
 a.wpm-image-movedown {
-    position: absolute;
-    left: 35px;
-    top: 30px;
-    font-size: 1.5em;
-    cursor: pointer;
+  position: absolute;
+  left: 35px;
+  top: 30px;
+  font-size: 1.5em;
+  cursor: pointer;
 }
 
 div#object-image-box img {
-    margin: 20px 10px 20px 10px;
-    border: 10px solid #F1F1F1;
+  margin: 20px 10px 20px 10px;
+  border: 10px solid #f1f1f1;
+}
+
+/*
+ * General Admin Settings Page
+ */
+
+.museum-admin-general {
+  max-width: 1200px;
+  margin: 20px 20px 20px 0;
+}
+
+.museum-admin-general .admin-header {
+  margin-bottom: 30px;
+}
+
+.museum-admin-general .admin-header h1 {
+  font-size: 2em;
+  font-weight: 300;
+  margin-bottom: 10px;
+  color: #23282d;
+}
+
+.museum-admin-general .admin-header p {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.museum-admin-general .config-panel {
+  background: #fff;
+  border: 1px solid #ccd0d4;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.museum-admin-general .options-section {
+  padding: 20px;
+}
+
+.museum-admin-general .section-header {
+  border-bottom: 1px solid #e2e4e7;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.museum-admin-general .section-header h2 {
+  font-size: 1.3em;
+  font-weight: 400;
+  margin: 0 0 8px 0;
+  color: #23282d;
+}
+
+.museum-admin-general .section-header p {
+  font-size: 13px;
+  color: #646970;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.museum-admin-general .options-list {
+  margin-bottom: 30px;
+}
+
+.museum-admin-general .option-item {
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #f6f7f7;
+  border: 1px solid #dcdcde;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.museum-admin-general .option-item:hover {
+  background: #fff;
+  border-color: #8c8f94;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.museum-admin-general .option-item:last-child {
+  margin-bottom: 0;
+}
+
+.museum-admin-general .option-item .components-checkbox-control__label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #1e1e1e;
+}
+
+.museum-admin-general .option-item .components-checkbox-control__help {
+  margin-top: 5px;
+  margin-left: 24px;
+  font-size: 13px;
+  color: #646970;
+  line-height: 1.5;
+}
+
+.museum-admin-general .action-buttons {
+  padding-top: 20px;
+  border-top: 1px solid #e2e4e7;
+  display: flex;
+  gap: 10px;
+}
+
+.museum-admin-general .action-buttons .components-button {
+  font-size: 14px;
+  padding: 6px 16px;
+  height: auto;
+  min-height: 36px;
 }

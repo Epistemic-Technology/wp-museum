@@ -1,42 +1,351 @@
-@import './objects/admin.scss';
-@import './remote/admin.scss';
+// Component-specific styles
+@import "./objects/admin.scss";
+@import "./remote/admin.scss";
+@import "./oai-pmh/admin.scss";
+@import "./general/admin.scss";
+
+// =============================================
+// Common Museum Admin Styles
+// =============================================
+
+// Base container for all admin pages
+.museum-admin-main,
+.museum-admin-general,
+.oai-pmh-admin {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+// Common header styles
+.admin-header {
+  margin-bottom: 30px;
+
+  h1 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.3;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+
+    strong {
+      color: #0073aa;
+      font-weight: 600;
+    }
+  }
+}
+
+// Configuration panels
+.config-panel {
+  background: #fff;
+  border: 1px solid #ccd0d4;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+// Section headers
+.section-header {
+  margin-bottom: 25px;
+
+  h2 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+}
+
+// Common form controls
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #8c8f94;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+  }
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+  }
+}
+
+// Checkbox labels
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  color: #1d2327;
+
+  input[type="checkbox"] {
+    margin: 0 8px 0 0;
+    flex-shrink: 0;
+  }
+
+  .label-text {
+    font-weight: 500;
+    color: #1d2327;
+  }
+}
+
+// Common button styles
+.action-buttons,
+.main-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 25px;
+  border-top: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.components-button,
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  color: #2c3e50;
+
+  &.is-primary,
+  &.button-primary {
+    background: #0073aa;
+    color: white;
+    border-color: #0073aa;
+
+    &:hover:not(:disabled) {
+      background: #005a87;
+      border-color: #004a6b;
+    }
+
+    &:focus:not(:disabled) {
+      box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.3);
+    }
+  }
+
+  &.is-secondary {
+    background: #f7f7f7;
+    border: 1px solid #ccc;
+    color: #2c3e50;
+
+    &:hover:not(:disabled) {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+  }
+
+  &.is-large {
+    padding: 12px 24px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: #f0f0f0;
+    border-color: #999;
+  }
+
+  &:focus:not(:disabled) {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Notice styles (success/error)
+.success-notice {
+  background: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+
+  p {
+    margin: 0;
+    color: #2e7d32;
+    font-weight: 500;
+  }
+}
+
+.error-notice {
+  background: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+
+  p {
+    margin: 0;
+    color: #c62828;
+    font-weight: 500;
+  }
+}
+
+// Loading states
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+// List items with actions
+.kind-item,
+.option-item {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  background: #fbfbfb;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover {
+    border-color: #d0d0d0;
+    background: #f8f8f8;
+  }
+}
+
+// Item labels
+.kind-label {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1d2327;
+  margin-bottom: 12px;
+}
+
+// Action button groups
+.object-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .components-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
 
 // Breadcrumb navigation styles
 .wpm-breadcrumbs {
-	margin-bottom: 1em;
-	font-size: 14px;
+  margin-bottom: 1em;
+  font-size: 14px;
 
-	.breadcrumb-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.5em;
-	}
+  .breadcrumb-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
 
-	.breadcrumb-item {
-		display: flex;
-		align-items: center;
-		gap: 0.5em;
-	}
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
 
-	.breadcrumb-link {
-		text-decoration: none;
-		color: #0073aa;
+  .breadcrumb-link {
+    text-decoration: none;
+    color: #0073aa;
 
-		&:hover {
-			text-decoration: underline;
-		}
-	}
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 
-	.breadcrumb-current {
-		color: #666;
-		font-weight: 500;
-	}
+  .breadcrumb-current {
+    color: #666;
+    font-weight: 500;
+  }
 
-	.breadcrumb-separator {
-		color: #666;
-		margin: 0 0.25em;
-	}
+  .breadcrumb-separator {
+    color: #666;
+    margin: 0 0.25em;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .museum-admin-main,
+  .museum-admin-general,
+  .oai-pmh-admin {
+    padding: 15px;
+  }
+
+  .config-panel {
+    padding: 15px;
+  }
+
+  .kind-item,
+  .option-item {
+    padding: 15px;
+  }
+
+  .action-buttons,
+  .main-actions {
+    flex-direction: column;
+
+    .components-button,
+    .button {
+      width: 100%;
+    }
+  }
 }

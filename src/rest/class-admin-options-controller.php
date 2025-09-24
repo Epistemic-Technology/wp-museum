@@ -185,6 +185,11 @@ class Admin_Options_Controller extends \WP_REST_Controller {
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
+				'collection_override_taxonomy' => [
+					'description' => __( 'Whether to redirect collection taxonomy archive pages to collection posts.' ),
+					'type'        => 'boolean',
+					'context'     => [ 'view', 'edit' ],
+				],
 			],
 		];
 

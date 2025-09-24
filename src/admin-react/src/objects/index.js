@@ -439,8 +439,8 @@ const Main = (props) => {
 
     return (
       <div className="museum-admin-main">
-        <h1>Museum Administration</h1>
-        <div className="help-text">
+        <div className="admin-header">
+          <h1>Museum Administration</h1>
           <p>
             Manage your museum object types and their fields.{" "}
             <strong>Tip:</strong> Double-click any object type to edit it
