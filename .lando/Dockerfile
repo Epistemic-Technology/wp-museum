@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 RUN apk add --update nodejs npm bash git subversion apache2
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
