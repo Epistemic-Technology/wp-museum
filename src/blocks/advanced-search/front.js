@@ -39,7 +39,7 @@ const AdvancedSearchFront = (props) => {
     showCollections,
     showTags,
     showFields,
-    resultsPerPage,
+    gridRows,
     columns,
   } = attributes;
 
@@ -92,7 +92,7 @@ const AdvancedSearchFront = (props) => {
         searchParams[flag] = true;
       }
     }
-    searchParams.posts_per_page = resultsPerPage;
+    searchParams.per_page = gridRows * columns;
     setCurrentSearchParams(searchParams);
     apiFetch({
       path: `${baseRestPath}/search`,

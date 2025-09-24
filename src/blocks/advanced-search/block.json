@@ -1,65 +1,65 @@
 {
-    "$schema": "https://schemas.wp.org/trunk/block.json",
-	"apiVersion": 2,
-    "name": "wp-museum/advanced-search",
-    "title": "Advanced Search",
-    "description": "A block that allows users to search for objects in the collection.",
-    "category": "wp-museum",
-    "icon": "museum",
-    "supports": {
-        "align": true,
-        "html": false
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 2,
+  "name": "wp-museum/advanced-search",
+  "title": "Advanced Search",
+  "description": "A block that allows users to search for objects in the collection.",
+  "category": "wp-museum",
+  "icon": "museum",
+  "supports": {
+    "align": true,
+    "html": false
+  },
+  "textdomain": "wp-museum",
+  "editorScript": "file:index.js",
+  "editorStyle": "file:./editor.css",
+  "viewScript": "file:front.js",
+  "viewStyle": "file:front.css",
+  "render": "file:render.php",
+  "attributes": {
+    "defaultSearch": {
+      "type": "string",
+      "default": ""
     },
-    "textdomain": "wp-museum",
-    "editorScript": "file:index.js",
-    "editorStyle": "file:./editor.css",
-    "viewScript": "file:front.js",
-    "viewStyle": "file:front.css",
-    "render": "file:render.php",
-    "attributes": {
-        "defaultSearch": {
-            "type": "string",
-            "default": ""
-        },
-        "fixSearch": {
-            "type": "boolean",
-            "default": false
-        },
-        "runOnLoad": {
-            "type": "boolean",
-            "default": false
-        },
-        "showObjectType": {
-            "type": "boolean",
-            "default": true
-        },
-        "showTitleToggle": {
-            "type": "boolean",
-            "default": true
-        },
-        "showFlags": {
-            "type": "boolean",
-            "default": true
-        },
-        "showCollections": {
-            "type": "boolean",
-            "default": true
-        },
-        "showTags": {
-            "type": "boolean",
-            "default": true
-        },
-        "showFields": {
-            "type": "boolean",
-            "default": true
-        },
-        "resultsPerPage": {
-            "type": "number",
-            "default": 20
-        },
-        "columns": {
-            "type": "number",
-            "default": 4
-        }
+    "fixSearch": {
+      "type": "boolean",
+      "default": false
+    },
+    "runOnLoad": {
+      "type": "boolean",
+      "default": false
+    },
+    "showObjectType": {
+      "type": "boolean",
+      "default": true
+    },
+    "showTitleToggle": {
+      "type": "boolean",
+      "default": true
+    },
+    "showFlags": {
+      "type": "boolean",
+      "default": true
+    },
+    "showCollections": {
+      "type": "boolean",
+      "default": true
+    },
+    "showTags": {
+      "type": "boolean",
+      "default": true
+    },
+    "showFields": {
+      "type": "boolean",
+      "default": true
+    },
+    "gridRows": {
+      "type": "number",
+      "default": 5
+    },
+    "columns": {
+      "type": "number",
+      "default": 4
     }
+  }
 }
