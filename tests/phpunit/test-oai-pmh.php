@@ -387,6 +387,196 @@ class OAIPMHTest extends WP_Museum_Test_Case
     }
 
     /**
+     * Test include_oai_pmh postmeta registration.
+     */
+    public function test_register_oai_pmh_meta()
+    {
+        // Call the registration function
+        \MikeThicke\WPMuseum\register_oai_pmh_meta();
+
+        // Check if meta is registered for our test post types
+        $registered_meta = get_registered_meta_keys('post', 'wpm_instrument');
+        
+        $this->assertArrayHasKey('include_oai_pmh', $registered_meta);
+        $this->assertEquals('boolean', $registered_meta['include_oai_pmh']['type']);
+        $this->assertTrue($registered_meta['include_oai_pmh']['single']);
+        $this->assertTrue($registered_meta['include_oai_pmh']['default']);
+    }
+
+    /**
+     * Test include_oai_pmh default behavior (true when not set).
+     */
+    public function test_include_oai_pmh_default_true()
+    {
+        $post = $this->test_data["telescope"];
+        $post->post_type = "wpm_instrument";
+
+        // Ensure meta is not set
+        delete_post_meta($post->ID, 'include_oai_pmh');
+
+        // Get identifier should work (post included by default)
+        $identifier = \MikeThicke\WPMuseum\get_oai_identifier($post);
+
+        // Try to get post by identifier
+        if ($identifier) {
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNotNull($found_post);
+            $this->assertEquals($post->ID, $found_post->ID);
+        }
+    }
+
+    /**
+     * Test exclude from OAI-PMH when include_oai_pmh is false.
+     */
+    public function test_exclude_from_oai_pmh()
+    {
+        $post = $this->test_data["telescope"];
+        $post->post_type = "wpm_instrument";
+
+        // Set include_oai_pmh to false
+        update_post_meta($post->ID, 'include_oai_pmh', false);
+
+        // Get identifier still works
+        $identifier = \MikeThicke\WPMuseum\get_oai_identifier($post);
+
+        // But getting post by identifier should return null
+        if ($identifier) {
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNull($found_post);
+        }
+    }
+
+    /**
+     * Test toggle include_oai_pmh from false to true.
+     */
+    public function test_toggle_include_oai_pmh()
+    {
+        $post = $this->test_data["telescope"];
+        $post->post_type = "wpm_instrument";
+
+        // Start with excluded
+        update_post_meta($post->ID, 'include_oai_pmh', false);
+
+        $identifier = \MikeThicke\WPMuseum\get_oai_identifier($post);
+
+        if ($identifier) {
+            // Should not be found
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNull($found_post);
+
+            // Toggle to included
+            update_post_meta($post->ID, 'include_oai_pmh', true);
+
+            // Now should be found
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNotNull($found_post);
+            $this->assertEquals($post->ID, $found_post->ID);
+        }
+    }
+
+    /**
+     * Test get_oai_posts respects include_oai_pmh meta.
+     */
+    public function test_get_oai_posts_respects_include_meta()
+    {
+        // Set one post to be excluded
+        $telescope = $this->test_data["telescope"];
+        update_post_meta($telescope->ID, 'include_oai_pmh', false);
+
+        // Set another to be included
+        $microscope = $this->test_data["microscope"];
+        update_post_meta($microscope->ID, 'include_oai_pmh', true);
+
+        // Get all OAI posts
+        $posts = \MikeThicke\WPMuseum\get_oai_posts([]);
+
+        // Get post IDs for easier assertion
+        $post_ids = array_map(function($post) {
+            return $post->ID;
+        }, $posts);
+
+        // Telescope should not be in results
+        $this->assertNotContains($telescope->ID, $post_ids);
+        
+        // Microscope should be in results (if it has mappings)
+        $kind = \MikeThicke\WPMuseum\kind_from_type($microscope->post_type);
+        if ($kind && $kind->has_oai_pmh_mappings()) {
+            $this->assertContains($microscope->ID, $post_ids);
+        }
+    }
+
+    /**
+     * Test get_oai_posts with no explicitly excluded posts.
+     */
+    public function test_get_oai_posts_default_inclusion()
+    {
+        // Don't set include_oai_pmh meta on any posts
+        $telescope = $this->test_data["telescope"];
+        $microscope = $this->test_data["microscope"];
+        
+        delete_post_meta($telescope->ID, 'include_oai_pmh');
+        delete_post_meta($microscope->ID, 'include_oai_pmh');
+
+        // Get all OAI posts
+        $posts = \MikeThicke\WPMuseum\get_oai_posts([]);
+
+        // Both should be included if they have mappings
+        $post_ids = array_map(function($post) {
+            return $post->ID;
+        }, $posts);
+
+        $telescope_kind = \MikeThicke\WPMuseum\kind_from_type($telescope->post_type);
+        if ($telescope_kind && $telescope_kind->has_oai_pmh_mappings()) {
+            $this->assertContains($telescope->ID, $post_ids);
+        }
+
+        $microscope_kind = \MikeThicke\WPMuseum\kind_from_type($microscope->post_type);
+        if ($microscope_kind && $microscope_kind->has_oai_pmh_mappings()) {
+            $this->assertContains($microscope->ID, $post_ids);
+        }
+    }
+
+    /**
+     * Test various false values for include_oai_pmh meta.
+     */
+    public function test_include_oai_pmh_false_values()
+    {
+        $post = $this->test_data["telescope"];
+        $post->post_type = "wpm_instrument";
+
+        $identifier = \MikeThicke\WPMuseum\get_oai_identifier($post);
+
+        if ($identifier) {
+            // Test with boolean false
+            update_post_meta($post->ID, 'include_oai_pmh', false);
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNull($found_post);
+
+            // Test with string '0'
+            update_post_meta($post->ID, 'include_oai_pmh', '0');
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNull($found_post);
+
+            // Test with integer 0
+            update_post_meta($post->ID, 'include_oai_pmh', 0);
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNull($found_post);
+
+            // Test with true value (should be found)
+            update_post_meta($post->ID, 'include_oai_pmh', true);
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNotNull($found_post);
+            $this->assertEquals($post->ID, $found_post->ID);
+
+            // Test with string '1' (should be found)
+            update_post_meta($post->ID, 'include_oai_pmh', '1');
+            $found_post = \MikeThicke\WPMuseum\get_post_by_oai_identifier($identifier);
+            $this->assertNotNull($found_post);
+            $this->assertEquals($post->ID, $found_post->ID);
+        }
+    }
+
+    /**
      * Clean up after tests.
      */
     public function tearDown(): void

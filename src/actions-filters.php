@@ -102,25 +102,33 @@ add_action(
 add_action("widgets_init", __NAMESPACE__ . '\register_collection_tree_widget');
 
 /**
+ * Register OAI-PMH meta fields.
+ * Priority 2 ensures this runs after object post types are created (priority 1).
+ *
+ * @see oai-pmh.php::register_oai_pmh_meta()
+ */
+add_action("init", __NAMESPACE__ . "\\register_oai_pmh_meta", 2);
+
+/**
  * Add OAI-PMH rewrite rules.
  *
  * @see oai-pmh.php::add_oai_pmh_rewrite_rules()
  */
-add_action("init", __NAMESPACE__ . "\add_oai_pmh_rewrite_rules");
+add_action("init", __NAMESPACE__ . "\\add_oai_pmh_rewrite_rules");
 
 /**
  * Add OAI-PMH query vars.
  *
  * @see oai-pmh.php::add_oai_pmh_query_vars()
  */
-add_filter("query_vars", __NAMESPACE__ . "\add_oai_pmh_query_vars");
+add_filter("query_vars", __NAMESPACE__ . "\\add_oai_pmh_query_vars");
 
 /**
  * Handle OAI-PMH requests.
  *
  * @see oai-pmh.php::handle_oai_pmh_request()
  */
-add_action("template_redirect", __NAMESPACE__ . "\handle_oai_pmh_request");
+add_action("template_redirect", __NAMESPACE__ . "\\handle_oai_pmh_request");
 
 /*****************************************************************************
  *

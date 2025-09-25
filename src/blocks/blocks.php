@@ -214,6 +214,18 @@ function enqueue_block_editor_assets()
         [],
         filemtime(WPM_BUILD_DIR . "museum-block-editor.css")
     );
+
+    $post_type = calculate_post_type_in_editor();
+    if ( $post_type && in_array($post_type, get_object_type_names() )) {
+        $asset_file = include WPM_BUILD_DIR . "museum-oai-pmh-toggle.asset.php";
+        wp_enqueue_script(
+            WPM_PREFIX . "oai-pmh-toggle",
+            WPM_BUILD_URL . "museum-oai-pmh-toggle.js",
+            $asset_file["dependencies"],
+            $asset_file["version"],
+            true
+        );
+    }
 }
 add_action(
     "enqueue_block_assets",

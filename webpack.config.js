@@ -31,6 +31,9 @@ module.exports = {
     "museum-block-editor": {
       import: "./src/blocks/editor.scss",
     },
+    "museum-oai-pmh-toggle": {
+      import: "./src/javascript/oai-pmh-toggle.tsx",
+    },
   },
   plugins: [...defaultConfig.plugins, new RemoveEmptyScriptsPlugin()],
 };

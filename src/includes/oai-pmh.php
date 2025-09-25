@@ -9,6 +9,35 @@
 
 namespace MikeThicke\WPMuseum;
 
+/**
+ * Register the include_oai_pmh meta field for museum objects.
+ */
+function register_oai_pmh_meta() {
+    $object_post_types = get_object_type_names();
+
+    foreach ($object_post_types as $post_type) {
+        register_post_meta(
+            $post_type,
+            'include_oai_pmh',
+            [
+                'type'          => 'boolean',
+                'description'   => 'Include in OAI-PMH feed',
+                'single'        => true,
+                'default'       => true,
+                'show_in_rest'  => [
+                    'schema' => [
+                        'type'    => 'boolean',
+                        'default' => true,
+                    ]
+                ],
+                'auth_callback' => function() {
+                    return current_user_can('edit_posts');
+                }
+            ]
+        );
+    }
+}
+
 function add_oai_pmh_rewrite_rules()
 {
     add_rewrite_rule("^oai-pmh/?", "index.php?oai_pmh=1", "top");
@@ -622,6 +651,19 @@ function get_oai_posts($args)
         "posts_per_page" => -1,
         "orderby" => "modified",
         "order" => "ASC",
+        "meta_query" => [
+            "relation" => "OR",
+            [
+                "key" => "include_oai_pmh",
+                "value" => true,
+                "type" => "BOOLEAN",
+                "compare" => "="
+            ],
+            [
+                "key" => "include_oai_pmh",
+                "compare" => "NOT EXISTS"
+            ]
+        ]
     ];
 
     // Handle date range filtering
@@ -738,10 +780,38 @@ function get_post_by_oai_identifier($identifier)
             }
         }
 
-        // Try to get the object post using the search identifier
-        $post = get_object_post_from_id($kind, $search_identifier);
+        if ($mappings->identifier['field'] === 'wp_post_id') {
+            $post = get_post(intval($search_identifier));
+        }
+        else {
+            $args = [
+                'post_type' => $kind->type_name,
+                'post_status' => 'publish',
+                'meta_key' => $mappings->identifier['field'],
+                'meta_value' => $search_identifier,
+                'meta_compare' => '='
+            ];
+            $posts = get_posts($args);
+            if (count($posts) === 0) {
+                return new \WP_Error('oai_pmh_no_post', __('No post found for identifier', 'wp-museum'));
+            }
+            if (count($posts) > 1 ) {
+                return new \WP_Error('oai_pmh_multiple_posts', __('Multiple posts found for identifier', 'wp-museum'));
+            } else {
+                $post = $posts[0];
+            }
+        }
 
         if ($post) {
+            // Check if the post is set to be included in OAI-PMH
+            // Default to true if meta doesn't exist
+            $include_oai_pmh = get_post_meta($post->ID, 'include_oai_pmh', true);
+            // Handle various false values: '0', 0, false, ''
+            // Note: empty string means the meta key doesn't exist, so default to true
+            if ( ! $include_oai_pmh ) {
+                // Post is explicitly excluded from OAI-PMH
+                return null;
+            }
             return $post;
         }
     }
