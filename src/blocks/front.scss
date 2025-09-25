@@ -1,42 +1,8 @@
-@import './advanced-search/style.scss';
-@import './collection/style.scss';
-@import './embedded-search/style.scss';
-@import './object-gallery/style.scss';
-@import './object-grid/style.scss';
-@import './object-image/style.scss';
-@import './object-infobox/style.scss';
-@import './object-meta/style.scss';
-
-// @see https://dev.to/xinnks/make-animated-content-placeholders-with-html-and-css-3ekn
-// parent element must have relative positioning
-.placeholder {
-	position: absolute;
-	height: 100%;
-	width: 100%;
-	background-color: #e8e8e8;
-	z-index: 44;
-	overflow: hidden;
-
-	&:after {
-		content: '';
-		display: block;
-		position: absolute;
-		left: -45%;
-		height: 100%;
-		width: 45%;
-		background-image: linear-gradient(to left, rgba(251,251,251, .05), rgba(251,251,251, .3), rgba(251,251,251, .6), rgba(251,251,251, .3), rgba(251,251,251, .05));
-    	background-image: -moz-linear-gradient(to left, rgba(251,251,251, .05), rgba(251,251,251, .3), rgba(251,251,251, .6), rgba(251,251,251, .3), rgba(251,251,251, .05));
-    	background-image: -webkit-linear-gradient(to left, rgba(251,251,251, .05), rgba(251,251,251, .3), rgba(251,251,251, .6), rgba(251,251,251, .3), rgba(251,251,251, .05));
-    	animation: loading 1s infinite;
-    	z-index: 45;		
-	}
-
-	@keyframes loading {
-		0%{
-			left: -45%;
-		}
-		100%{
-			left: 100%;
-		}
-	}
-}
+@use "./advanced-search/style.scss" as advanced-search;
+@use "./collection/style.scss" as collection;
+@use "./embedded-search/style.scss" as embedded-search;
+@use "./object-gallery/style.scss" as object-gallery;
+@use "./object-grid/style.scss" as object-grid;
+@use "./object-image/style.scss" as object-image;
+@use "./object-infobox/style.scss" as object-infobox;
+@use "./object-meta/style.scss" as object-meta;
