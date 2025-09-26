@@ -606,7 +606,7 @@ class OAIPMHOutputTest extends WP_Museum_Test_Case
         $output = ob_get_clean();
 
         $this->assertStringContainsString(
-            "The identifier does not exist",
+            "No post found for identifier",
             $output
         );
     }

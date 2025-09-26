@@ -31,7 +31,7 @@ function export_csv() {
 	$sort_col = isset( $_GET['sort_col'] ) ? sanitize_text_field( wp_unslash( $_GET['sort_col'] ) ) : 'post_title';
 	$sort_dir = isset( $_GET['sort_dir'] ) ? sanitize_text_field( wp_unslash( $_GET['sort_dir'] ) ) : 'asc';
 	$kind    = get_kind( $kind_id );
-	
+
 	if ( ! $kind ) {
 		wp_die( esc_html__( 'Invalid object kind.', 'wp-museum' ) );
 	}
@@ -58,7 +58,7 @@ function export_csv() {
 	if ( $sort_col === 'post_title' ) {
 		$col_index = 0; // Title is the first column
 	} elseif ( $sort_col === 'post_content' ) {
-		$col_index = 1; // Content is the second column  
+		$col_index = 1; // Content is the second column
 	} else {
 		// Find the column index for custom fields
 		$col_index = null;
@@ -69,7 +69,7 @@ function export_csv() {
 			}
 		}
 	}
-	
+
 	if ( $col_index !== null ) {
 		usort( $rows, function( $a, $b ) use ( $col_index, $sort_dir ) {
 			$result = strcmp( $a[$col_index], $b[$col_index] );
@@ -96,17 +96,17 @@ function export_csv() {
 	}
 
 	$file = fopen( 'php://output', 'w' );
-	fputcsv( $file, $header_row );
-	fputcsv( $file, $slug_row );
+	fputcsv( $file, $header_row, ',', '"', "\\" );
+	fputcsv( $file, $slug_row, ',', '"', "\\" );
 	foreach ( $rows as $row ) {
-		fputcsv( $file, $row );
+		fputcsv( $file, $row, ',', '"', "\\" );
 	}
 
 	// Allow tests to prevent exit
 	if ( defined( 'WP_TESTS_DOMAIN' ) || defined( 'WPM_TESTING' ) ) {
 		return;
 	}
-	
+
 	exit();
 }
 
@@ -191,8 +191,8 @@ function import_csv( $kind_id, $csvfile ) {
 		rewind( $handle );
 	}
 
-	$header_row = fgetcsv( $handle );
-	$slug_row   = fgetcsv( $handle );
+	$header_row = fgetcsv( $handle, 0, ',', '"', '\\' );
+	$slug_row   = fgetcsv( $handle, 0, ',', '"', '\\' );
 	$col_count  = count( $slug_row );
 	$rows       = [];
 
@@ -201,7 +201,7 @@ function import_csv( $kind_id, $csvfile ) {
 	}
 
 	//phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
-	while ( $data = fgetcsv( $handle ) ) {
+	while ( $data = fgetcsv( $handle, 0, ',', '"', '\\' ) ) {
 		$row       = [];
 		$cat_value = '';
 		for ( $column = 0; $column < $col_count; $column++ ) {
@@ -397,7 +397,7 @@ function export_images_aj() {
 		'Image URL',
 		'Filename',
 	];
-	fputcsv( $manifest, $header_row );
+	fputcsv( $manifest, $header_row, ',', '"', '\\' );
 
 	$kinds = get_mobject_kinds();
 	foreach ( $kinds as $kind ) {
@@ -450,7 +450,7 @@ function export_images_aj() {
 					esc_url( wp_upload_dir()['baseurl'] . '/' . $metadata['file'] ),
 					sanitize_file_name( $kind->name ) . DIRECTORY_SEPARATOR . $base_filename . $image_num . $extension,
 				];
-				fputcsv( $manifest, $row );
+				fputcsv( $manifest, $row, ',', '"', '\\' );
 			}
 		}
 	}

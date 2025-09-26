@@ -9,6 +9,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+use WP_Error;
+
 /**
  * Register the include_oai_pmh meta field for museum objects.
  */
@@ -373,6 +375,9 @@ function handle_get_record($args)
     $post = get_post_by_oai_identifier($args["identifier"]);
     if (!$post) {
         output_oai_error("idDoesNotExist", "The identifier does not exist");
+        return;
+    } elseif ($post instanceof WP_Error) {
+        output_oai_error("idDoesNotExist", $post->get_error_message());
         return;
     }
 
@@ -756,7 +761,7 @@ function post_has_oai_mappings($post)
 /**
  * Get post by OAI identifier
  */
-function get_post_by_oai_identifier($identifier)
+function get_post_by_oai_identifier($identifier) : \WP_Post|null|\WP_Error
 {
     $kinds = get_mobject_kinds();
 
@@ -805,7 +810,12 @@ function get_post_by_oai_identifier($identifier)
         if ($post) {
             // Check if the post is set to be included in OAI-PMH
             // Default to true if meta doesn't exist
-            $include_oai_pmh = get_post_meta($post->ID, 'include_oai_pmh', true);
+            $meta = get_post_meta($post->ID, 'include_oai_pmh', false);
+            if ( count($meta) === 0 ) {
+                $include_oai_pmh = true;
+            } else {
+                $include_oai_pmh = $meta[0];
+            }
             // Handle various false values: '0', 0, false, ''
             // Note: empty string means the meta key doesn't exist, so default to true
             if ( ! $include_oai_pmh ) {

@@ -198,7 +198,7 @@ class OAIPMHTest extends WP_Museum_Test_Case
         $invalid_result = \MikeThicke\WPMuseum\get_post_by_oai_identifier(
             "invalid"
         );
-        $this->assertNull($invalid_result);
+        $this->assertInstanceOf("WP_Error", $invalid_result);
     }
 
     /**
@@ -396,7 +396,7 @@ class OAIPMHTest extends WP_Museum_Test_Case
 
         // Check if meta is registered for our test post types
         $registered_meta = get_registered_meta_keys('post', 'wpm_instrument');
-        
+
         $this->assertArrayHasKey('include_oai_pmh', $registered_meta);
         $this->assertEquals('boolean', $registered_meta['include_oai_pmh']['type']);
         $this->assertTrue($registered_meta['include_oai_pmh']['single']);
@@ -497,7 +497,7 @@ class OAIPMHTest extends WP_Museum_Test_Case
 
         // Telescope should not be in results
         $this->assertNotContains($telescope->ID, $post_ids);
-        
+
         // Microscope should be in results (if it has mappings)
         $kind = \MikeThicke\WPMuseum\kind_from_type($microscope->post_type);
         if ($kind && $kind->has_oai_pmh_mappings()) {
@@ -513,7 +513,7 @@ class OAIPMHTest extends WP_Museum_Test_Case
         // Don't set include_oai_pmh meta on any posts
         $telescope = $this->test_data["telescope"];
         $microscope = $this->test_data["microscope"];
-        
+
         delete_post_meta($telescope->ID, 'include_oai_pmh');
         delete_post_meta($microscope->ID, 'include_oai_pmh');
 

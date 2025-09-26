@@ -39,29 +39,29 @@ class TestImportExport extends WP_UnitTestCase {
 
 		// Create a test object kind
 		$this->test_kind = MuseumTestData::create_test_object_kind();
-		
+
 		// Register the post types
 		WPMuseum\create_mobject_post_types();
-		
+
 		// Clear cache to ensure fresh data
 		wp_cache_flush();
-		
+
 		// Verify the kind was created properly
 		$this->assertNotNull( $this->test_kind, 'Test kind should not be null' );
 		$this->assertNotNull( $this->test_kind->kind_id, 'Test kind ID should not be null' );
-		
+
 		// Debug: Check if the kind is in the database
 		global $wpdb;
 		$table_name = $wpdb->prefix . WPMuseum\WPM_PREFIX . 'mobject_kinds';
 		$count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
 		$this->assertGreaterThan( 0, $count, "Should have at least one kind in database. Table: $table_name" );
-		
+
 		// Try direct query to see what's in the database
-		$direct_result = $wpdb->get_results( 
-			$wpdb->prepare( "SELECT * FROM $table_name WHERE kind_id = %d", $this->test_kind->kind_id ) 
+		$direct_result = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $table_name WHERE kind_id = %d", $this->test_kind->kind_id )
 		);
 		$this->assertNotEmpty( $direct_result, 'Direct query should find the kind' );
-		
+
 		// Verify we can retrieve the kind
 		$retrieved_kind = WPMuseum\get_kind( $this->test_kind->kind_id );
 		$this->assertNotNull( $retrieved_kind, 'Should be able to retrieve the test kind with ID: ' . $this->test_kind->kind_id );
@@ -87,13 +87,13 @@ class TestImportExport extends WP_UnitTestCase {
 
 		// Clean up the test kind and its fields
 		global $wpdb;
-		$wpdb->delete( 
-			$wpdb->prefix . 'wpm_mobject_kinds', 
-			[ 'kind_id' => $this->test_kind->kind_id ] 
+		$wpdb->delete(
+			$wpdb->prefix . 'wpm_mobject_kinds',
+			[ 'kind_id' => $this->test_kind->kind_id ]
 		);
-		$wpdb->delete( 
-			$wpdb->prefix . 'wpm_mobject_fields', 
-			[ 'kind_id' => $this->test_kind->kind_id ] 
+		$wpdb->delete(
+			$wpdb->prefix . 'wpm_mobject_fields',
+			[ 'kind_id' => $this->test_kind->kind_id ]
 		);
 
 		parent::tearDown();
@@ -142,33 +142,33 @@ class TestImportExport extends WP_UnitTestCase {
 
 		// Verify we got CSV output
 		$this->assertNotEmpty( $output );
-		
+
 		// Parse the CSV output
 		$lines = explode( "\n", trim( $output ) );
 		$this->assertGreaterThanOrEqual( 5, count( $lines ) ); // Header + slug row + 3 posts
-		
+
 		// Check header row
-		$header = str_getcsv( $lines[0] );
+		$header = str_getcsv( $lines[0], ",", '"', "\\" );
 		$this->assertContains( 'Title', $header );
 		$this->assertContains( 'Content', $header );
 		$this->assertContains( 'Permalink', $header );
 		$this->assertContains( 'Publication Status', $header );
-		
+
 		// Check slug row
-		$slug_row = str_getcsv( $lines[1] );
+		$slug_row = str_getcsv( $lines[1], ",", '"', "\\" );
 		$this->assertContains( 'post_title', $slug_row );
 		$this->assertContains( 'post_content', $slug_row );
-		
+
 		// Verify data rows are sorted by title (ascending)
 		$data_rows = array_slice( $lines, 2 );
 		$titles = [];
 		foreach ( $data_rows as $row ) {
 			if ( ! empty( $row ) ) {
-				$data = str_getcsv( $row );
+				$data = str_getcsv( $row, ",", '"', "\\" );
 				$titles[] = $data[0]; // Title is first column
 			}
 		}
-		
+
 		// Should be sorted: "Test Object 1", "Test Object 2", "Test Object 3"
 		$this->assertEquals( 'Test Object 1', $titles[0] );
 		$this->assertEquals( 'Test Object 2', $titles[1] );
@@ -203,7 +203,7 @@ class TestImportExport extends WP_UnitTestCase {
 		ob_start();
 		WPMuseum\export_csv();
 		$output = ob_get_clean();
-		
+
 		// Should get CSV output even with invalid nonce during tests
 		$this->assertNotEmpty( $output );
 	}
@@ -225,7 +225,7 @@ class TestImportExport extends WP_UnitTestCase {
 		// The function should die with permissions error
 		$this->expectException( 'WPDieException' );
 		$this->expectExceptionMessageMatches( '/You do not have sufficient permissions/' );
-		
+
 		WPMuseum\export_csv();
 	}
 
@@ -240,7 +240,7 @@ class TestImportExport extends WP_UnitTestCase {
 		// The function should die with an error for invalid kind
 		$this->expectException( 'WPDieException' );
 		$this->expectExceptionMessageMatches( '/Invalid object kind/' );
-		
+
 		WPMuseum\export_csv();
 	}
 
@@ -264,7 +264,7 @@ class TestImportExport extends WP_UnitTestCase {
 			ob_start();
 			WPMuseum\export_csv();
 			ob_end_clean();
-			
+
 			// If we get here without fatal error, the test passes
 			$this->assertTrue( true );
 		}
@@ -278,19 +278,19 @@ class TestImportExport extends WP_UnitTestCase {
 	public function test_csv_headers_setup() {
 		// This test verifies the function can retrieve the necessary data
 		// without actually testing the CSV output (which requires intercepting headers and exit)
-		
+
 		$kind = WPMuseum\get_kind( $this->test_kind->kind_id );
 		$this->assertNotNull( $kind );
-		
+
 		$fields = WPMuseum\get_mobject_fields( $this->test_kind->kind_id );
 		$this->assertIsArray( $fields );
-		
+
 		$posts = get_posts( [
 			'post_type'   => $kind->type_name,
 			'post_status' => 'any',
 			'numberposts' => -1,
 		] );
-		
+
 		$this->assertCount( 3, $posts );
 	}
 }
