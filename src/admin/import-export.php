@@ -43,6 +43,10 @@ function export_csv() {
 	];
 	$posts  = get_posts( $args );
 	$fields = get_mobject_fields( $kind_id );
+	
+	// Sort posts using the sophisticated wpm_sort_by_field function
+	wpm_sort_by_field( $posts, $sort_col, $sort_dir );
+	
 	$rows   = [];
 	foreach ( $posts as $the_post ) {
 		$row          = get_post_custom( $the_post->ID );
@@ -52,29 +56,6 @@ function export_csv() {
 		array_unshift( $sorted_row, wp_strip_all_tags( $the_post->post_content ) );
 		array_unshift( $sorted_row, html_entity_decode( $the_post->post_title ) );
 		$rows[] = $sorted_row;
-	}
-
-	// Sort the rows by the specified column
-	if ( $sort_col === 'post_title' ) {
-		$col_index = 0; // Title is the first column
-	} elseif ( $sort_col === 'post_content' ) {
-		$col_index = 1; // Content is the second column
-	} else {
-		// Find the column index for custom fields
-		$col_index = null;
-		foreach ( $fields as $index => $field ) {
-			if ( $field->slug === $sort_col ) {
-				$col_index = $index + 2; // +2 because title and content are first
-				break;
-			}
-		}
-	}
-
-	if ( $col_index !== null ) {
-		usort( $rows, function( $a, $b ) use ( $col_index, $sort_dir ) {
-			$result = strcmp( $a[$col_index], $b[$col_index] );
-			return $sort_dir === 'desc' ? -$result : $result;
-		});
 	}
 
 	$header_row = [ 'Title', 'Content' ];

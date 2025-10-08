@@ -38,7 +38,6 @@ function add_quick_browse(): void
  */
 function quick_browse(): void
 {
-    error_log("Memory limit: " . ini_get("memory_limit"));
     global $wpdb;
     if (!isset($_SERVER["PHP_SELF"])) {
         wp_die(esc_html__("quick_browse: PHP_SELF not set.", "wp-museum"));
@@ -153,7 +152,7 @@ function quick_browse(): void
 
     // export_csv_button() and import_csv_buton() escape output.
     echo "<th>";
-    export_csv_button($object_type->kind_id);
+    export_csv_button($object_type->kind_id, $sort_col, $sort_dir);
     echo " ";
     import_csv_button($object_type->kind_id);
     echo "</th><th></th><th></th>";
@@ -224,172 +223,4 @@ function quick_browse(): void
         echo "</tr>";
     }
     echo "</tbody></table></div>";
-}
-
-/**
- * Callback function for sorting quick browse table by a column.
- *
- * @param array  $target_array   The posts to be sorted.
- * @param string $sort_col       Slug of field to sort by.
- * @param string $sort_dir       The direction to sort by (asc or desc).
- * @return void
- */
-function wpm_sort_by_field(
-    array &$target_array,
-    string $sort_col,
-    string $sort_dir
-): void {
-    if (empty($target_array)) {
-        return;
-    }
-
-    if ("post_title" === $sort_col) {
-        $sort_field = null;
-    } else {
-        $fields = get_mobject_fields(kind_from_post($target_array[0])->kind_id);
-        $sort_field = null;
-        foreach ($fields as $field) {
-            if ($field->slug === $sort_col) {
-                $sort_field = $field;
-                break;
-            }
-        }
-    }
-    if ("asc" === $sort_dir) {
-        $rv = 1;
-    } else {
-        $rv = -1;
-    }
-    usort($target_array, function ($a, $b) use ($sort_field, $rv, $sort_col) {
-        if ("post_title" === $sort_col) {
-            $a_field_val = $a->post_title;
-            $b_field_val = $b->post_title;
-        } else {
-            $a_custom = get_post_custom($a->ID);
-            $b_custom = get_post_custom($b->ID);
-
-            if (isset($a_custom[$sort_col])) {
-                $a_field_val = $a_custom[$sort_col][0];
-            } else {
-                return -1 * $rv;
-            }
-
-            if (isset($b_custom[$sort_col])) {
-                $b_field_val = $b_custom[$sort_col][0];
-            } else {
-                return $rv;
-            }
-
-            if (
-                $sort_field &&
-                isset($sort_field->field_schema) &&
-                !empty($sort_field->field_schema)
-            ) {
-                $a_matches = [];
-                $b_matches = [];
-                $pattern = "/" . $sort_field->field_schema . "/";
-                if (
-                    preg_match($pattern, $a_field_val, $a_matches) &&
-                    preg_match($pattern, $b_field_val, $b_matches)
-                ) {
-                    $a_named_capture_keys = array_filter(
-                        array_keys($a_matches),
-                        "is_string"
-                    );
-                    $b_named_capture_keys = array_filter(
-                        array_keys($b_matches),
-                        "is_string"
-                    );
-                    $named_capture_keys = array_intersect(
-                        $a_named_capture_keys,
-                        $b_named_capture_keys
-                    );
-                    if (count($named_capture_keys) > 0) {
-                        // Named capture groups.
-                        sort($named_capture_keys);
-                        foreach ($named_capture_keys as $key) {
-                            if (
-                                is_numeric($a_matches[$key]) &&
-                                is_numeric($b_matches[$key])
-                            ) {
-                                if (
-                                    intval($a_matches[$key]) >
-                                    intval($b_matches[$key])
-                                ) {
-                                    return $rv;
-                                } elseif (
-                                    intval($a_matches[$key]) <
-                                    intval($b_matches[$key])
-                                ) {
-                                    return -1 * $rv;
-                                }
-                            } elseif (
-                                strcasecmp($a_matches[$key], $b_matches[$key]) >
-                                0
-                            ) {
-                                return $rv;
-                            } elseif (
-                                strcasecmp($a_matches[$key], $b_matches[$key]) <
-                                0
-                            ) {
-                                return -1 * $rv;
-                            }
-                        }
-                    } else {
-                        // Sequential capture groups.
-                        $limit = min(count($a_matches), count($b_matches));
-                        for ($i = 1; $i < $limit; $i++) {
-                            if (
-                                is_numeric($a_matches[$i]) &&
-                                is_numeric($b_matches[$i])
-                            ) {
-                                if (
-                                    intval($a_matches[$i]) >
-                                    intval($b_matches[$i])
-                                ) {
-                                    return $rv;
-                                } elseif (
-                                    intval($a_matches[$i]) <
-                                    intval($b_matches[$i])
-                                ) {
-                                    return -1 * $rv;
-                                }
-                            } elseif (
-                                strcasecmp($a_matches[$i], $b_matches[$i]) > 0
-                            ) {
-                                return $rv;
-                            } elseif (
-                                strcasecmp($a_matches[$i], $b_matches[$i]) < 0
-                            ) {
-                                return -1 * $rv;
-                            }
-                        }
-                    }
-                    if (count($a_matches) > count($b_matches)) {
-                        return 1 * $rv;
-                    } elseif (count($a_matches) < count($b_matches)) {
-                        return -1 * $rv;
-                    } else {
-                        return 0;
-                    }
-                }
-            }
-        }
-
-        if (is_numeric($a_field_val) && is_numeric($b_field_val)) {
-            if (intval($a_field_val) > intval($b_field_val)) {
-                return $rv;
-            } elseif ($a_field_val > $b_field_val) {
-                return -1 * $rv;
-            } else {
-                return 0;
-            }
-        } elseif (strcasecmp($a_field_val, $b_field_val) > 0) {
-            return $rv;
-        } elseif (strcasecmp($a_field_val, $b_field_val) < 0) {
-            return -1 * $rv;
-        } else {
-            return 0;
-        }
-    });
 }
