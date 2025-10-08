@@ -54,7 +54,13 @@ const ObjectGridBox = (props) => {
       >
         <div className="object-grid-box">
           <div className="object-grid-thumbnail-div">
-            {!!useImgURL && <img src={useImgURL} title={decodedPostTitle} alt={decodedPostTitle} />}
+            {!!useImgURL && (
+              <img
+                src={useImgURL}
+                title={decodedPostTitle}
+                alt={decodedPostTitle}
+              />
+            )}
             {!useImgURL && <div className="placeholder"></div>}
           </div>
           <div className="object-grid-caption-div">
@@ -103,18 +109,24 @@ const ObjectGridBoxDynamicImage = (props) => {
   useEffect(() => {
     setImgData(null);
     fetchObjectImages(mObject.ID).then((result) => {
-      if (result) {
+      if (result !== null) {
         setImgData(result);
       }
     });
   }, [mObject]);
 
   let bestImage = null;
-  if (imgData != null && Object.entries(imgData).length > 0) {
-    bestImage = getBestImage(getFirstObjectImage(imgData), {
-      width: targetWidthHeight,
-      height: targetWidthHeight,
-    });
+  let usePlaceholder = false;
+  if (imgData !== null) {
+    if (Object.entries(imgData).length > 0) {
+      bestImage = getBestImage(getFirstObjectImage(imgData), {
+        width: targetWidthHeight,
+        height: targetWidthHeight,
+      });
+    } else {
+      // imgData is an empty array, use placeholder
+      usePlaceholder = true;
+    }
   }
 
   const handleClick = () => {
@@ -135,7 +147,13 @@ const ObjectGridBoxDynamicImage = (props) => {
         displayExcerpt={displayExcerpt}
         linkToObject={linkToObject}
         onClickCallback={handleClick}
-        imgURL={!!bestImage ? bestImage.URL : null}
+        imgURL={
+          usePlaceholder
+            ? "/wp-content/plugins/wp-museum/src/assets/museum-icon-darkgray-1024.png"
+            : !!bestImage
+              ? bestImage.URL
+              : null
+        }
       />
       {doObjectModal && modalOpen && (
         <ObjectModal
