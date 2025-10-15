@@ -194,33 +194,111 @@ const RecentActivity = () => {
   useEffect(() => {
     const fetchRecentActivity = async () => {
       try {
-        // Fetch recent objects and collections
-        const [recentObjects, recentCollections] = await Promise.all([
-          apiFetch({
-            path: `${wordPressRestBase}/posts?per_page=5&orderby=modified&order=desc&_embed`,
-          }).catch(() => []),
-          apiFetch({
-            path: `${baseRestPath}/collections?per_page=5&orderby=modified&order=desc`,
-          }).catch(() => []),
-        ]);
+        // First, fetch object kinds to get all museum object types
+        const objectKinds = await apiFetch({
+          path: `${baseRestPath}/mobject_kinds`,
+        }).catch(() => []);
 
-        // Combine and sort by modified date
-        const combined = [
-          ...(recentObjects || []).map((item) => ({
-            ...item,
-            type: "object",
-            modified: item.modified,
-          })),
-          ...(recentCollections || []).map((item) => ({
-            ...item,
-            type: "collection",
-            modified: item.post_modified,
-          })),
+        // Create a map of post type to label
+        const postTypeLabels = {
+          post: "Post",
+          page: "Page",
+          wpm_collection: "Collection",
+        };
+
+        objectKinds.forEach((kind) => {
+          postTypeLabels[kind.type_name] = kind.label;
+        });
+
+        // Fetch recent items from different sources
+        const fetchPromises = [
+          // Regular posts
+          apiFetch({
+            path: `${wordPressRestBase}/posts?per_page=10&orderby=modified&order=desc`,
+          }).catch(() => []),
+          // Pages
+          apiFetch({
+            path: `${wordPressRestBase}/pages?per_page=10&orderby=modified&order=desc`,
+          }).catch(() => []),
+          // Collections
+          apiFetch({
+            path: `${baseRestPath}/collections?per_page=10&orderby=modified&order=desc`,
+          }).catch(() => []),
         ];
 
+        // Fetch museum objects for each kind
+        objectKinds.forEach((kind) => {
+          fetchPromises.push(
+            apiFetch({
+              path: `${wordPressRestBase}/${kind.type_name}?per_page=10&orderby=modified&order=desc`,
+            }).catch(() => []),
+          );
+        });
+
+        const results = await Promise.all(fetchPromises);
+        const [regularPosts, pages, collections, ...museumObjectsByKind] =
+          results;
+
+        console.log("Post Type Labels Map:", postTypeLabels);
+        console.log("Regular Posts:", regularPosts);
+        console.log("Pages:", pages);
+        console.log("Collections:", collections);
+        console.log("Museum Objects by Kind:", museumObjectsByKind);
+
+        // Combine and categorize all items
+        const combined = [];
+
+        // Add regular posts
+        (regularPosts || []).forEach((item) => {
+          console.log("Regular Post item.type:", item.type);
+          combined.push({
+            ...item,
+            type: postTypeLabels[item.type] || "Post",
+            modified: item.modified,
+            isCollection: false,
+          });
+        });
+
+        // Add pages
+        (pages || []).forEach((item) => {
+          console.log("Page item.type:", item.type);
+          combined.push({
+            ...item,
+            type: postTypeLabels[item.type] || "Page",
+            modified: item.modified,
+            isCollection: false,
+          });
+        });
+
+        // Add collections (different structure)
+        (collections || []).forEach((item) => {
+          combined.push({
+            ...item,
+            type: "Collection",
+            modified: item.post_modified,
+            isCollection: true,
+          });
+        });
+
+        // Add museum objects
+        museumObjectsByKind.forEach((objects) => {
+          if (objects && objects.length > 0) {
+            objects.forEach((item) => {
+              console.log("Museum Object item.type:", item.type);
+              combined.push({
+                ...item,
+                type: postTypeLabels[item.type] || "Museum Object",
+                modified: item.modified,
+                isCollection: false,
+              });
+            });
+          }
+        });
+
+        // Sort by modified date
         combined.sort((a, b) => new Date(b.modified) - new Date(a.modified));
 
-        setRecentItems(combined.slice(0, 10));
+        setRecentItems(combined.slice(0, 20));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching recent activity:", error);
@@ -251,7 +329,7 @@ const RecentActivity = () => {
   };
 
   const getEditUrl = (item) => {
-    if (item.type === "collection") {
+    if (item.isCollection) {
       return `post.php?post=${item.ID}&action=edit`;
     } else {
       return `post.php?post=${item.id}&action=edit`;
@@ -259,7 +337,7 @@ const RecentActivity = () => {
   };
 
   const getTitle = (item) => {
-    if (item.type === "collection") {
+    if (item.isCollection) {
       return item.post_title;
     } else {
       return item.title?.rendered || item.title;
@@ -279,9 +357,7 @@ const RecentActivity = () => {
         <div className="activity-feed">
           {recentItems.map((item, index) => (
             <div key={index} className="activity-item">
-              <div className="activity-type-badge">
-                {item.type === "collection" ? "Collection" : "Object"}
-              </div>
+              <div className="activity-type-badge">{item.type}</div>
               <div className="activity-content">
                 <a href={getEditUrl(item)} className="activity-title">
                   {getTitle(item)}
