@@ -1,14 +1,9 @@
+// Remote Administration specific styles
+// Common styles are in parent admin.scss
+
 .museum-admin-remote {
-	padding: 1em;
-
-	.remote-options {
-		input {
-			display: block;
-			width: 100%;
-		}
-	}
-
-	.save-button-bottom {
-		margin-top: 1em;
-	}
+  // Page-specific overrides only
+  .save-button-bottom {
+    margin-top: 30px;
+  }
 }

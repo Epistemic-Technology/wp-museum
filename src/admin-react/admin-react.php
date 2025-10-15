@@ -33,7 +33,11 @@ function enqueue_admin_react($hook_suffix)
         'wpmAdminData',
         array(
             'csvExportNonce' => wp_create_nonce('d78HG@YsELh2KByUgCTuDCepW'),
-            'ajaxUrl' => admin_url('admin-ajax.php')
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'pluginVersion' => WPM_PLUGIN_VERSION,
+            'wpVersion' => get_bloginfo('version'),
+            'phpVersion' => phpversion(),
+            'phpMemoryLimit' => ini_get('memory_limit')
         )
     );
 

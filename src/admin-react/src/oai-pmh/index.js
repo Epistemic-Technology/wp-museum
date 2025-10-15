@@ -522,7 +522,7 @@ const OmiPmhAdmin = () => {
                 onClick={handleSave}
                 disabled={loading || saving}
               >
-                {saving ? "Saving..." : "Save Mappings"}
+                {saving ? "Saving..." : "Save Settings"}
               </button>
               <button
                 type="button"

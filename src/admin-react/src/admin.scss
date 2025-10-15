@@ -1,4 +1,423 @@
+// =============================================================================
+// Museum Administration - Common Styles
+// =============================================================================
+// This file contains shared styles used across all Museum admin pages
+// Page-specific styles are in their respective subdirectories
+
 @use "./objects/admin.scss" as objects-admin;
 @use "./remote/admin.scss" as remote-admin;
 @use "./oai-pmh/admin.scss" as oai-pmh-admin;
 @use "./general/admin.scss" as general-admin;
+@use "./dashboard/admin.scss" as dashboard-admin;
+
+// =============================================================================
+// Common Page Structure
+// =============================================================================
+
+// Base container for all admin pages
+.museum-admin-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+// Legacy page containers (maintained for compatibility)
+.museum-admin-main,
+.museum-admin-remote,
+.oai-pmh-admin,
+.museum-admin-general {
+  @extend .museum-admin-page;
+}
+
+// =============================================================================
+// Page Headers
+// =============================================================================
+
+.admin-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+
+  h1 {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.3;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #646970;
+  }
+
+  strong {
+    font-weight: 600;
+    color: #1d2327;
+  }
+}
+
+// Section headers within pages
+.section-header {
+  margin: 30px 0 20px 0;
+
+  h2 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2327;
+  }
+
+  p {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #646970;
+  }
+}
+
+// =============================================================================
+// Form Elements
+// =============================================================================
+
+// Common input styling
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+textarea,
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1d2327;
+  background-color: #fff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+  }
+
+  &:disabled {
+    background-color: #f6f7f7;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+select {
+  cursor: pointer;
+}
+
+// Label styling
+label {
+  display: block;
+  font-weight: 500;
+  color: #1d2327;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+// =============================================================================
+// Checkboxes and Radio Buttons
+// =============================================================================
+
+// Checkbox wrapper for consistent layout
+.checkbox-label,
+.option-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 2px 10px 0 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .label-text {
+    font-weight: 500;
+    color: #1d2327;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+  }
+}
+
+// Checkbox group for multiple options
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0 10px 0 0;
+    flex-shrink: 0;
+  }
+
+  label {
+    font-weight: 500;
+    color: #1d2327;
+    cursor: pointer;
+    margin: 0;
+  }
+}
+
+// =============================================================================
+// Help Text
+// =============================================================================
+
+.help-text {
+  margin: 8px 0 0 30px;
+  color: #646970;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.option-item .help-text {
+  margin-left: 0;
+  padding-left: 30px;
+}
+
+// =============================================================================
+// Buttons
+// =============================================================================
+
+// Common button styling (for non-WordPress component buttons)
+.admin-button,
+button.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #1d2327;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #0073aa;
+    color: #0073aa;
+    background-color: #f6f7f7;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+}
+
+.button-primary,
+button.button-primary {
+  color: #fff;
+  background-color: #0073aa;
+  border-color: #0073aa;
+
+  &:hover:not(:disabled) {
+    background-color: #005a87;
+    border-color: #005a87;
+    color: #fff;
+  }
+
+  &:focus {
+    box-shadow:
+      0 0 0 1px #0073aa,
+      0 0 0 3px rgba(0, 115, 170, 0.3);
+  }
+}
+
+// Action buttons section at bottom of forms
+.action-buttons,
+.main-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+// =============================================================================
+// Lists and Tables
+// =============================================================================
+
+// Options/settings list
+.options-list {
+  margin-bottom: 20px;
+}
+
+// WordPress widefat table styling
+table.widefat {
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  background-color: #fff;
+  margin-bottom: 20px;
+
+  thead {
+    background-color: #f6f7f7;
+
+    th {
+      padding: 12px 16px;
+      font-weight: 600;
+      text-align: left;
+      border-bottom: 1px solid #d0d5dd;
+      color: #1d2327;
+      font-size: 14px;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: #f9fafb;
+      }
+    }
+
+    td {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #1d2327;
+    }
+  }
+}
+
+// =============================================================================
+// Notices and Messages
+// =============================================================================
+
+.error-notice,
+.success-notice,
+.info-notice {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+
+  p {
+    margin: 0;
+  }
+}
+
+.error-notice {
+  background-color: #fee;
+  border: 1px solid #d63638;
+  color: #d63638;
+}
+
+.success-notice {
+  background-color: #eef9ee;
+  border: 1px solid #00a32a;
+  color: #00a32a;
+}
+
+.info-notice {
+  background-color: #f0f6fc;
+  border: 1px solid #0073aa;
+  color: #0073aa;
+}
+
+// =============================================================================
+// Loading States
+// =============================================================================
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #646970;
+  font-size: 14px;
+  font-style: italic;
+}
+
+// =============================================================================
+// Utility Classes
+// =============================================================================
+
+// Screen reader only content
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Spacing utilities
+.mt-1 {
+  margin-top: 8px;
+}
+.mt-2 {
+  margin-top: 16px;
+}
+.mt-3 {
+  margin-top: 24px;
+}
+.mb-1 {
+  margin-bottom: 8px;
+}
+.mb-2 {
+  margin-bottom: 16px;
+}
+.mb-3 {
+  margin-bottom: 24px;
+}

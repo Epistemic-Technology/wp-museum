@@ -26,6 +26,9 @@ const DB_SHOW_ERRORS = true; // Have WP report db errors.
 const IMAGE_DIR = "wp-museum"; // Directory to save exported images.
 const REST_NAMESPACE = "wp-museum/v1"; // Root for rest routes.
 
+$plugin_data = get_plugin_data(__FILE__);
+define('WPM_PLUGIN_VERSION', $plugin_data['Version']);
+
 /**
  * Is this a development build of the plugin?
  *

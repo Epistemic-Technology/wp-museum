@@ -1,0 +1,429 @@
+// =============================================================================
+// Museum Dashboard Styles
+// =============================================================================
+
+.museum-admin-dashboard {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// =============================================================================
+// Dashboard Layout
+// =============================================================================
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 24px;
+  margin-top: 24px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// =============================================================================
+// Dashboard Sections
+// =============================================================================
+
+.dashboard-section {
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 24px;
+  overflow: hidden;
+
+  h2 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+  }
+}
+
+// =============================================================================
+// Statistics Grid
+// =============================================================================
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+.stat-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 16px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: default;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  &:hover {
+    border-color: #0073aa;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+  }
+}
+
+.stat-card-clickable {
+  cursor: pointer;
+
+  &:hover {
+    border-color: #0073aa;
+    box-shadow: 0 2px 6px rgba(0, 115, 170, 0.15);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.stat-card-header {
+  font-size: 13px;
+  font-weight: 500;
+  color: #646970;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.stat-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0073aa;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-card-subtitle {
+  font-size: 12px;
+  color: #646970;
+  line-height: 1.4;
+  margin-top: auto;
+}
+
+.stat-card-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+// =============================================================================
+// Activity Feed
+// =============================================================================
+
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+
+    &:hover {
+      background: #a1a1a1;
+    }
+  }
+}
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #0073aa;
+    background: #fff;
+  }
+}
+
+.activity-type-badge {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: #0073aa;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 4px;
+  height: fit-content;
+  letter-spacing: 0.5px;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-title {
+  display: block;
+  font-weight: 500;
+  color: #1d2327;
+  text-decoration: none;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover {
+    color: #0073aa;
+    text-decoration: underline;
+  }
+}
+
+.activity-meta {
+  font-size: 12px;
+  color: #646970;
+}
+
+// =============================================================================
+// Pending Objects List
+// =============================================================================
+
+.pending-objects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+
+    &:hover {
+      background: #a1a1a1;
+    }
+  }
+}
+
+.pending-object-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #fffbf0;
+  border: 1px solid #f0c849;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #d4a927;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.pending-object-type-badge {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: #f0c849;
+  color: #1d2327;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 4px;
+  height: fit-content;
+  letter-spacing: 0.5px;
+}
+
+.pending-object-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.pending-object-title {
+  display: block;
+  font-weight: 500;
+  color: #1d2327;
+  text-decoration: none;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover {
+    color: #0073aa;
+    text-decoration: underline;
+  }
+}
+
+.pending-object-meta {
+  font-size: 12px;
+  color: #646970;
+}
+
+// =============================================================================
+// System Status
+// =============================================================================
+
+.system-status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.status-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #646970;
+}
+
+.status-value {
+  font-size: 13px;
+  color: #1d2327;
+  font-weight: 600;
+
+  &.status-success {
+    color: #00a32a;
+  }
+
+  &.status-warning {
+    color: #f0b849;
+  }
+
+  &.status-error {
+    color: #d63638;
+  }
+}
+
+// =============================================================================
+// Placeholder Sections
+// =============================================================================
+
+.placeholder-section {
+  .placeholder-content {
+    text-align: center;
+    padding: 32px 16px;
+    background: #f9fafb;
+    border-radius: 6px;
+    border: 2px dashed #d0d5dd;
+  }
+
+  .placeholder-message {
+    font-size: 16px;
+    font-weight: 600;
+    color: #646970;
+    margin: 0 0 8px 0;
+  }
+
+  .placeholder-description {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+// =============================================================================
+// Loading States
+// =============================================================================
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  color: #646970;
+}
+
+// =============================================================================
+// Empty States
+// =============================================================================
+
+.empty-message {
+  text-align: center;
+  padding: 32px 16px;
+  color: #646970;
+  font-style: italic;
+  margin: 0;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+// =============================================================================
+// Responsive Adjustments
+// =============================================================================
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-section {
+    padding: 16px;
+  }
+
+  .stat-card {
+    min-height: 100px;
+  }
+
+  .stat-card-value {
+    font-size: 28px;
+  }
+}

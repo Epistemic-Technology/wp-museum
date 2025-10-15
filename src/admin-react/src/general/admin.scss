@@ -1,14 +1,5 @@
 // General Settings specific styles
 // Common styles are in parent admin.scss
 
-.museum-admin-general {
-  // Help text styling specific to General settings
-  .help-text {
-    margin-top: 8px;
-    margin-left: 26px;
-    color: #666;
-    font-size: 13px;
-    line-height: 1.5;
-    font-style: italic;
-  }
-}
+// Note: This page now uses common styles from admin.scss
+// No page-specific overrides needed at this time
