@@ -377,24 +377,32 @@ class CustomPostType
                                 $field_options["options"]
                                 as $option_value => $option_label
                             ) {
-                                echo "<input type='checkbox' name='" .
+                                echo "<input type='checkbox' id='" .
+                                    esc_html($field_name . "_" . $option_value) .
+                                    "' name='" .
                                     esc_html($field_name) .
                                     "' value='" .
                                     esc_html($option_value) .
-                                    "' ";
+                                    "'";
                                 if ($option_value === $field_value) {
-                                    echo " checked ";
+                                    echo " checked='checked'";
                                 }
-                                echo ">" . esc_html($option_label) . "<br />";
+                                echo " /><label for='" .
+                                    esc_html($field_name . "_" . $option_value) .
+                                    "'>" .
+                                    esc_html($option_label) .
+                                    "</label><br />";
                             }
                         } else {
-                            echo "<input type='checkbox' name='" .
+                            echo "<input type='checkbox' id='" .
                                 esc_html($field_name) .
-                                "' value='1' ";
+                                "' name='" .
+                                esc_html($field_name) .
+                                "' value='1'";
                             if ("1" === $field_value) {
-                                echo " checked ";
+                                echo " checked='checked'";
                             }
-                            echo ">";
+                            echo " />";
                         }
                         break;
                 }

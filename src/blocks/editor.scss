@@ -9,3 +9,14 @@
 @use "./object-image-attachments/editor.scss" as object-image-attachments;
 @use "./object-infobox/editor.scss" as object-infobox;
 @use "./object-meta/editor.scss" as object-meta;
+
+#wpbody {
+  .block-editor-writing-flow {
+    .wp-block-post-content {
+      .wp-block-wp-museum-object-image-attachments-block:focus:after,
+      .wp-block-wp-museum-object-meta-block:focus:after {
+        outline-style: none;
+      }
+    }
+  }
+}
