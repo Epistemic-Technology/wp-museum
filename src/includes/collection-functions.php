@@ -168,7 +168,7 @@ function query_associated_objects(
         }
     }
 
-    $display_options = get_option(WPM_PREFIX . "display_options");
+    $display_options = get_customizer_settings()[ WPM_PREFIX . 'collection_style' ];
     if (1 === $show_all) {
         $collection_query = new \WP_Query([
             "tax_query" => $tax_query,
@@ -182,11 +182,7 @@ function query_associated_objects(
         } else {
             $page_num = get_query_var("page");
         }
-        if (isset($display_options["posts_per_page"])) {
-            $posts_per_page = $display_options["posts_per_page"];
-        } else {
-            $posts_per_page = DEF_POSTS_PER_PAGE;
-        }
+        $posts_per_page = $display_options["posts_per_page"] ?? DEF_POSTS_PER_PAGE;
         $collection_query = new \WP_Query([
             "tax_query" => $tax_query,
             "posts_per_page" => $posts_per_page,
