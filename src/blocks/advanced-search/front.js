@@ -41,6 +41,7 @@ const AdvancedSearchFront = (props) => {
     showFields,
     gridRows,
     columns,
+    resultsPerPage,
   } = attributes;
 
   const [collectionData, setCollectionData] = useState({});
@@ -92,7 +93,8 @@ const AdvancedSearchFront = (props) => {
         searchParams[flag] = true;
       }
     }
-    searchParams.per_page = gridRows * columns;
+    // Use resultsPerPage setting (-1 means unlimited/all results)
+    searchParams.per_page = resultsPerPage;
     setCurrentSearchParams(searchParams);
     apiFetch({
       path: `${baseRestPath}/search`,

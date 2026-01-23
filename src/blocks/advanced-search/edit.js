@@ -37,6 +37,7 @@ const AdvancedSearchEdit = (props) => {
     showFields,
     gridRows,
     columns,
+    resultsPerPage,
   } = attributes;
 
   const [collectionData, setCollectionData] = useState({});
@@ -74,8 +75,8 @@ const AdvancedSearchEdit = (props) => {
         break;
       }
     }
-    // Calculate posts per page from grid dimensions
-    searchParams["posts_per_page"] = gridRows * columns;
+    // Use resultsPerPage setting (-1 means unlimited/all results)
+    searchParams["posts_per_page"] = resultsPerPage;
     setCurrentSearchParams(searchParams);
     apiFetch({
       path: `${baseRestPath}/search`,
@@ -137,20 +138,16 @@ const AdvancedSearchEdit = (props) => {
         </PanelBody>
         <PanelBody title="Results">
           <SelectControl
-            label="Grid Rows"
-            value={gridRows}
-            onChange={(val) => setAttributes({ gridRows: parseInt(val) })}
+            label="Results per Page"
+            value={resultsPerPage}
+            onChange={(val) => setAttributes({ resultsPerPage: parseInt(val) })}
             options={[
-              { value: 1, label: "1" },
-              { value: 2, label: "2" },
-              { value: 3, label: "3" },
-              { value: 4, label: "4" },
-              { value: 5, label: "5" },
-              { value: 6, label: "6" },
-              { value: 7, label: "7" },
-              { value: 8, label: "8" },
-              { value: 9, label: "9" },
-              { value: 10, label: "10" },
+              { value: 20, label: "20" },
+              { value: 40, label: "40" },
+              { value: 60, label: "60" },
+              { value: 80, label: "80" },
+              { value: 100, label: "100" },
+              { value: -1, label: "Unlimited" },
             ]}
           />
           <SelectControl
@@ -166,9 +163,6 @@ const AdvancedSearchEdit = (props) => {
               { value: 6, label: "6" },
             ]}
           />
-          <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
-            Results per page: {gridRows * columns}
-          </p>
         </PanelBody>
       </InspectorControls>
       <AdvancedSearchUI

@@ -60,6 +60,10 @@
     "columns": {
       "type": "number",
       "default": 4
+    },
+    "resultsPerPage": {
+      "type": "number",
+      "default": 20
     }
   }
 }
