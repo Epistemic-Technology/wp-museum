@@ -3,14 +3,17 @@
 	bootstrap="tests/bootstrap.php"
 	backupGlobals="false"
 	colors="true"
-	convertErrorsToExceptions="true"
-	convertNoticesToExceptions="true"
-	convertWarningsToExceptions="true"
 	stopOnFailure="true"
+	failOnDeprecation="false"
 	>
 	<testsuites>
 		<testsuite name="testing">
-			<directory prefix="test-" suffix=".php">./tests/phpunit/</directory>
+			<directory suffix=".php">./tests/phpunit/</directory>
+			<exclude>./tests/phpunit/classes/WPMuseumClassesTestSuite.php</exclude>
+			<exclude>./tests/phpunit/classes/class-wp-museum-test-case.php</exclude>
+			<exclude>./tests/phpunit/classes/verify-tests.php</exclude>
+			<exclude>./tests/phpunit/helpers/museum-test-data.php</exclude>
+			<exclude>./tests/phpunit/rest/base-rest.php</exclude>
 		</testsuite>
 	</testsuites>
 </phpunit>

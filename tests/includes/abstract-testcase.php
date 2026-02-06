@@ -546,12 +546,15 @@ abstract class WP_UnitTestCase_Base extends PHPUnit_Adapter_TestCase {
 		if ( method_exists( $this, 'getAnnotations' ) ) {
 			// PHPUnit < 9.5.0.
 			$annotations = $this->getAnnotations();
-		} else {
-			// PHPUnit >= 9.5.0.
+		} elseif ( method_exists( '\PHPUnit\Util\Test', 'parseTestMethodAnnotations' ) ) {
+			// PHPUnit 9.5.0 - 9.x.
 			$annotations = \PHPUnit\Util\Test::parseTestMethodAnnotations(
 				static::class,
 				$this->getName( false )
 			);
+		} else {
+			// PHPUnit 10+.
+			$annotations = self::parseAnnotations( static::class, $this->name() );
 		}
 
 		foreach ( array( 'class', 'method' ) as $depth ) {
@@ -1372,8 +1375,10 @@ abstract class WP_UnitTestCase_Base extends PHPUnit_Adapter_TestCase {
 	 * @param Text_Template $template The template to prepare.
 	 */
 	public function prepareTemplate( Text_Template $template ) {
-		$template->setVar( array( 'constants' => '' ) );
-		$template->setVar( array( 'wp_constants' => PHPUnit_Util_GlobalState::getConstantsAsString() ) );
+		if ( class_exists( 'PHPUnit_Util_GlobalState' ) ) {
+			$template->setVar( array( 'constants' => '' ) );
+			$template->setVar( array( 'wp_constants' => PHPUnit_Util_GlobalState::getConstantsAsString() ) );
+		}
 		parent::prepareTemplate( $template );
 	}
 
@@ -1808,5 +1813,58 @@ abstract class WP_UnitTestCase_Base extends PHPUnit_Adapter_TestCase {
 		$this->skipTestOnTimeout( $result );
 
 		return $result;
+	}
+
+	/**
+	 * Parse annotations from class and method docblocks.
+	 *
+	 * Replacement for PHPUnit\Util\Test::parseTestMethodAnnotations()
+	 * which was removed in PHPUnit 10.
+	 *
+	 * @param string $class_name  Fully qualified class name.
+	 * @param string $method_name Test method name.
+	 * @return array Associative array with 'class' and 'method' annotation arrays.
+	 */
+	private static function parseAnnotations( $class_name, $method_name ) {
+		$annotations = array(
+			'class'  => array(),
+			'method' => array(),
+		);
+
+		$class = new ReflectionClass( $class_name );
+
+		$class_doc = $class->getDocComment();
+		if ( $class_doc ) {
+			$annotations['class'] = self::parseDocBlock( $class_doc );
+		}
+
+		if ( $method_name && $class->hasMethod( $method_name ) ) {
+			$method_doc = $class->getMethod( $method_name )->getDocComment();
+			if ( $method_doc ) {
+				$annotations['method'] = self::parseDocBlock( $method_doc );
+			}
+		}
+
+		return $annotations;
+	}
+
+	/**
+	 * Parse a docblock string into an array of annotations.
+	 *
+	 * @param string $docblock The docblock string to parse.
+	 * @return array Associative array of annotation name => array of values.
+	 */
+	private static function parseDocBlock( $docblock ) {
+		$annotations = array();
+
+		if ( preg_match_all( '/@(?P<name>[A-Za-z_-]+)(?:[ \t]+(?P<value>.*?))?[ \t]*\r?$/m', $docblock, $matches ) ) {
+			$num_matches = count( $matches[0] );
+
+			for ( $i = 0; $i < $num_matches; $i++ ) {
+				$annotations[ $matches['name'][ $i ] ][] = $matches['value'][ $i ];
+			}
+		}
+
+		return $annotations;
 	}
 }

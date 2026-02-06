@@ -158,7 +158,7 @@ class MockBuilder {
 		$this->className = $className;
 	}
 	
-	public function setMethods( $methods ) {
+	public function onlyMethods( $methods ) {
 		return $this;
 	}
 	
@@ -227,13 +227,13 @@ function main() {
 	echo "==================================\n\n";
 	
 	$test_files = [
-		'test-customposttype.php',
-		'test-metabox.php',
-		'test-mobjectfield.php',
-		'test-objectkind.php',
-		'test-objectposttype.php',
-		'test-remoteclient.php',
-		'test-suite.php'
+		'TestCustomPostType.php',
+		'TestMetaBox.php',
+		'TestMObjectField.php',
+		'TestObjectKind.php',
+		'TestObjectPostType.php',
+		'TestRemoteClient.php',
+		'WPMuseumClassesTestSuite.php'
 	];
 	
 	$passed = 0;

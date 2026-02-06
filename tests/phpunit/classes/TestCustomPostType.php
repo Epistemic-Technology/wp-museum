@@ -252,7 +252,7 @@ class TestCustomPostType extends WP_UnitTestCase
 
         // Create a mock WP_Query
         $query = $this->getMockBuilder("WP_Query")
-            ->setMethods(["get", "set"])
+            ->onlyMethods(["get", "set"])
             ->getMock();
 
         $query

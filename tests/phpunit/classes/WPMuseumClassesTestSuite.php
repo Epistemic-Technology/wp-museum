@@ -22,12 +22,12 @@ class WPMuseumClassesTestSuite {
 		$suite = new PHPUnit\Framework\TestSuite( 'WP Museum Classes' );
 
 		// Add all class test files
-		$suite->addTestFile( __DIR__ . '/test-customposttype.php' );
-		$suite->addTestFile( __DIR__ . '/test-metabox.php' );
-		$suite->addTestFile( __DIR__ . '/test-mobjectfield.php' );
-		$suite->addTestFile( __DIR__ . '/test-objectkind.php' );
-		$suite->addTestFile( __DIR__ . '/test-objectposttype.php' );
-		$suite->addTestFile( __DIR__ . '/test-remoteclient.php' );
+		$suite->addTestFile( __DIR__ . '/TestCustomPostType.php' );
+		$suite->addTestFile( __DIR__ . '/TestMetaBox.php' );
+		$suite->addTestFile( __DIR__ . '/TestMObjectField.php' );
+		$suite->addTestFile( __DIR__ . '/TestObjectKind.php' );
+		$suite->addTestFile( __DIR__ . '/TestObjectPostType.php' );
+		$suite->addTestFile( __DIR__ . '/TestRemoteClient.php' );
 
 		return $suite;
 	}
@@ -199,7 +199,7 @@ class WPMuseumTestHelpers {
 	 */
 	public static function assertObjectHasProperties( $expected_properties, $actual_object, $message = '' ) {
 		foreach ( $expected_properties as $property ) {
-			PHPUnit\Framework\Assert::assertObjectHasAttribute( $property, $actual_object, $message );
+			PHPUnit\Framework\Assert::assertObjectHasProperty( $property, $actual_object, $message );
 		}
 	}
 
