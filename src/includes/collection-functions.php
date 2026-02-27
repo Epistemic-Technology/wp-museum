@@ -398,7 +398,7 @@ function ensure_collection_has_term($collection_id)
     // Check if the collection already has a term
     $term_id = get_collection_term_id($collection_id);
     if ($term_id) {
-        return $term_id;
+        return (int) $term_id;
     }
 
     // Get the collection post

@@ -178,7 +178,7 @@ class MuseumTestData
 
         $result = wp_set_object_terms(
             $object_id,
-            $term_id,
+            (int) $term_id,
             "wpm_collection_tax",
             true
         );
