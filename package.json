@@ -21,6 +21,10 @@
     "url": "https://github.com/mikethicke/wp-museum/issues"
   },
   "homepage": "https://github.com/mikethicke/wp-museum#readme",
+  "overrides": {
+    "@babel/runtime": "^7.26.10",
+    "diff": "^4.0.4"
+  },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
     "@prettier/plugin-php": "^0.24.0",
