@@ -16,7 +16,7 @@ EOF
 
 # Install WordPress
 wp core install \
-  --url=http://wp-test.lndo.site \
+  --url=https://wp-test-server_nginx.wpmuseum.internal \
   --title="Test Museum Site" \
   --admin_user="${TEST_WP_ADMIN_USER:-admin}" \
   --admin_password="${TEST_WP_ADMIN_PASS:-admin}" \

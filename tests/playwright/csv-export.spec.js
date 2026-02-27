@@ -1,9 +1,10 @@
 const { test, expect } = require("@playwright/test");
-const { 
-  setupMuseumTest, 
-  createSimpleObjectKind, 
+const {
+  setupMuseumTest,
+  deleteAllObjectKinds,
+  createSimpleObjectKind,
   createMuseumObject,
-  postTypeFromSlug 
+  postTypeFromSlug
 } = require("./utils");
 const fs = require("fs");
 const path = require("path");
@@ -14,11 +15,14 @@ test.describe("CSV Export Functionality", () => {
 
   test.beforeEach(async ({ page }) => {
     await setupMuseumTest(page);
-    
+
+    // Clean up any leftover object kinds from previous tests
+    await deleteAllObjectKinds(page);
+
     // Create a simple object kind for testing
     objectKindSlug = await createSimpleObjectKind(page, "Test Instrument");
     postType = postTypeFromSlug(objectKindSlug);
-    
+
     // Create a few test objects
     for (let i = 1; i <= 3; i++) {
       await createMuseumObject(page, postType, {
@@ -101,79 +105,42 @@ test.describe("CSV Export Functionality", () => {
     // Navigate to object admin page
     await page.goto(`/wp-admin/admin.php?page=wpm-react-admin-objects&view=main`);
     await page.waitForLoadState("networkidle");
-    
+
     // Wait for React app to load
     await page.waitForSelector(".museum-admin-main, #wpm-react-admin-app-container-objects", { timeout: 10000 });
-    
-    // Wait a bit for the page to fully render
-    await page.waitForTimeout(2000);
-    
-    // Look for Export CSV button in the admin interface
-    // Try multiple possible selectors
-    const exportButtonSelectors = [
-      'button:has-text("Export CSV")',
-      'a:has-text("Export CSV")',
-      '.export-csv-button',
-      '[data-action="export-csv"]',
-      'button[title*="Export"]',
-      'a[title*="Export"]'
-    ];
-    
-    let exportButton = null;
-    for (const selector of exportButtonSelectors) {
-      const button = page.locator(selector).first();
-      if (await button.isVisible({ timeout: 2000 }).catch(() => false)) {
-        exportButton = button;
-        break;
-      }
-    }
-    
-    // If no button found, take a screenshot for debugging
-    if (!exportButton) {
-      await page.screenshot({ path: "debug-no-export-button-admin.png" });
-    }
-    
-    expect(exportButton).toBeTruthy();
-    await expect(exportButton).toBeVisible();
-    
+
+    // Find the Export CSV button for our Test Instrument kind
+    const kindRow = page.locator('div:has-text("Test Instrument")').first();
+    const exportButton = kindRow.locator('button:has-text("Export CSV"), a:has-text("Export CSV")').first();
+    await expect(exportButton).toBeVisible({ timeout: 10000 });
+
     // Set up download promise before clicking
     const downloadPromise = page.waitForEvent("download", { timeout: 10000 });
-    
+
     // Click Export CSV button
     await exportButton.click();
-    
-    // Wait for download - this is expected to fail based on the issue description
-    let download;
-    try {
-      download = await downloadPromise;
-    } catch (error) {
-      // Expected to timeout since the button doesn't work
-      console.log("Download failed as expected:", error.message);
-      
-      // Take a screenshot to document the failure
-      await page.screenshot({ path: "debug-export-csv-admin-failed.png" });
-      
-      // This test is expected to fail
-      throw new Error("Export CSV button on object admin screen does not trigger download");
-    }
-    
-    // If we somehow get here (download succeeded), verify the CSV
-    // This part should not be reached based on the issue description
+
+    // Wait for download
+    const download = await downloadPromise;
+
+    // Verify download has correct filename pattern
     const suggestedFilename = download.suggestedFilename();
     expect(suggestedFilename).toMatch(/\.csv$/);
-    
+
     // Save and read the downloaded file
     const downloadPath = path.join(__dirname, "temp-export-admin.csv");
     await download.saveAs(downloadPath);
-    
+
     // Read and verify CSV content
     const csvContent = fs.readFileSync(downloadPath, "utf8");
-    
-    // Verify CSV has content
+
+    // Verify CSV has content and expected data
     expect(csvContent).toBeTruthy();
     expect(csvContent).toContain("Title");
-    expect(csvContent).toContain("Test Instrument");
-    
+    expect(csvContent).toContain("Test Instrument 1");
+    expect(csvContent).toContain("Test Instrument 2");
+    expect(csvContent).toContain("Test Instrument 3");
+
     // Clean up temp file
     fs.unlinkSync(downloadPath);
   });
