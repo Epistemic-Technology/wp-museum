@@ -546,9 +546,13 @@ class Objects_Controller extends \WP_REST_Controller
         $page = (int) $query_args["paged"];
         $total_posts = $posts_query->found_posts;
 
-        $max_pages = ceil(
-            $total_posts / (int) $posts_query->query_vars["posts_per_page"]
-        );
+        if ( -1 === (int) $posts_query->query_vars["posts_per_page"] ) {
+            $max_pages = 1;
+        } else {
+            $max_pages = ceil(
+                $total_posts / (int) $posts_query->query_vars["posts_per_page"]
+            );
+        }
 
         if ($page > $max_pages && $total_posts > 0) {
             return new \WP_Error(
