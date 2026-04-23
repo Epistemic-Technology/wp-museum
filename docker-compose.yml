@@ -104,7 +104,7 @@ services:
     networks: [test]
 
   playwright:
-    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
     working_dir: /app/tests/playwright
     volumes:
       - .:/app

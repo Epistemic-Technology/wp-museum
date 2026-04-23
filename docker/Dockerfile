@@ -14,3 +14,5 @@ RUN apk add --no-cache curl less mysql-client && \
     mv wp-cli.phar /usr/local/bin/wp
 
 RUN npm install -g npm@latest
+
+ENV PATH="/app/vendor/bin:${PATH}"
