@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 if ( is_admin() ) {
 	return null;
 }

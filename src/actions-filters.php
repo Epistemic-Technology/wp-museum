@@ -14,6 +14,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /*****************************************************************************
  *
  * Global Actions

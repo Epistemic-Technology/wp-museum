@@ -255,6 +255,15 @@ cp "$PLUGIN_FILE" "$RELEASE_DIR/"
 cp -r "$BLOCKS_BUILD_DIR"/* "$REACT_DIR/"
 cp -r ./src/* "$RELEASE_DIR/"
 
+# Include the WordPress.org readme and license at the zip root
+cp ./readme.txt "$RELEASE_DIR/"
+cp ./LICENSE.md "$RELEASE_DIR/"
+
+# Include translation template if present
+if [ -d ./languages ]; then
+	cp -r ./languages "$RELEASE_DIR/"
+fi
+
 # Patch DEV_BUILD to false in the release copy
 sed -i '' 's/const DEV_BUILD = true/const DEV_BUILD = false/' "$RELEASE_DIR/wp-museum.php"
 

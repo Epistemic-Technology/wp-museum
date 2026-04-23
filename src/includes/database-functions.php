@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Checks whether site database schema is up-to-date and updates if not.
  */

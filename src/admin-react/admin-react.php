@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Enqueue script and style.
  *

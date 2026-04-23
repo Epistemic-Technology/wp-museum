@@ -38,6 +38,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 const DEFAULT_NUMBERPOSTS = 50;
 
 /**

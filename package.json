@@ -6,14 +6,50 @@
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",
-    "test:e2e": "lando playwright"
+
+    "setup": "npm run certs:generate && docker compose up -d --build && npm run bootstrap",
+    "bootstrap": "docker compose exec -T fpm sh -c 'npm install && composer install && npm run build && bash /app/docker/build-wordpress.sh' && npm run wp:install && docker compose exec -T fpm-test bash /app/docker/setup-test-wordpress.sh && npm run test:reset && docker compose --profile playwright run --rm -T playwright npm install",
+
+    "up": "docker compose up -d",
+    "down": "docker compose down",
+    "restart": "docker compose restart",
+    "rebuild": "docker compose build --no-cache",
+    "logs": "docker compose logs -f",
+    "ps": "docker compose ps",
+    "shell": "docker compose exec fpm bash",
+    "shell:test": "docker compose exec fpm-test bash",
+
+    "wp": "docker compose exec fpm wp",
+    "wp:debug": "docker compose exec -e XDEBUG_MODE=debug fpm php -d xdebug.start_with_request=yes /usr/local/bin/wp",
+    "wp:install": "docker compose exec fpm bash -c 'wp core install --title=\"WordPress Museum\" --admin_user=admin --admin_password=admin --admin_email=admin@example.com --skip-email --url=\"${WP_HOME:-http://localhost:8080}\"'",
+
+    "mysql": "docker compose exec database mysql -u wordpress -pwordpress wordpress",
+    "mysql:test": "docker compose exec fpm-test-db mysql -u wptest -pwptest wptest",
+
+    "phpunit": "docker compose exec fpm-test phpunit",
+    "phpunit:debug": "docker compose exec -e XDEBUG_MODE=debug fpm-test php -d xdebug.start_with_request=yes /app/vendor/bin/phpunit",
+    "test": "docker compose exec fpm-test bash -c '/app/docker/reset-test-wordpress.sh && phpunit'",
+    "test:reset": "docker compose exec fpm-test /app/docker/reset-test-wordpress.sh",
+
+    "test:e2e": "docker compose --profile playwright run --rm playwright /app/docker/run-playwright.sh",
+    "test:e2e:ui": "docker compose --profile playwright run --rm playwright npx playwright test --ui",
+    "test:e2e:debug": "docker compose --profile playwright run --rm playwright npx playwright test --debug",
+    "test:e2e:headed": "docker compose --profile playwright run --rm playwright npx playwright test --headed",
+
+    "composer": "docker compose exec fpm composer",
+    "composer:install": "docker compose exec fpm composer install",
+    "lint": "docker compose exec fpm composer run-script lint",
+    "lint:fix": "docker compose exec fpm composer run-script lint:fix",
+    "format": "docker compose exec fpm composer run-script format",
+
+    "certs:generate": "./docker/generate-certs.sh"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mikethicke/wp-museum.git"
   },
   "author": "Mike Thicke",
-  "license": "ISC",
+  "license": "GPL-2.0-or-later",
   "bugs": {
     "url": "https://github.com/mikethicke/wp-museum/issues"
   },

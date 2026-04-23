@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Represents a WordPress custom post type.
  */
@@ -426,15 +428,27 @@ class CustomPostType
             return;
         }
 
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
         foreach ($this->meta_box_fields as $field_name => $field_data) {
-            // phpcs:disable WordPress.Security.NonceVerification
-            if (isset($_POST[$field_name])) {
-                // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $field_value = trim(wp_unslash($_POST[$field_name]));
-                if (isset($field_value) && "" !== $field_value) {
-                    update_post_meta($post_id, $field_name, $field_value);
+            // Nonce is handled by WordPress core's post edit screen; capability
+            // is checked above.
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            if ( isset( $_POST[ $field_name ] ) ) {
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $raw_value   = wp_unslash( $_POST[ $field_name ] );
+                $field_type  = isset( $field_data["type"] ) ? $field_data["type"] : "text";
+                if ( "textarea" === $field_type ) {
+                    $field_value = trim( sanitize_textarea_field( $raw_value ) );
                 } else {
-                    delete_post_meta($post_id, $field_name);
+                    $field_value = trim( sanitize_text_field( $raw_value ) );
+                }
+                if ( "" !== $field_value ) {
+                    update_post_meta( $post_id, $field_name, $field_value );
+                } else {
+                    delete_post_meta( $post_id, $field_name );
                 }
             } elseif ("checkbox" === $field_data["type"]) {
                 update_post_meta($post_id, $field_name, "0");

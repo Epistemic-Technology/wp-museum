@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Checks if a cross-origin request to the rest api is authorized.
  *

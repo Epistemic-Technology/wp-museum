@@ -8,6 +8,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Singleton class for configuring and displaying widget.
  */

@@ -7,12 +7,18 @@
  *
  * @wordpress-plugin
  * Plugin Name: Museum for WordPress
+ * Plugin URI: https://github.com/mikethicke/wp-museum
  * Description: Manages a database of museum objects.
  * Version: 0.8.0
  * Requires at least: 6.2
+ * Requires PHP: 8.2
+ * Tested up to: 6.7
  * Author: Mike Thicke
  * Author URI: http://www.mikethicke.com
  * Text Domain: wp-museum
+ * Domain Path: /languages
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 namespace MikeThicke\WPMuseum;
@@ -22,7 +28,7 @@ const CSS_VERSION = "0.5.3"; // Change to force reload of CSS.
 const SCRIPT_VERSION = "0.5.2"; // Change to force reload of JS.
 const CACHE_GROUP = "MikeThicke\WPMuseum"; // For caching db queries.
 const DB_VERSION = "0.6.69"; // Change to update db structure.
-const DB_SHOW_ERRORS = true; // Have WP report db errors.
+const DB_SHOW_ERRORS = false; // Have WP report db errors (only enable during local debugging).
 const IMAGE_DIR = "wp-museum"; // Directory to save exported images.
 const REST_NAMESPACE = "wp-museum/v1"; // Root for rest routes.
 

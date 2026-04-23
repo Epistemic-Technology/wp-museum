@@ -10,6 +10,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Register the collection taxonomy for museum objects.
  */

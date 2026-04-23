@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Creates a new post with same type as current post and sets current post as its parent.
  * Called via ajax.

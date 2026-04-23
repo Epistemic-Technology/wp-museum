@@ -18,6 +18,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 require_once 'CustomPostType.php';
 require_once 'MetaBox.php';
 

@@ -9,6 +9,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Adds quick browse page to all object types.
  *
@@ -175,9 +177,10 @@ function quick_browse(): void
             $page++;
         } while (count($batch) === 50);
     } catch (\Exception $e) {
-        trigger_error($e->getMessage(), E_USER_ERROR);
+        trigger_error( esc_html( $e->getMessage() ), E_USER_ERROR );
         wp_die(
             sprintf(
+                /* translators: %s: error message from the database layer. */
                 esc_html__("Error retrieving museum objects: %s", "wp-museum"),
                 esc_html($e->getMessage())
             ),

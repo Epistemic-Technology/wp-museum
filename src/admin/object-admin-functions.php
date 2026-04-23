@@ -24,6 +24,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 // prefix for new fields created by javascript before being saved. Just has to be something
 // unique.
 const WPM_FIELD = 'wpm-new-field#';
@@ -273,7 +275,7 @@ function display_options_admin_section(): void {
 function display_image_backups_table(): void {
 	$dir_info = wp_upload_dir();
 	if ( ! $dir_info ) {
-		return false;
+		return;
 	}
 	$zip_dir     = $dir_info['basedir'] . DIRECTORY_SEPARATOR . IMAGE_DIR;
 	$zip_dir_url = $dir_info['baseurl'] . '/' . IMAGE_DIR;

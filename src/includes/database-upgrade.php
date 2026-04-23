@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Upgrades database from version 0.13 to 0.15. Version 0.13 is the live
  * verion on UTSIC in 2018/2019.

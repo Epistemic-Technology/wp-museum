@@ -1,6 +1,8 @@
 <?php
 
 namespace MikeThicke\WPMuseum;
+
+defined( 'ABSPATH' ) || exit;
 	
 $numObjects       = $attributes['numObjects'] ?? 4;
 $columns          = $attributes['columns'] ?? 2;
@@ -53,46 +55,44 @@ $collection_object_data = array_slice( $collection_object_data, 0, $numObjects )
 
 $percent_width = round( 1 / $columns * 100 );
 
+$title_tag    = tag_escape( $titleTag );
+$img_align    = sanitize_html_class( $imgAlignment );
+$font_size_em = (float) $fontSize;
+$col_count    = max( 1, (int) $columns );
 ?>
-<div class = 'museum-collection-block'>
-	<div class = 'collection-block-upper-content img-<?= $imgAlignment ?>'>
-		<?php if ( $displayThumbnail && ! is_null( $thumbnailURL ) ): ?>
-			<div class = 'thumbnail-wrapper'>
-				<img src = '<?= $thumbnailURL ?>' alt='<?= esc_attr( $collection->post_title ) ?>'/>
+<div class="museum-collection-block">
+	<div class="collection-block-upper-content img-<?php echo esc_attr( $img_align ); ?>">
+		<?php if ( $displayThumbnail && ! is_null( $thumbnailURL ) ) : ?>
+			<div class="thumbnail-wrapper">
+				<img src="<?php echo esc_url( $thumbnailURL ); ?>" alt="<?php echo esc_attr( isset( $collection ) ? $collection->post_title : '' ); ?>"/>
 			</div>
 		<?php endif; ?>
-		<div class = 'collection-info'>
+		<div class="collection-info">
 			<?php if ( $displayTitle && ! is_null( $title ) ) : ?>
-				<<?= $titleTag; ?>>
-					<?= $title; ?>
-				</<?= $titleTag; ?>>
+				<<?php echo esc_html( $title_tag ); ?>>
+					<?php echo esc_html( $title ); ?>
+				</<?php echo esc_html( $title_tag ); ?>>
 			<?php endif; ?>
-			<?php if ( $displayExcerpt && ! is_null( $excerpt ) ): ?>
-				<div
-					class = 'collection-excerpt'
-					style = 'font-size: <?= $fontSize ?>em'
-				>
-					<?= $excerpt ?>
+			<?php if ( $displayExcerpt && ! is_null( $excerpt ) ) : ?>
+				<div class="collection-excerpt" style="font-size: <?php echo esc_attr( $font_size_em ); ?>em">
+					<?php echo esc_html( $excerpt ); ?>
 				</div>
 			<?php endif; ?>
 		</div>
 	</div>
-	<div 
-		class = 'collection-block-lower-content'
-		style = 'display: grid; grid-template-columns: repeat(<?= $columns ?>, 1fr); gap: 1rem;'
-	>
-		<?php if ( $displayObjects && count( $collection_object_data ) > 0 ): ?>
-			<?php foreach( $collection_object_data as $object_data ): ?>
-				<div class = 'collection-object-image-wrapper'>
-					<?php if ( $linkToObjects ): ?>
-						<a href = '<?= $object_data['URL'] ?>'>
+	<div class="collection-block-lower-content" style="display: grid; grid-template-columns: repeat(<?php echo esc_attr( $col_count ); ?>, 1fr); gap: 1rem;">
+		<?php if ( $displayObjects && count( $collection_object_data ) > 0 ) : ?>
+			<?php foreach ( $collection_object_data as $object_data ) : ?>
+				<div class="collection-object-image-wrapper">
+					<?php if ( $linkToObjects ) : ?>
+						<a href="<?php echo esc_url( $object_data['URL'] ); ?>">
 					<?php endif; ?>
 					<img
-						src   = '<?= $object_data['imgURL'] ?>'
-						title = '<?= $object_data['title'] ?>'
-						alt   = '<?= esc_attr( $object_data['title'] ) ?>'
+						src="<?php echo esc_url( $object_data['imgURL'] ); ?>"
+						title="<?php echo esc_attr( $object_data['title'] ); ?>"
+						alt="<?php echo esc_attr( $object_data['title'] ); ?>"
 					/>
-					<?php if ( $linkToObjects ): ?>
+					<?php if ( $linkToObjects ) : ?>
 						</a>
 					<?php endif; ?>
 				</div>

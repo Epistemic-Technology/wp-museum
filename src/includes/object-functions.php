@@ -8,6 +8,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * List of WordPress type names for all objects in database.
  *

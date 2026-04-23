@@ -9,6 +9,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 use WP_Error;
 
 /**
@@ -62,8 +64,12 @@ function handle_oai_pmh_request()
     //     header("Content-Type: text/xml; charset=utf-8");
     // }
 
-    // Get and validate verb
-    $verb = $_GET["verb"] ?? ($_POST["verb"] ?? "");
+    // Get and validate verb. OAI-PMH is a public read-only harvesting endpoint
+    // defined by the Open Archives Initiative, so WordPress nonces do not apply.
+    // phpcs:disable WordPress.Security.NonceVerification
+    $raw_verb = $_GET["verb"] ?? ($_POST["verb"] ?? "");
+    // phpcs:enable WordPress.Security.NonceVerification
+    $verb     = sanitize_text_field( wp_unslash( $raw_verb ) );
 
     if (empty($verb)) {
         output_oai_error("badVerb", "Missing verb argument");
@@ -82,16 +88,19 @@ function handle_oai_pmh_request()
         "ListIdentifiers",
         "ListRecords",
     ];
-    if (!in_array($verb, $valid_verbs)) {
-        output_oai_error("badVerb", "Illegal OAI verb: $verb");
+    if (!in_array($verb, $valid_verbs, true)) {
+        output_oai_error("badVerb", "Illegal OAI verb: " . esc_html( $verb ));
         if (!defined("WP_TESTS_DOMAIN")) {
             exit();
         }
         return;
     }
 
-    // Get all arguments
-    $args = array_merge($_GET, $_POST);
+    // Get all arguments. Public OAI-PMH endpoint — see nonce comment above.
+    // Individual handlers sanitize values before use.
+    // phpcs:disable WordPress.Security.NonceVerification
+    $args = array_merge( wp_unslash( $_GET ), wp_unslash( $_POST ) );
+    // phpcs:enable WordPress.Security.NonceVerification
     unset($args["oai_pmh"]); // Remove our custom query var
 
     try {
@@ -141,7 +150,7 @@ function output_oai_header($verb, $args = [])
 
     // Response date in UTC
     echo "  <responseDate>" .
-        gmdate("Y-m-d\TH:i:s\Z") .
+        esc_html( gmdate("Y-m-d\TH:i:s\Z") ) .
         "</responseDate>" .
         "\n";
 
@@ -221,7 +230,7 @@ function handle_identify($args)
     // Get earliest datestamp from objects
     $earliest_date = get_earliest_object_date();
     echo "    <earliestDatestamp>" .
-        $earliest_date .
+        esc_html( $earliest_date ) .
         "</earliestDatestamp>" .
         "\n";
 
@@ -883,7 +892,7 @@ function output_header($post)
 
     echo "    <header>" . "\n";
     echo "      <identifier>" . esc_html($identifier) . "</identifier>" . "\n";
-    echo "      <datestamp>" . $datestamp . "</datestamp>" . "\n";
+    echo "      <datestamp>" . esc_html( $datestamp ) . "</datestamp>" . "\n";
 
     // Add set specs for collections
     $collection_terms = wp_get_object_terms(
@@ -997,21 +1006,21 @@ function output_metadata($post)
                 if (is_array($value)) {
                     foreach ($value as $v) {
                         echo "        <dc:" .
-                            $dc_field .
+                            esc_html( $dc_field ) .
                             ">" .
                             esc_html($v) .
                             "</dc:" .
-                            $dc_field .
+                            esc_html( $dc_field ) .
                             ">" .
                             "\n";
                     }
                 } else {
                     echo "        <dc:" .
-                        $dc_field .
+                        esc_html( $dc_field ) .
                         ">" .
                         esc_html($value) .
                         "</dc:" .
-                        $dc_field .
+                        esc_html( $dc_field ) .
                         ">" .
                         "\n";
                 }

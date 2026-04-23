@@ -2,9 +2,13 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 $post_id = get_the_ID();
-$output  = '';
 if ( $post_id ) {
-	echo ( "<div class='wpm-collection-objects-block' data-post-ID='$post_id'></div>" );
+	printf(
+		'<div class="wpm-collection-objects-block" data-post-ID="%d"></div>',
+		(int) $post_id
+	);
 }
 

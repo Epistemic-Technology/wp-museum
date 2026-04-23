@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Gets all posts of the Collection post type.
  *
@@ -41,7 +43,7 @@ function get_collection_by_slug(string $slug): \WP_Post|false
     ]);
     if (count($collections) > 1) {
         trigger_error(
-            "Multiple collections found with the same slug: " . $slug,
+            "Multiple collections found with the same slug: " . esc_html( $slug ),
             E_USER_WARNING
         );
     }

@@ -4,31 +4,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Essential Development Commands
 
+The default local environment is Docker Compose, driven through `npm run` scripts. Lando is still supported as an alternative — config shared via symlinks from `.lando/` to `docker/`.
+
+### First-time setup
+1. `cp .env.example .env` and set `WP_HOME` to the URL you'll use in the browser (e.g. `http://localhost:8080` or `http://<host>.<tailnet>.ts.net:8080` for remote dev over Tailscale).
+2. `npm run setup` — generates self-signed certs, builds the image, starts services, installs npm/composer deps, builds assets, downloads WordPress, installs WP, sets up the test site, and installs Playwright deps.
+
+### Lifecycle
+- `npm run up` / `npm run down` / `npm run restart` / `npm run rebuild`
+- `npm run logs` / `npm run ps`
+- `npm run shell` / `npm run shell:test` - Bash inside dev/test php-fpm container
+- `npm run certs:generate` - (Re)generate self-signed SSL certs in `docker/certs/`
+
 ### Build and Development
-- `lando npm run build` - Build production assets using @wordpress/scripts
-- `lando npm run start` - Start development server with watch mode
-- `lando composer install` - Install PHP dependencies (coding standards, tests)
+- `npm run build` - Build production assets using @wordpress/scripts (runs on host)
+- `npm run start` - Start development server with watch mode (runs on host)
+- `npm run composer:install` - Install PHP dependencies inside the container
 
 ### Testing
-- `lando phpunit` - Run PHPUnit tests (requires WordPress test environment)
-- `lando phpunit-debug` - Run PHPUnit with xdebug enabled
-- `lando test` - Reset test environment and run PHPUnit tests
-- `lando test-reset` - Reset test WordPress to clean state
-- `lando playwright` - Run Playwright end-to-end tests (includes automatic reset)
-- `lando npm run test:e2e` - Alternative Playwright test command
-- `lando npm run test:e2e:ui` - Run Playwright with interactive UI
-- `lando npm run test:e2e:debug` - Debug Playwright tests
-- `lando npm run test:e2e:headed` - Run Playwright with visible browser
+- `npm run phpunit` - Run PHPUnit tests
+- `npm run phpunit:debug` - Run PHPUnit with xdebug enabled
+- `npm run test` - Reset test environment and run PHPUnit tests
+- `npm run test:reset` - Reset test WordPress to clean state
+- `npm run test:e2e` - Run Playwright end-to-end tests (includes automatic reset)
+- `npm run test:e2e:ui` - Run Playwright with interactive UI
+- `npm run test:e2e:debug` - Debug Playwright tests
+- `npm run test:e2e:headed` - Run Playwright with visible browser
 
 ### Code Quality
-- `vendor/bin/phpcs` - Run PHP CodeSniffer with WordPress coding standards
-- `vendor/bin/phpcs --standard=phpcs.xml.dist` - Full linting with custom rules
+- `npm run lint` - Run PHP CodeSniffer with WordPress coding standards (delegates to `composer run-script lint`)
+- `npm run lint:fix` / `npm run format` - Auto-fix via phpcbf
 - PHP 8.2+ compatibility enforced via phpcs.xml.dist
 
 ### WordPress CLI
-- `lando wp` - Run WP-CLI commands
-- `lando wpd` - Run WP-CLI with xdebug enabled
-- `lando wp-install` - Install WordPress (admin/admin credentials)
+- `npm run wp -- <args>` - Run WP-CLI commands
+- `npm run wp:debug -- <args>` - Run WP-CLI with xdebug enabled
+- `npm run wp:install` - Install WordPress (admin/admin credentials, URL from `WP_HOME`)
+
+### Database
+- `npm run mysql` - Open MySQL shell against dev database
+- `npm run mysql:test` - Open MySQL shell against test database
+
+### Lando (alternative)
+All legacy `lando <cmd>` tooling from `.lando.yml` remains functional (`lando wp`, `lando phpunit`, `lando test`, `lando playwright`, etc.).
 
 ## Plugin Architecture Overview
 
@@ -90,7 +108,7 @@ Comprehensive REST API with controllers for:
 
 ### Testing Environment
 - **Playwright tests**: Use utilities in `tests/playwright/utils.js`
-- **Test site**: https://wp-test.lndo.site (credentials: admin/admin)
+- **Test site**: Reached internally at `http://nginx-test` (Docker Compose) or `https://wp-test.lndo.site` (Lando). Credentials: admin/admin. Override with `TEST_SITE_URL` in `.env`.
 - **Helper functions**: Object creation, plugin activation, admin login
 - **PHPUnit**: WordPress test framework integration
 - **Available test specs**: 
@@ -134,5 +152,10 @@ Webpack build process with:
 ### Testing
 - Playwright tests require WordPress test environment
 - Tests use comprehensive utilities for object/collection creation
-- Use `lando playwright` for automatic test environment reset before tests
+- Use `npm run test:e2e` (or `lando playwright`) for automatic test environment reset before tests
 - Test environment runs on separate database (wptest) and server instance
+
+### Container Layout
+- `docker/` - Source of truth for Dockerfile, nginx confs, php.ini, wp-configs, and setup/reset shell scripts
+- `.lando/` - Contains symlinks back into `docker/` so Lando and Docker Compose share the same files
+- `docker-compose.yml` - Defines `fpm`, `nginx`, `database` (dev network) and `fpm-test`, `nginx-test`, `fpm-test-db`, `playwright` (test network). Each php-fpm service is aliased `fpm` on its network so nginx confs work unchanged in both Lando and Compose.

@@ -10,6 +10,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * A singleton class for registering museum object kind field endpoints.
  */

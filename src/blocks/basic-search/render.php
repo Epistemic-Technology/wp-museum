@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 
 if ( is_admin() ) {
 	return;
@@ -22,10 +24,6 @@ if ( isset( $_GET['onlyTitle'] ) ) {
 $encoded_attributes = wp_json_encode( $attributes );
 
 ?>
-<div 
-	class='wpm-basic-search-block-frontend' 
-	data-attributes='<?= $encoded_attributes ?>'
->
-</div>
+<div class="wpm-basic-search-block-frontend" data-attributes="<?php echo esc_attr( $encoded_attributes ); ?>"></div>
 
 

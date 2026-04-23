@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 global $post;
 
 if ( ! in_the_loop() || ! is_singular( get_object_type_names() ) ) {

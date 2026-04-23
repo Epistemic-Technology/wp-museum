@@ -8,7 +8,7 @@
 	<!-- Check for PHP 8.x compatibility -->
     <config name="testVersion" value="8.2-"/>
 	<config name="minimum_wp_version" value="6.2"/>
-	<config name="installed_paths" value="vendor/phpcompatibility/php-compatibility" />
+	<config name="installed_paths" value="vendor/phpcompatibility/php-compatibility,vendor/wp-coding-standards/wpcs,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra" />
 
 	<exclude-pattern type="relative">vendor/*</exclude-pattern>
 	<exclude-pattern type="relative">node_modules/*</exclude-pattern>

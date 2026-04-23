@@ -32,6 +32,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 $title          = $attributes['title'];
 $excerpt        = $attributes['excerpt'];
 $objectURL      = $attributes['objectURL'];
@@ -64,9 +66,9 @@ if ( count( $fields ) === count( $fieldData ) ) {
 		function ( $key ) use ( $fontSize, $fieldData ) {
 			ob_start();
 			?>
-			<li key = '<?= $key ?>' style = 'font-size: <?= $fontSize ?>em'>
-				<span class = 'field-name'><?= $fieldData[$key]['name'] ?>: </span>
-				<span class = 'field-data'><?= $fieldData[$key]['content'] ?? '' ?> </span>
+			<li key="<?php echo esc_attr( $key ); ?>" style="font-size: <?php echo esc_attr( (float) $fontSize ); ?>em">
+				<span class="field-name"><?php echo esc_html( $fieldData[ $key ]['name'] ); ?>: </span>
+				<span class="field-data"><?php echo esc_html( $fieldData[ $key ]['content'] ?? '' ); ?> </span>
 			</li>
 			<?php
 			$output = ob_get_contents();
@@ -81,32 +83,35 @@ foreach ( $fieldList as $field ) {
 	$fieldListHTML .= $field;
 }
 
+$title_tag = tag_escape( $titleTag );
+$img_align = sanitize_html_class( $imgAlignment );
+$font_size = (float) $fontSize;
 ?>
-<div class = 'info-outer-div'>
-	<div class = 'infobox-body-wrapper img-<?= $imgAlignment ?>'>
-		<?php if ( $linkToObject ): ?>
-			<a class = 'object-link' href = '<?= $objectURL ?>'>Hidden Link Text</a>
+<div class="info-outer-div">
+	<div class="infobox-body-wrapper img-<?php echo esc_attr( $img_align ); ?>">
+		<?php if ( $linkToObject ) : ?>
+			<a class="object-link" href="<?php echo esc_url( $objectURL ); ?>">Hidden Link Text</a>
 		<?php endif; ?>
-		<?php if ( ! is_null( $imgURL ) && $displayImage ): ?>
-			<div class = 'infobox-img-wrapper'>
+		<?php if ( ! is_null( $imgURL ) && $displayImage ) : ?>
+			<div class="infobox-img-wrapper">
 				<img
-					src    = '<?= $imgURL ?>'
-					height = '<?= $height ?>'
-					width  = '<?= $width  ?>'
-					alt    = '<?= esc_attr( $post_title ) ?>'
+					src="<?php echo esc_url( $imgURL ); ?>"
+					height="<?php echo esc_attr( (int) $height ); ?>"
+					width="<?php echo esc_attr( (int) $width ); ?>"
+					alt="<?php echo esc_attr( isset( $post_title ) ? $post_title : '' ); ?>"
 				/>
 			</div>
 		<?php endif; ?>
-		<div class = 'infobox-content-wrapper'>
-			<?php if ( null !== $title && $displayTitle ): ?>
-				<<?= $titleTag ?>><?= $title ?></<?= $titleTag ?>>
+		<div class="infobox-content-wrapper">
+			<?php if ( null !== $title && $displayTitle ) : ?>
+				<<?php echo esc_html( $title_tag ); ?>><?php echo esc_html( $title ); ?></<?php echo esc_html( $title_tag ); ?>>
 			<?php endif; ?>
-			<?php if ( null !== $excerpt && $displayExcerpt ): ?>
-				<p style = 'font-size:<?= $fontSize ?>em'><?= $excerpt ?></p>
+			<?php if ( null !== $excerpt && $displayExcerpt ) : ?>
+				<p style="font-size:<?php echo esc_attr( $font_size ); ?>em"><?php echo esc_html( $excerpt ); ?></p>
 			<?php endif; ?>
-			<?php if ( count( $fieldList ) > 0 ): ?>
+			<?php if ( count( $fieldList ) > 0 ) : ?>
 				<ul>
-					<?= $fieldListHTML ?>
+					<?php echo wp_kses_post( $fieldListHTML ); ?>
 				</ul>
 			<?php endif; ?>
 		</div>

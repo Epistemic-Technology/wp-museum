@@ -11,6 +11,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Check if the migration should run.
  * 
@@ -18,16 +20,23 @@ namespace MikeThicke\WPMuseum;
  * @return bool True if the migration should run.
  */
 function should_run_collection_migration($force = false) {
-    // If force is true, run the migration regardless of completion status
-    if ($force) {
-        return current_user_can('manage_options') && isset($_GET['collection_migration']) && $_GET['collection_migration'] == 1;
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return false;
     }
-    
-    // Only run if user is an admin, the GET parameter is set, and the migration hasn't been completed
-    return current_user_can('manage_options') && 
-           isset($_GET['collection_migration']) && 
-           $_GET['collection_migration'] == 1 && 
-           !is_collection_migration_completed();
+    if ( ! isset( $_GET['collection_migration'], $_GET['wpm_migration_nonce'] ) ) {
+        return false;
+    }
+    $nonce = sanitize_text_field( wp_unslash( $_GET['wpm_migration_nonce'] ) );
+    if ( ! wp_verify_nonce( $nonce, 'wp_museum_force_collection_migration' ) ) {
+        return false;
+    }
+    if ( 1 !== absint( $_GET['collection_migration'] ) ) {
+        return false;
+    }
+    if ( $force ) {
+        return true;
+    }
+    return ! is_collection_migration_completed();
 }
 
 /**
@@ -442,19 +451,21 @@ function add_force_migration_button() {
         <p>This will migrate your WordPress categories to collection taxonomy terms.</p>
         <p>This is useful if you have been using categories to organize your museum objects and want to switch to the collection taxonomy system.</p>
         
-        <form method="get" action="<?php echo admin_url('admin.php'); ?>">
+        <form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
             <input type="hidden" name="page" value="collection-migration">
             <input type="hidden" name="collection_migration" value="1">
+            <input type="hidden" name="force" value="1">
+            <?php wp_nonce_field( 'wp_museum_force_collection_migration', 'wpm_migration_nonce' ); ?>
             <?php submit_button('Run Category to Collection Migration', 'primary', 'submit', false); ?>
         </form>
-        
+
         <hr>
-        
+
         <h2>Collection Post to Term Migration</h2>
         <p>This will create taxonomy terms for all your existing collection posts.</p>
         <p>This is useful if you have existing collections that need to be associated with taxonomy terms.</p>
-        
-        <form method="post" action="<?php echo admin_url('admin.php'); ?>">
+
+        <form method="post" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
             <input type="hidden" name="page" value="collection-migration">
             <input type="hidden" name="action" value="force_collection_term_migration">
             <?php wp_nonce_field('wp_museum_force_collection_term_migration'); ?>
@@ -482,13 +493,20 @@ add_action('admin_menu', __NAMESPACE__ . '\add_migration_menu');
  * Check if we should force the migration.
  */
 function check_force_migration() {
-    if (current_user_can('manage_options') && 
-        isset($_GET['collection_migration']) && 
-        $_GET['collection_migration'] == 1 && 
-        isset($_GET['force']) && 
-        $_GET['force'] == 1) {
-        run_collection_migration(true);
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
     }
+    if ( ! isset( $_GET['collection_migration'], $_GET['force'], $_GET['wpm_migration_nonce'] ) ) {
+        return;
+    }
+    $nonce = sanitize_text_field( wp_unslash( $_GET['wpm_migration_nonce'] ) );
+    if ( ! wp_verify_nonce( $nonce, 'wp_museum_force_collection_migration' ) ) {
+        return;
+    }
+    if ( absint( $_GET['collection_migration'] ) !== 1 || absint( $_GET['force'] ) !== 1 ) {
+        return;
+    }
+    run_collection_migration( true );
 }
 add_action('init', __NAMESPACE__ . '\check_force_migration', 9); // Run before the normal migration
 
@@ -500,22 +518,34 @@ function migration_admin_notice() {
         return;
     }
     
-    // Check for category to collection migration completion
-    if (isset($_GET['migration_complete']) && $_GET['migration_complete'] == 1) {
+    // Check for category to collection migration completion.
+    $migration_complete = isset( $_GET['migration_complete'] ) ? absint( $_GET['migration_complete'] ) : 0;
+    if ( 1 === $migration_complete ) {
+        $log_url = wp_nonce_url(
+            admin_url( 'admin.php?page=collection-migration&view_migration_log=1' ),
+            'wp_museum_view_migration_log',
+            'wpm_log_nonce'
+        );
         ?>
         <div class="notice notice-success is-dismissible">
             <p><strong>Success!</strong> The category to collection migration has been completed.</p>
-            <p><a href="<?php echo admin_url('admin.php?page=collection-migration&view_migration_log=1'); ?>">View Migration Log</a></p>
+            <p><a href="<?php echo esc_url( $log_url ); ?>">View Migration Log</a></p>
         </div>
         <?php
     }
-    
-    // Check for collection term migration completion
-    if (isset($_GET['term_migration_complete']) && $_GET['term_migration_complete'] == 1) {
+
+    // Check for collection term migration completion.
+    $term_migration_complete = isset( $_GET['term_migration_complete'] ) ? absint( $_GET['term_migration_complete'] ) : 0;
+    if ( 1 === $term_migration_complete ) {
+        $log_url = wp_nonce_url(
+            admin_url( 'admin.php?page=collection-migration&view_migration_log=1' ),
+            'wp_museum_view_migration_log',
+            'wpm_log_nonce'
+        );
         ?>
         <div class="notice notice-success is-dismissible">
             <p><strong>Success!</strong> The collection term migration has been completed.</p>
-            <p><a href="<?php echo admin_url('admin.php?page=collection-migration&view_migration_log=1'); ?>">View Migration Log</a></p>
+            <p><a href="<?php echo esc_url( $log_url ); ?>">View Migration Log</a></p>
         </div>
         <?php
     }
@@ -535,31 +565,42 @@ function is_collection_migration_completed() {
  * Display the migration log in the admin area.
  */
 function display_migration_log() {
-    if (!current_user_can('administrator')) {
+    if ( ! current_user_can( 'administrator' ) ) {
         return;
     }
-    
-    if (isset($_GET['view_migration_log'])) {
-        $log = get_option(WPM_PREFIX . 'collection_migration_log', []);
-        
-        echo '<div class="wrap">';
-        echo '<h1>Collection Migration Log</h1>';
-        
-        if (empty($log)) {
-            echo '<p>No migration log found.</p>';
-        } else {
-            echo '<div style="background: #f8f8f8; padding: 15px; border: 1px solid #ddd; max-height: 500px; overflow-y: auto;">';
-            echo '<ul>';
-            foreach ($log as $entry) {
-                echo '<li>' . esc_html($entry) . '</li>';
-            }
-            echo '</ul>';
-            echo '</div>';
+
+    if ( ! isset( $_GET['view_migration_log'], $_GET['wpm_log_nonce'] ) ) {
+        return;
+    }
+
+    $nonce = sanitize_text_field( wp_unslash( $_GET['wpm_log_nonce'] ) );
+    if ( ! wp_verify_nonce( $nonce, 'wp_museum_view_migration_log' ) ) {
+        return;
+    }
+
+    $log = get_option( WPM_PREFIX . 'collection_migration_log', [] );
+
+    echo '<div class="wrap">';
+    echo '<h1>' . esc_html__( 'Collection Migration Log', 'wp-museum' ) . '</h1>';
+
+    if ( empty( $log ) ) {
+        echo '<p>' . esc_html__( 'No migration log found.', 'wp-museum' ) . '</p>';
+    } else {
+        echo '<div style="background: #f8f8f8; padding: 15px; border: 1px solid #ddd; max-height: 500px; overflow-y: auto;">';
+        echo '<ul>';
+        foreach ( $log as $entry ) {
+            echo '<li>' . esc_html( $entry ) . '</li>';
         }
-        
-        echo '<p><a href="' . admin_url('index.php') . '" class="button">Back to Dashboard</a></p>';
+        echo '</ul>';
         echo '</div>';
     }
+
+    printf(
+        '<p><a href="%s" class="button">%s</a></p>',
+        esc_url( admin_url( 'index.php' ) ),
+        esc_html__( 'Back to Dashboard', 'wp-museum' )
+    );
+    echo '</div>';
 }
 add_action('admin_notices', __NAMESPACE__ . '\display_migration_log');
 

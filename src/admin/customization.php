@@ -10,6 +10,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 global $style_defaults;
 
 $style_defaults = [

@@ -11,6 +11,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 $collection_options   = [
 	'type'         => WPM_PREFIX . 'collection',
 	'label'        => 'Collection',

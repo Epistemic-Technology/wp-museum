@@ -29,6 +29,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 //phpcs:disable
 $columns        = $attributes['columns'];
 $objectURL      = $attributes['objectURL'] ?? null;

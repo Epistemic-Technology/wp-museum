@@ -2,7 +2,7 @@
   "name": "mikethicke/wp-museum",
   "description": "Museum management plugin for WordPress",
   "type": "project",
-  "license": "MIT",
+  "license": "GPL-2.0-or-later",
   "authors": [
     {
       "name": "Mike Thicke",
@@ -20,5 +20,13 @@
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
+  },
+  "scripts": {
+    "lint": "phpcs --standard=phpcs.xml.dist",
+    "lint:fix": "phpcbf --standard=phpcs.xml.dist",
+    "format": "phpcbf --standard=phpcs.xml.dist",
+    "phpcs": "phpcs",
+    "phpcbf": "phpcbf",
+    "phpunit": "phpunit"
   }
 }

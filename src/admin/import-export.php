@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Output csv to save. This is called by setting the Get parameter wpm_ot_csv to
  * an object type (collection, exhibit, instrument, etc.).

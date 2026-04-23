@@ -12,6 +12,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class representing a remote museum client.
  */

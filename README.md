@@ -67,6 +67,36 @@ features up to the 1.0 release.
 For detailed roadmap see the [project
 page](https://github.com/mikethicke/wp-museum/projects/1).
 
+## Development
+
+The local environment runs on Docker Compose, orchestrated through `npm run`
+scripts. Lando is still supported as an alternative; both share config via
+symlinks from `.lando/` into `docker/`.
+
+### Setup
+
+1. `cp .env.example .env` and set `WP_HOME` to the URL your browser will hit
+   (e.g. `http://localhost:8080`, or `http://<host>.<tailnet>.ts.net:8080` for
+   remote development over Tailscale).
+2. `npm run setup` — generates self-signed certs, builds the container image,
+   starts services, installs dependencies, builds assets, downloads WordPress,
+   and bootstraps both dev and test sites.
+
+### Common commands
+
+- `npm run up` / `npm run down` — start/stop services
+- `npm run shell` — bash inside the dev container
+- `npm run wp -- <args>` — WP-CLI
+- `npm run test` — PHPUnit with automatic test-site reset
+- `npm run test:e2e` — Playwright end-to-end tests
+- `npm run lint` / `npm run lint:fix` — PHP coding standards
+
+See [CLAUDE.md](CLAUDE.md) for the full command reference.
+
+### Lando (alternative)
+
+All existing `lando <cmd>` tooling continues to work against the same config.
+
 ## Authors
 
 Museum for WordPress is developed by [Mike Thicke](http://www.mikethicke.com/).
@@ -79,4 +109,4 @@ Institute for Astronomy and Astrophysics](https://www.dunlap.utoronto.ca).
 
 ## License
 
-This project is licensed under the open source [MIT License](LICENSE.md).
+This project is licensed under the [GNU General Public License, version 2 or later](LICENSE.md).

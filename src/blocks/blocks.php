@@ -7,6 +7,8 @@
 
 namespace MikeThicke\WPMuseum;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Register blocks.
  */
@@ -82,20 +84,18 @@ add_action("init", __NAMESPACE__ . '\register_object_meta_block', 50);
 function calculate_post_type_in_editor(): string|false
 {
     if (isset($_GET["post_type"])) {
-        return sanitize_text_field($_GET["post_type"]);
+        return sanitize_key( wp_unslash( $_GET["post_type"] ) );
     }
 
     if (isset($_GET["post"])) {
-        $post_id = intval($_GET["post"]);
+        $post_id = intval( wp_unslash( $_GET["post"] ) );
     } else {
         // See: https://wordpress.stackexchange.com/a/307601
+        $https = isset( $_SERVER["HTTPS"] ) && "on" === sanitize_text_field( wp_unslash( $_SERVER["HTTPS"] ) );
+        $host  = isset( $_SERVER["HTTP_HOST"] ) ? sanitize_text_field( wp_unslash( $_SERVER["HTTP_HOST"] ) ) : "";
+        $uri   = isset( $_SERVER["REQUEST_URI"] ) ? esc_url_raw( wp_unslash( $_SERVER["REQUEST_URI"] ) ) : "";
         $post_id = url_to_postid(
-            (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] === "on"
-                ? "https"
-                : "http") .
-                "://" .
-                $_SERVER["HTTP_HOST"] .
-                $_SERVER["REQUEST_URI"]
+            ( $https ? "https" : "http" ) . "://" . $host . $uri
         );
     }
 
