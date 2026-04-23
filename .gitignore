@@ -30,3 +30,5 @@ playwright-report/
 browser-cache/
 test-results/
 debug-*
+.env
+docker/certs/

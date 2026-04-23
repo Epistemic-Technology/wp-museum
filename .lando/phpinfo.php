@@ -1,3 +1,1 @@
-<?php
-// phpcs:ignoreFile
-phpinfo();
+../docker/phpinfo.php
