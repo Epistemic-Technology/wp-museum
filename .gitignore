@@ -32,3 +32,4 @@ test-results/
 debug-*
 .env
 docker/certs/
+local/
