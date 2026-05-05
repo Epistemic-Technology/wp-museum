@@ -1,5 +1,5 @@
 import { useSelect, useDispatch } from "@wordpress/data";
-import { useState, useEffect } from "@wordpress/element";
+import { useState, useEffect, useRef } from "@wordpress/element";
 import apiFetch from "@wordpress/api-fetch";
 import {
   InspectorControls,
@@ -174,6 +174,8 @@ const ObjectMetaEdit = (props) => {
   const { attributes, setAttributes } = props;
   const blockProps = useBlockProps({ className: "object-meta-block" });
 
+  const fieldsContainerRef = useRef(null);
+
   const [fieldData, setFieldData] = useState(null);
   const [postData, setPostData] = useState(null);
   const [currentHelpText, setCurrentHelpText] = useState(null);
@@ -291,6 +293,51 @@ const ObjectMetaEdit = (props) => {
     }
   }, [fieldData]);
 
+  // Override Gutenberg's Tab handling within the field group so keyboard
+  // navigation moves between fields instead of jumping to the block toolbar
+  // or sidebar. Capture phase + stopImmediatePropagation prevents the block
+  // editor's writing-flow listener from intercepting the event.
+  useEffect(() => {
+    const container = fieldsContainerRef.current;
+    if (!container) return undefined;
+
+    const focusableSelector = [
+      'input:not([disabled]):not([type="hidden"])',
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      'button:not([disabled]):not([tabindex="-1"])',
+      '[contenteditable="true"]',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(",");
+
+    const handleKeyDown = (event) => {
+      if (event.key !== "Tab") return;
+
+      const focusables = Array.from(
+        container.querySelectorAll(focusableSelector),
+      ).filter((el) => el.offsetParent !== null || el.getClientRects().length);
+
+      if (focusables.length === 0) return;
+
+      const currentIndex = focusables.indexOf(document.activeElement);
+      if (currentIndex === -1) return;
+
+      const nextIndex = event.shiftKey ? currentIndex - 1 : currentIndex + 1;
+
+      // At the boundaries, let the event propagate so focus can leave the
+      // block normally.
+      if (nextIndex < 0 || nextIndex >= focusables.length) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      focusables[nextIndex].focus();
+    };
+
+    container.addEventListener("keydown", handleKeyDown, true);
+    return () =>
+      container.removeEventListener("keydown", handleKeyDown, true);
+  }, []);
+
   const onFieldFocus = (helpText, detailedInstructions) => {
     setCurrentHelpText(stripslashes(helpText));
     setCurrentDetailedInstructions(stripslashes(detailedInstructions));
@@ -346,7 +393,9 @@ const ObjectMetaEdit = (props) => {
         helpText={currentHelpText}
         detailedInstructions={currentDetailedInstructions}
       />
-      <div className="object-meta-fields-container">{fields}</div>
+      <div className="object-meta-fields-container" ref={fieldsContainerRef}>
+        {fields}
+      </div>
     </div>
   );
 };
