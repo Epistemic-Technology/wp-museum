@@ -10,9 +10,9 @@
  * Plugin URI: https://github.com/mikethicke/wp-museum
  * Description: Manages a database of museum objects.
  * Version: 0.8.0
- * Requires at least: 6.2
+ * Requires at least: 6.9
  * Requires PHP: 8.2
- * Tested up to: 6.7
+ * Tested up to: 6.9.4
  * Author: Mike Thicke
  * Author URI: http://www.mikethicke.com
  * Text Domain: wp-museum

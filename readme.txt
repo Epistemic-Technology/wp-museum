@@ -1,8 +1,8 @@
 === Museum for WordPress ===
 Contributors: mikethicke
 Tags: museum, collection, gallery, archive, catalog
-Requires at least: 6.2
-Tested up to: 6.7
+Requires at least: 6.9
+Tested up to: 6.9.4
 Requires PHP: 8.2
 Stable tag: 0.8.0
 License: GPLv2 or later
@@ -31,7 +31,7 @@ Museum for WordPress is a full-featured museum management system built directly 
 
 **Requirements**
 
-* WordPress 6.2 or later
+* WordPress 6.9 or later
 * PHP 8.2 or later
 
 == Installation ==

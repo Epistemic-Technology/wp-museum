@@ -33,3 +33,4 @@ debug-*
 .env
 docker/certs/
 local/
+site/

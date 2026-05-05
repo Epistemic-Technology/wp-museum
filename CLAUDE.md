@@ -57,7 +57,7 @@ This is a WordPress plugin called "Museum for WordPress" that manages museum obj
 - Entry point with constants and autoloading
 - New PHP files need to be explicitly required in wp-museum.php
 - DEV_BUILD constant controls development vs production structure
-- Version 0.6.73 with WordPress 6.2+ requirement
+- Version 0.8.0 with WordPress 6.9+ requirement (tested up to 6.9.4)
 - PHP 8.4 compatibility in development environment
 
 ### Key Directories
