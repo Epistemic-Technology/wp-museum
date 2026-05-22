@@ -231,35 +231,35 @@ class Remote_Client_Controller extends \WP_REST_Controller {
 			'type'       => 'object',
 			'properties' => [
 				'client_id'         => [
-					'description' => __( 'Unique database identifier for client.' ),
+					'description' => __( 'Unique database identifier for client.', 'wp-museum' ),
 					'type'        => [ 'integer', 'null' ],
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'uuid'              => [
-					'description' => __( 'Unique external identifier for client.' ),
+					'description' => __( 'Unique external identifier for client.', 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'format'      => 'uuid',
 				],
 				'title'             => [
-					'description' => __( 'Title of the remote client WordPress site.' ),
+					'description' => __( 'Title of the remote client WordPress site.', 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'context'     => [ 'view', 'edit', 'embed' ],
 				],
 				'url'               => [
-					'description' => __( 'URL of the remote client WordPress site.' ),
+					'description' => __( 'URL of the remote client WordPress site.', 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'format'      => 'uri',
 				],
 				'blocked'           => [
-					'description' => __( 'Whether requests from the remote client should be blocked.' ),
+					'description' => __( 'Whether requests from the remote client should be blocked.', 'wp-museum' ),
 					'type'        => [ 'boolean', 'null' ],
 					'context'     => [ 'view', 'edit', 'embed' ],
 				],
 				'registration_time' => [
-					'description' => __( 'When the remote client was first registered.' ),
+					'description' => __( 'When the remote client was first registered.', 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'format'      => 'date-time',

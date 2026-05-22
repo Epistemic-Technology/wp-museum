@@ -224,7 +224,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 if (!$kind || !$kind->is_valid()) {
                     return new \WP_Error(
                         "rest_invalid_kind",
-                        __("Invalid object kind data."),
+                        __("Invalid object kind data.", 'wp-museum'),
                         [
                             "status" => 400,
                             "data" => [
@@ -238,7 +238,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 } elseif (false === $kind->save_to_db()) {
                     return new \WP_Error(
                         "rest_cannot_update",
-                        __("There was an error updating the object kind.")
+                        __("There was an error updating the object kind.", 'wp-museum')
                     );
                 }
             }
@@ -270,14 +270,14 @@ class Kinds_Controller extends \WP_REST_Controller
             "type" => "object",
             "properties" => [
                 "kind_id" => [
-                    "description" => __("Unique identifier for the kind."),
+                    "description" => __("Unique identifier for the kind.", 'wp-museum'),
                     "type" => "integer",
                     "context" => ["view", "edit"],
                     "readonly" => true,
                 ],
                 "cat_field_id" => [
                     "description" => __(
-                        "Unique identifier of field that is used as unique identifier by users for museum objects of this kind."
+                        "Unique identifier of field that is used as unique identifier by users for museum objects of this kind.", 'wp-museum'
                     ),
                     "type" => "integer",
                     "context" => ["view", "edit"],
@@ -285,7 +285,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "name" => [
                     "description" => __(
-                        "Machine-readable name of kind. Derrived from label."
+                        "Machine-readable name of kind. Derrived from label.", 'wp-museum'
                     ),
                     "type" => "string",
                     "context" => ["view", "edit"],
@@ -293,21 +293,21 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "type_name" => [
                     "description" => __(
-                        "WordPress custom post type name for this kind. Derrived from name."
+                        "WordPress custom post type name for this kind. Derrived from name.", 'wp-museum'
                     ),
                     "type" => "string",
                     "context" => ["view", "edit"],
                     "readonly" => true,
                 ],
                 "label" => [
-                    "description" => __("Human-readable name of kind."),
+                    "description" => __("Human-readable name of kind.", 'wp-museum'),
                     "type" => "string",
                     "context" => ["view", "edit"],
                     "readonly" => false,
                 ],
                 "label_plural" => [
                     "description" => __(
-                        "Human-readable plural name of kind. User generated."
+                        "Human-readable plural name of kind. User generated.", 'wp-museum'
                     ),
                     "type" => "string",
                     "context" => ["view", "edit"],
@@ -315,7 +315,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "description" => [
                     "description" => __(
-                        "Short, human-readible description of the kind."
+                        "Short, human-readible description of the kind.", 'wp-museum'
                     ),
                     "type" => "string",
                     "context" => ["view", "edit"],
@@ -323,7 +323,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "categorized" => [
                     "description" => __(
-                        "Whether museum objects of this kind must be assigned a category before publication."
+                        "Whether museum objects of this kind must be assigned a category before publication.", 'wp-museum'
                     ),
                     "type" => "boolean",
                     "context" => ["view", "edit"],
@@ -331,7 +331,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "hierarchical" => [
                     "description" => __(
-                        "Whether posts of this kind can be hierarchical"
+                        "Whether posts of this kind can be hierarchical", 'wp-museum'
                     ),
                     "type" => "boolean",
                     "context" => ["view", "edit"],
@@ -339,14 +339,14 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "parent_kind_id" => [
                     "description" => __(
-                        "Kind_id of parent kind. Setting this makes this a child kind."
+                        "Kind_id of parent kind. Setting this makes this a child kind.", 'wp-museum'
                     ),
                     "type" => "integer",
                     "context" => ["view", "edit"],
                     "readonly" => false,
                 ],
                 "children" => [
-                    "description" => __("Data for child kinds."),
+                    "description" => __("Data for child kinds.", 'wp-museum'),
                     "type" => "array",
                     "items" => [
                         "type" => "object",
@@ -356,7 +356,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "available_fields_for_oai_pmh" => [
                     "description" => __(
-                        "Available fields for OAI-PMH mapping including WordPress post fields."
+                        "Available fields for OAI-PMH mapping including WordPress post fields.", 'wp-museum'
                     ),
                     "type" => "array",
                     "items" => [
@@ -381,7 +381,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "oai_pmh_mappings" => [
                     "description" => __(
-                        "OAI-PMH Dublin Core metadata field mappings for this kind."
+                        "OAI-PMH Dublin Core metadata field mappings for this kind.", 'wp-museum'
                     ),
                     "type" => "object",
                     "context" => ["view", "edit"],
@@ -396,7 +396,7 @@ class Kinds_Controller extends \WP_REST_Controller
             $private_schema_properties = [
                 "must_featured_image" => [
                     "description" => __(
-                        "Whether objects of this kind must have a featured image to be published."
+                        "Whether objects of this kind must have a featured image to be published.", 'wp-museum'
                     ),
                     "type" => "boolean",
                     "context" => ["view", "edit"],
@@ -404,7 +404,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "must_gallery" => [
                     "description" => __(
-                        "Whether objects of this kind must have an image gallery to be published."
+                        "Whether objects of this kind must have an image gallery to be published.", 'wp-museum'
                     ),
                     "type" => "boolean",
                     "context" => ["view", "edit"],
@@ -412,7 +412,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "strict_checking" => [
                     "description" => __(
-                        "Whether violated requirements will prevent publishing objects or just report warnings."
+                        "Whether violated requirements will prevent publishing objects or just report warnings.", 'wp-museum'
                     ),
                     "type" => "boolean",
                     "context" => ["view", "edit"],
@@ -420,7 +420,7 @@ class Kinds_Controller extends \WP_REST_Controller
                 ],
                 "exclude_from_search" => [
                     "description" => __(
-                        "Whether objects of this kind should be excluded from searches."
+                        "Whether objects of this kind should be excluded from searches.", 'wp-museum'
                     ),
                     "type" => "boolean",
                     "context" => ["view", "edit"],

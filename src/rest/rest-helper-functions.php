@@ -169,7 +169,7 @@ function object_image_data( $post ) {
 function get_post_for_rest( $id ) {
 	$error = new \WP_Error(
 		'rest_post_invalid_id',
-		__( 'Invalid post ID.' ),
+		__( 'Invalid post ID.', 'wp-museum' ),
 		array( 'status' => 404 )
 	);
 

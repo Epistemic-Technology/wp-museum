@@ -237,7 +237,7 @@ class Objects_Controller extends \WP_REST_Controller
      */
     protected function get_post($id)
     {
-        $error = new \WP_Error("rest_post_invalid_id", __("Invalid post ID."), [
+        $error = new \WP_Error("rest_post_invalid_id", __("Invalid post ID.", 'wp-museum'), [
             "status" => 404,
         ]);
 
@@ -560,7 +560,7 @@ class Objects_Controller extends \WP_REST_Controller
             return new \WP_Error(
                 "rest_post_invalid_page_number",
                 __(
-                    "The page number requested is larger than the number of pages available."
+                    "The page number requested is larger than the number of pages available.", 'wp-museum'
                 ),
                 ["status" => 400]
             );
@@ -652,24 +652,24 @@ class Objects_Controller extends \WP_REST_Controller
             "type" => "object",
             "properties" => [
                 "ID" => [
-                    "description" => __("Unique identifier for the object."),
+                    "description" => __("Unique identifier for the object.", 'wp-museum'),
                     "type" => "integer",
                     "context" => ["view", "edit", "embed"],
                     "readonly" => true,
                 ],
                 "post_title" => [
-                    "description" => __("Title of the object."),
+                    "description" => __("Title of the object.", 'wp-museum'),
                     "type" => "string",
                     "context" => ["view", "edit", "embed"],
                 ],
                 "post_author" => [
-                    "description" => __("The ID for the author of the object."),
+                    "description" => __("The ID for the author of the object.", 'wp-museum'),
                     "type" => "integer",
                     "context" => ["view", "edit", "embed"],
                 ],
                 "post_date" => [
                     "description" => __(
-                        "The date the object was published, in the site's timezone."
+                        "The date the object was published, in the site's timezone.", 'wp-museum'
                     ),
                     "type" => ["string", "null"],
                     "format" => "date-time",
@@ -677,31 +677,31 @@ class Objects_Controller extends \WP_REST_Controller
                 ],
                 "post_date_gmt" => [
                     "description" => __(
-                        "The date the object was published, as GMT."
+                        "The date the object was published, as GMT.", 'wp-museum'
                     ),
                     "type" => ["string", "null"],
                     "format" => "date-time",
                     "context" => ["view", "edit"],
                 ],
                 "post_content" => [
-                    "description" => __("The rendered content for the object."),
+                    "description" => __("The rendered content for the object.", 'wp-museum'),
                     "type" => "string",
                     "context" => ["view", "edit"],
                 ],
                 "excerpt" => [
-                    "description" => __("The excerpt for the object."),
+                    "description" => __("The excerpt for the object.", 'wp-museum'),
                     "type" => "string",
                     "context" => ["view", "edit", "embed"],
                 ],
                 "post_status" => [
-                    "description" => __("A named status for the object."),
+                    "description" => __("A named status for the object.", 'wp-museum'),
                     "type" => "string",
                     "enum" => array_keys(get_post_stati(["internal" => false])),
                     "context" => ["view", "edit"],
                 ],
                 "post_name" => [
                     "description" => __(
-                        "An alphanumeric identifier for the object unique to its type."
+                        "An alphanumeric identifier for the object unique to its type.", 'wp-museum'
                     ),
                     "type" => "string",
                     "context" => ["view", "edit", "embed"],
@@ -709,7 +709,7 @@ class Objects_Controller extends \WP_REST_Controller
                 ],
                 "post_modified" => [
                     "description" => __(
-                        "The date the object was last modified, in the site's timezone."
+                        "The date the object was last modified, in the site's timezone.", 'wp-museum'
                     ),
                     "type" => "string",
                     "format" => "date-time",
@@ -718,7 +718,7 @@ class Objects_Controller extends \WP_REST_Controller
                 ],
                 "post_modified_gmt" => [
                     "description" => __(
-                        "The date the object was last modified, as GMT."
+                        "The date the object was last modified, as GMT.", 'wp-museum'
                     ),
                     "type" => "string",
                     "format" => "date-time",
@@ -726,20 +726,20 @@ class Objects_Controller extends \WP_REST_Controller
                     "readonly" => true,
                 ],
                 "post_type" => [
-                    "description" => __("Type of Post for the object."),
+                    "description" => __("Type of Post for the object.", 'wp-museum'),
                     "type" => "string",
                     "context" => ["view", "edit", "embed"],
                     "readonly" => true,
                 ],
                 "link" => [
-                    "description" => __("URL to the object."),
+                    "description" => __("URL to the object.", 'wp-museum'),
                     "type" => "string",
                     "format" => "uri",
                     "context" => ["view", "edit", "embed"],
                     "readonly" => true,
                 ],
                 "edit_link" => [
-                    "description" => __("URL to the object edit page."),
+                    "description" => __("URL to the object edit page.", 'wp-museum'),
                     "type" => ["string", "null"],
                     "format" => "uri",
                     "context" => ["view", "edit", "embed"],
@@ -747,28 +747,28 @@ class Objects_Controller extends \WP_REST_Controller
                 ],
                 "thumbnail" => [
                     "description" => __(
-                        "Data for thumbnail image of object: [URL, W, H, Resized?]"
+                        "Data for thumbnail image of object: [URL, W, H, Resized?]", 'wp-museum'
                     ),
                     "type" => "array",
                     "context" => ["view", "edit", "embed"],
                     "readonly" => true,
                     "items" => [
                         [
-                            "description" => __("Image URL."),
+                            "description" => __("Image URL.", 'wp-museum'),
                             "type" => "string",
                             "format" => "uri",
                         ],
                         [
-                            "description" => __("Image width."),
+                            "description" => __("Image width.", 'wp-museum'),
                             "type" => "number",
                         ],
                         [
-                            "description" => __("Image height"),
+                            "description" => __("Image height", 'wp-museum'),
                             "type" => "number",
                         ],
                         [
                             "description" => __(
-                                "Is this version resized from original?"
+                                "Is this version resized from original?", 'wp-museum'
                             ),
                             "type" => "boolean",
                         ],
@@ -776,14 +776,14 @@ class Objects_Controller extends \WP_REST_Controller
                 ],
                 "cat_field" => [
                     "description" => __(
-                        "Slug for museum object field that is used as unique identifier for the object."
+                        "Slug for museum object field that is used as unique identifier for the object.", 'wp-museum'
                     ),
                     "type" => "string",
                     "context" => ["view", "edit", "embed"],
                 ],
                 "collections" => [
                     "description" => __(
-                        "Collection terms associated with this object."
+                        "Collection terms associated with this object.", 'wp-museum'
                     ),
                     "type" => "object",
                     "context" => ["view", "edit", "embed"],

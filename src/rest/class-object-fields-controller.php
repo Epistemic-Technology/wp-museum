@@ -160,88 +160,88 @@ class Object_Fields_Controller extends \WP_REST_Controller {
 			'type'       => 'object',
 			'properties' => [
 				'field_id'              => [
-					'description' => __( 'Unique identifier for the field.' ),
+					'description' => __( 'Unique identifier for the field.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context '    => [ 'view', 'edit' ],
 					'readonly'    => true,
 				],
 				'slug'                  => [
-					'description' => __( 'WordPress identifier for the field.' ),
+					'description' => __( 'WordPress identifier for the field.', 'wp-museum' ),
 					'type'        => 'string',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'kind_id'               => [
-					'description' => __( 'Identifier of museum object kind associated with the field.' ),
+					'description' => __( 'Identifier of museum object kind associated with the field.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'name'                  => [
-					'description' => __( 'Label of this field for user display.' ),
+					'description' => __( 'Label of this field for user display.', 'wp-museum' ),
 					'type'        => 'string',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'type'                  => [
-					'description' => __( 'Datatype of the field.' ),
+					'description' => __( 'Datatype of the field.', 'wp-museum' ),
 					'type'        => 'string',
 					'enum'        => [ 'plain', 'rich', 'date', 'factor', 'multiple', 'measure', 'flag' ],
 					'context '    => [ 'view', 'edit' ],
 				],
 				'display_order'         => [
-					'description' => __( 'Order in which to display this field in forms and the front end (ascending order).' ),
+					'description' => __( 'Order in which to display this field in forms and the front end (ascending order).', 'wp-museum' ),
 					'type'        => 'integer',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'public'                => [
-					'description' => __( 'Whether this field is publicly-viewable on the front end.' ),
+					'description' => __( 'Whether this field is publicly-viewable on the front end.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'required'              => [
-					'description' => __( 'Whether this field is required to be filled in when posts are published.' ),
+					'description' => __( 'Whether this field is required to be filled in when posts are published.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'quick_browse'          => [
-					'description' => __( 'Whether this field is displayed in the Quick Browse table.' ),
+					'description' => __( 'Whether this field is displayed in the Quick Browse table.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'help_text'             => [
-					'description' => __( 'Help text for users filling in this field.' ),
+					'description' => __( 'Help text for users filling in this field.', 'wp-museum' ),
 					'type'        => 'string',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'detailed_instructions' => [
-					'description' => __( 'Detailed instructions for editng the field.' ),
+					'description' => __( 'Detailed instructions for editng the field.', 'wp-museum' ),
 					'type'        => 'string',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'public_description'    => [
-					'description' => __( 'Description of the field for visitors, to be displayed on the front end.' ),
+					'description' => __( 'Description of the field for visitors, to be displayed on the front end.', 'wp-museum' ),
 					'type'        => 'string',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'field_schema'          => [
-					'description' => __( 'Regular expression that this field must conform to. Also used for sorting.' ),
+					'description' => __( 'Regular expression that this field must conform to. Also used for sorting.', 'wp-museum' ),
 					'type'        => 'string',
 					'format'      => 'regex',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'max_length'            => [
-					'description' => __( 'Maximum length of field. Only applies to plain or rich type. 0 = no limit.' ),
+					'description' => __( 'Maximum length of field. Only applies to plain or rich type. 0 = no limit.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'dimensions'            => [
-					'description' => __( 'Number and labels for dimensions. Only applies to measure type.' ),
+					'description' => __( 'Number and labels for dimensions. Only applies to measure type.', 'wp-museum' ),
 					'type'        => 'object',
 					'properties'  => [
 						'n'      => [
-							'description' => __( 'Number of dimensions' ),
+							'description' => __( 'Number of dimensions', 'wp-museum' ),
 							'type'        => [ 'integer', 'null' ],
 						],
 						'labels' => [
-							'description' => __( 'Labels for each dimension.' ),
+							'description' => __( 'Labels for each dimension.', 'wp-museum' ),
 							'type'        => 'array',
 							'items'       => [
 								'type' => 'string',
@@ -251,12 +251,12 @@ class Object_Fields_Controller extends \WP_REST_Controller {
 					'context '    => [ 'view', 'edit' ],
 				],
 				'units'                 => [
-					'description' => __( 'Measurement units (kg, cm, m, lbs, g, etc). Only applies to measure type.' ),
+					'description' => __( 'Measurement units (kg, cm, m, lbs, g, etc). Only applies to measure type.', 'wp-museum' ),
 					'type'        => 'string',
 					'context '    => [ 'view', 'edit' ],
 				],
 				'factors'               => [
-					'description' => __( 'List of allowed factors for the field. Only applies to factor and multiple factor types.' ),
+					'description' => __( 'List of allowed factors for the field. Only applies to factor and multiple factor types.', 'wp-museum' ),
 					'type'        => [ 'array' ],
 					'items'       => [
 						'type' => 'string',

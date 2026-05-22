@@ -322,14 +322,16 @@ class MObjectField
             if ($this->field_id < 0) {
                 $results = $wpdb->get_results(
                     $wpdb->prepare(
-                        "SELECT slug FROM $table_name WHERE slug = %s",
+                        'SELECT slug FROM %i WHERE slug = %s',
+                        $table_name,
                         $slug
                     )
                 );
             } else {
                 $results = $wpdb->get_results(
                     $wpdb->prepare(
-                        "SELECT slug FROM $table_name WHERE slug = %s AND field_id != %s",
+                        'SELECT slug FROM %i WHERE slug = %s AND field_id != %s',
+                        $table_name,
                         $slug,
                         $this->field_id
                     )
@@ -436,7 +438,8 @@ class MObjectField
         if ($field_exists) {
             $existing_field = $wpdb->get_row(
                 $wpdb->prepare(
-                    "SELECT * FROM $table_name WHERE field_id = %d",
+                    'SELECT * FROM %i WHERE field_id = %d',
+                    $table_name,
                     $this->field_id
                 )
             );

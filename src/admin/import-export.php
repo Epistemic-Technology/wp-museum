@@ -335,6 +335,9 @@ function export_images_aj() {
 	if ( ! check_ajax_referer( 'kcDbrTMMfFqh6jy8&LrCGoH7p', 'nonce' ) ) {
 		wp_die( esc_html__( 'Failed nonce check.', 'wp-museum' ) );
 	}
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
+	}
 
 	$zip_dir  = wp_upload_dir()['basedir'] . DIRECTORY_SEPARATOR . IMAGE_DIR;
 	$temp_dir = $zip_dir . DIRECTORY_SEPARATOR . 'tmp';

@@ -148,7 +148,9 @@ function delete_remote_clients_table()
     global $wpdb;
     $table_name = $wpdb->prefix . WPM_PREFIX . "remote_clients";
     $wpdb->show_errors = DB_SHOW_ERRORS;
-    return $wpdb->query("DROP TABLE IF EXISTS %i;", $table_name);
+    return $wpdb->query(
+        $wpdb->prepare("DROP TABLE IF EXISTS %i;", $table_name)
+    );
 }
 
 /**

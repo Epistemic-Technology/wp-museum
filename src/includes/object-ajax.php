@@ -23,6 +23,9 @@ function create_new_obj_aj() {
 		wp_die( esc_html__( 'Tried to create child post but parent post not found.', 'wp-museum' ) );
 	}
 	$parent_id   = intval( $_POST['parent'] );
+	if ( ! current_user_can( 'edit_post', $parent_id ) ) {
+		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
+	}
 	$parent_post = get_post( $parent_id );
 	$categories  = wp_get_post_categories( $parent_id );
 	$args        = [
@@ -51,15 +54,3 @@ function wpm_media_box_enqueue() {
 	);
 }
 
-/**
- * Display images using fancybox-jq
- */
-function enqueue_javascript() {
-	wp_enqueue_script(
-		'fancybox-jq',
-		'https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js',
-		[ 'jquery' ],
-		SCRIPT_VERSION,
-		true
-	);
-}

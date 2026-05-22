@@ -437,13 +437,13 @@ class CustomPostType
             // is checked above.
             // phpcs:ignore WordPress.Security.NonceVerification.Missing
             if ( isset( $_POST[ $field_name ] ) ) {
-                // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                $raw_value   = wp_unslash( $_POST[ $field_name ] );
                 $field_type  = isset( $field_data["type"] ) ? $field_data["type"] : "text";
                 if ( "textarea" === $field_type ) {
-                    $field_value = trim( sanitize_textarea_field( $raw_value ) );
+                    // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    $field_value = trim( sanitize_textarea_field( wp_unslash( $_POST[ $field_name ] ) ) );
                 } else {
-                    $field_value = trim( sanitize_text_field( $raw_value ) );
+                    // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    $field_value = trim( sanitize_text_field( wp_unslash( $_POST[ $field_name ] ) ) );
                 }
                 if ( "" !== $field_value ) {
                     update_post_meta( $post_id, $field_name, $field_value );

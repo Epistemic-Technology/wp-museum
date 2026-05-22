@@ -99,7 +99,7 @@ $display_sub_exhibits_cb = function () {
 	echo '</table><br />';
 	echo wp_kses_post( "<button type='button' class='button button-large' onclick='new_SE({$post->ID})'>New Sub Exhibit</button>" );
 };
-$children_box            = new MetaBox( 'sub_exhibits', __( 'Sub Exhibits' ), $display_sub_exhibits_cb );
+$children_box            = new MetaBox( 'sub_exhibits', __( 'Sub Exhibits', 'wp-museum' ), $display_sub_exhibits_cb );
 $exhibit_post_type->add_custom_meta( $children_box );
 
 
@@ -137,7 +137,7 @@ $display_associated_objects = function () {
 	}
 	echo '</table>';
 };
-$associated_objects_box     = new MetaBox( 'exhibit_objects', __( 'Objects' ), $display_associated_objects );
+$associated_objects_box     = new MetaBox( 'exhibit_objects', __( 'Objects', 'wp-museum' ), $display_associated_objects );
 $exhibit_post_type->add_custom_meta( $associated_objects_box );
 
 
@@ -174,7 +174,10 @@ function create_new_se() {
 	if ( ! check_ajax_referer( 'create_new_se', 'nonce' ) ) {
 		wp_die( 'Security check' );
 	}
-	$parent_id = intval( $_POST['parent'] );
+	$parent_id = isset( $_POST['parent'] ) ? intval( $_POST['parent'] ) : 0;
+	if ( ! $parent_id || ! current_user_can( 'edit_post', $parent_id ) ) {
+		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
+	}
 	$category  = get_post_custom( $parent_id )['associated_category'];
 	$args      = [
 		'post_title'    => '',

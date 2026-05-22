@@ -97,29 +97,27 @@ if ( $child_kinds && $child_ids ) {
 			count( $child_ids[ $child_kind->kind_id ] ) > 0
 		) {
 			$object_children_html .= "<div class='child-kind'>";
-			$object_children_html .= "<h2>$child_kind->label_plural</h2>";
+			$object_children_html .= '<h2>' . esc_html( $child_kind->label_plural ) . '</h2>';
 			foreach ( $child_ids[ $child_kind->kind_id ] as $child_id ) {
 				$child_post = get_post( $child_id );
 				$thumbnail  = get_object_thumbnail( $child_post->ID );
 				$link       = get_permalink( $child_post );
 				$title      = get_the_title( $child_post );
 
-				// phpcs:disable
 				ob_start();
 				?>
 				<div class='child-object'>
-					<img class='child-object-thumb' src='<?= $thumbnail[0] ?>' alt='<?= esc_attr( $title ) ?>' />
+					<img class='child-object-thumb' src='<?= esc_url( $thumbnail[0] ) ?>' alt='<?= esc_attr( $title ) ?>' />
 					<div class='child-object-content'>
-						<h3><?= $title ?></h3>
-						<?= get_the_excerpt( $child_post ) ?>
+						<h3><?= esc_html( $title ) ?></h3>
+						<?= wp_kses_post( get_the_excerpt( $child_post ) ) ?>
 						<div class='child-view-link'>
-							<a href='<?= $link ?>' aria-label='View <?= esc_attr( $title ) ?>'>View</a>
+							<a href='<?= esc_url( $link ) ?>' aria-label='View <?= esc_attr( $title ) ?>'>View</a>
 						</div>
 					</div>
 				</div>
 				<?php
-				// phpcs:enable
-				$object_children_html = ob_get_contents();
+				$object_children_html .= ob_get_contents();
 				ob_end_clean();
 			}
 			$object_children_html .= '</div>';
@@ -127,17 +125,16 @@ if ( $child_kinds && $child_ids ) {
 	}
 }
 
-// phpcs:disable
 ?>
-<div class = 'wpm-objectposttype-block'>
-	<div class = 'wpm-objectposttype-content'>
+<div class='wpm-objectposttype-block'>
+	<div class='wpm-objectposttype-content'>
 		<div
-			class = 'wpm-objectposttype-image-gallery <?= $display_options['image_gallery_position'] ?>'
-			data-post-ID = '<?= $post->ID ?>'
+			class='wpm-objectposttype-image-gallery <?= esc_attr( $display_options['image_gallery_position'] ) ?>'
+			data-post-ID='<?= intval( $post->ID ) ?>'
 		>
 		</div>
-		<?= $custom_fields_html ?>
-		<?= $object_children_html ?>
+		<?= wp_kses_post( $custom_fields_html ) ?>
+		<?= wp_kses_post( $object_children_html ) ?>
 	</div>
 </div>
 <?php

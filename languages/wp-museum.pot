@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-21T13:33:58+00:00\n"
+"POT-Creation-Date: 2026-05-07T15:51:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-museum\n"
@@ -255,12 +255,13 @@ msgstr ""
 msgid "No fields selected for quick browse in object admin."
 msgstr ""
 
-#: src/admin/quick-browse.php:183
+#. translators: %s: error message from the database layer.
+#: src/admin/quick-browse.php:184
 #, php-format
 msgid "Error retrieving museum objects: %s"
 msgstr ""
 
-#: src/admin/quick-browse.php:186
+#: src/admin/quick-browse.php:187
 msgid "Database Error"
 msgstr ""
 
@@ -330,6 +331,14 @@ msgstr ""
 msgid "Collections"
 msgstr ""
 
+#: src/includes/exhibit.php:102
+msgid "Sub Exhibits"
+msgstr ""
+
+#: src/includes/exhibit.php:140
+msgid "Objects"
+msgstr ""
+
 #: src/includes/migration.php:584
 msgid "Collection Migration Log"
 msgstr ""
@@ -342,16 +351,430 @@ msgstr ""
 msgid "Back to Dashboard"
 msgstr ""
 
-#: src/includes/oai-pmh.php:804
+#: src/includes/oai-pmh.php:810
 msgid "No post found for identifier"
 msgstr ""
 
-#: src/includes/oai-pmh.php:807
+#: src/includes/oai-pmh.php:813
 msgid "Multiple posts found for identifier"
 msgstr ""
 
 #: src/includes/object-ajax.php:23
 msgid "Tried to create child post but parent post not found."
+msgstr ""
+
+#: src/rest/class-admin-options-controller.php:166
+msgid "Whether remote REST requests should be allowed."
+msgstr ""
+
+#: src/rest/class-admin-options-controller.php:171
+msgid "Whether remote REST requests from unregistered domains should be allowed."
+msgstr ""
+
+#: src/rest/class-admin-options-controller.php:176
+msgid "Comma-separated list of whitelisted domains."
+msgstr ""
+
+#: src/rest/class-admin-options-controller.php:181
+msgid "Whether to delete all museum data on plugin uninstall."
+msgstr ""
+
+#: src/rest/class-admin-options-controller.php:186
+msgid "Whether to show post status in admin bar."
+msgstr ""
+
+#: src/rest/class-admin-options-controller.php:191
+msgid "Whether to redirect collection taxonomy archive pages to collection posts."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:131
+#: src/rest/class-objects-controller.php:240
+#: src/rest/rest-helper-functions.php:172
+msgid "Invalid post ID."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:343
+#: src/rest/class-objects-controller.php:562
+msgid "The page number requested is larger than the number of pages available."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:381
+msgid "Unique identifier for the collection."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:387
+msgid "Order to display in menus."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:393
+msgid "The ID for the author of the collection."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:398
+msgid "The date the collection was published, in the site's timezone."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:404
+msgid "The date the collection was published, as GMT."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:410
+msgid "The rendered content for the collection."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:415
+msgid "The title of the collectiton."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:420
+msgid "The excerpt for the collection."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:425
+msgid "A named status for the collectionn."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:431
+#: src/rest/class-objects-controller.php:703
+msgid "An alphanumeric identifier for the object unique to its type."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:437
+#: src/rest/class-objects-controller.php:711
+msgid "The date the object was last modified, in the site's timezone."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:444
+#: src/rest/class-objects-controller.php:720
+msgid "The date the object was last modified, as GMT."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:451
+msgid "Post ID of parent post, if one exists."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:457
+#: src/rest/class-objects-controller.php:729
+msgid "Type of Post for the object."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:463
+#: src/rest/class-objects-controller.php:735
+msgid "URL to the object."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:470
+#: src/rest/class-objects-controller.php:742
+msgid "URL to the object edit page."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:477
+#: src/rest/class-objects-controller.php:749
+msgid "Data for thumbnail image of object: [URL, W, H, Resized?]"
+msgstr ""
+
+#: src/rest/class-collections-controller.php:498
+msgid "Data for featured image of collection, or of an object in the collection."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:519
+msgid "List of IDs of museum objects associated with this collection."
+msgstr ""
+
+#: src/rest/class-collections-controller.php:528
+msgid "Taxonomy terms associated with the collection."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:227
+msgid "Invalid object kind data."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:241
+msgid "There was an error updating the object kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:273
+msgid "Unique identifier for the kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:279
+msgid "Unique identifier of field that is used as unique identifier by users for museum objects of this kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:287
+msgid "Machine-readable name of kind. Derrived from label."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:295
+msgid "WordPress custom post type name for this kind. Derrived from name."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:303
+msgid "Human-readable name of kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:309
+msgid "Human-readable plural name of kind. User generated."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:317
+msgid "Short, human-readible description of the kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:325
+msgid "Whether museum objects of this kind must be assigned a category before publication."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:333
+msgid "Whether posts of this kind can be hierarchical"
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:341
+msgid "Kind_id of parent kind. Setting this makes this a child kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:349
+msgid "Data for child kinds."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:358
+msgid "Available fields for OAI-PMH mapping including WordPress post fields."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:383
+msgid "OAI-PMH Dublin Core metadata field mappings for this kind."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:398
+msgid "Whether objects of this kind must have a featured image to be published."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:406
+msgid "Whether objects of this kind must have an image gallery to be published."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:414
+msgid "Whether violated requirements will prevent publishing objects or just report warnings."
+msgstr ""
+
+#: src/rest/class-kinds-controller.php:422
+msgid "Whether objects of this kind should be excluded from searches."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:163
+msgid "Unique identifier for the field."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:169
+msgid "WordPress identifier for the field."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:174
+msgid "Identifier of museum object kind associated with the field."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:179
+msgid "Label of this field for user display."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:184
+msgid "Datatype of the field."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:190
+msgid "Order in which to display this field in forms and the front end (ascending order)."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:195
+msgid "Whether this field is publicly-viewable on the front end."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:200
+msgid "Whether this field is required to be filled in when posts are published."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:205
+msgid "Whether this field is displayed in the Quick Browse table."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:210
+msgid "Help text for users filling in this field."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:215
+msgid "Detailed instructions for editng the field."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:220
+msgid "Description of the field for visitors, to be displayed on the front end."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:225
+msgid "Regular expression that this field must conform to. Also used for sorting."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:231
+msgid "Maximum length of field. Only applies to plain or rich type. 0 = no limit."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:236
+msgid "Number and labels for dimensions. Only applies to measure type."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:240
+msgid "Number of dimensions"
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:244
+msgid "Labels for each dimension."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:254
+msgid "Measurement units (kg, cm, m, lbs, g, etc). Only applies to measure type."
+msgstr ""
+
+#: src/rest/class-object-fields-controller.php:259
+msgid "List of allowed factors for the field. Only applies to factor and multiple factor types."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:143
+msgid "Updating image attachments, images not set."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:157
+msgid "There was an error updating the object image attachments."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:216
+msgid "Title of the image."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:222
+msgid "Caption for the image."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:228
+msgid "Description of the image."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:234
+msgid "Alternative text for the image."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:240
+msgid "Order in which image will be dispayed or listed."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:250
+#: src/rest/class-objects-controller.php:757
+msgid "Image URL."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:255
+#: src/rest/class-objects-controller.php:762
+msgid "Image width."
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:259
+#: src/rest/class-objects-controller.php:766
+msgid "Image height"
+msgstr ""
+
+#: src/rest/class-object-image-controller.php:263
+#: src/rest/class-objects-controller.php:770
+msgid "Is this version resized from original?"
+msgstr ""
+
+#: src/rest/class-objects-controller.php:655
+msgid "Unique identifier for the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:661
+msgid "Title of the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:666
+msgid "The ID for the author of the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:671
+msgid "The date the object was published, in the site's timezone."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:679
+msgid "The date the object was published, as GMT."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:687
+msgid "The rendered content for the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:692
+msgid "The excerpt for the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:697
+msgid "A named status for the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:778
+msgid "Slug for museum object field that is used as unique identifier for the object."
+msgstr ""
+
+#: src/rest/class-objects-controller.php:785
+msgid "Collection terms associated with this object."
+msgstr ""
+
+#: src/rest/class-remote-client-controller.php:234
+msgid "Unique database identifier for client."
+msgstr ""
+
+#: src/rest/class-remote-client-controller.php:240
+msgid "Unique external identifier for client."
+msgstr ""
+
+#: src/rest/class-remote-client-controller.php:246
+msgid "Title of the remote client WordPress site."
+msgstr ""
+
+#: src/rest/class-remote-client-controller.php:251
+msgid "URL of the remote client WordPress site."
+msgstr ""
+
+#: src/rest/class-remote-client-controller.php:257
+msgid "Whether requests from the remote client should be blocked."
+msgstr ""
+
+#: src/rest/class-remote-client-controller.php:262
+msgid "When the remote client was first registered."
+msgstr ""
+
+#: src/rest/class-site-data-controller.php:131
+msgid "Site title."
+msgstr ""
+
+#: src/rest/class-site-data-controller.php:137
+msgid "Site description."
+msgstr ""
+
+#: src/rest/class-site-data-controller.php:143
+msgid "Base url of the site."
+msgstr ""
+
+#: src/rest/class-site-data-controller.php:150
+msgid "List of museum collections on the site."
+msgstr ""
+
+#: src/rest/class-site-data-controller.php:159
+msgid "Number of (published) musuem objects on the site."
+msgstr ""
+
+#: src/widgets/class-associated-collection-widget.php:31
+msgid "Widget for displaying collections associated with an object in the sidebar."
+msgstr ""
+
+#: src/widgets/class-collection-tree-widget.php:25
+msgid "Widget for displaying hierarchical list of collections with current collection indicated"
 msgstr ""
 
 #: src/admin-react/src/objects/factor-edit.js:182

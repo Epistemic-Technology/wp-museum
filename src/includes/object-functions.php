@@ -118,65 +118,6 @@ function get_object_image_attachments($post_id)
     return array_flip($attach_ids);
 }
 
-/**
- * Displays fancybox thumbnails for all image attachments of a post.
- *
- * @param int $post_id The id of the post.
- */
-function object_image_box_contents($post_id = null)
-{
-    global $post;
-    if (is_null($post_id)) {
-        if (is_null($post)) {
-            return false;
-        }
-        $post_id = $post->ID;
-    }
-
-    $image_box_contents = get_object_image_attachments($post_id);
-    if (!empty($image_box_contents)) {
-        asort($image_box_contents);
-        foreach ($image_box_contents as $image_id => $sort_order) {
-            $image_thumbnail = wp_get_attachment_image_src(
-                $image_id,
-                "thumbnail"
-            );
-            $image_full = wp_get_attachment_image_src($image_id, "large");
-            echo "<div id='image-div-" .
-                esc_html($image_id) .
-                "' class='inline-image-box'>";
-            echo "<a data-fancybox='fbgallery' href='" .
-                esc_html($image_full[0]) .
-                "'><img src='" .
-                esc_html($image_thumbnail[0]) .
-                "' width=' " .
-                esc_html($image_thumbnail[1]) .
-                "' height='" .
-                esc_html($image_thumbnail[2]) .
-                "' alt='" .
-                esc_attr(get_post_meta($image_id, '_wp_attachment_image_alt', true) ?: 'Museum object image') .
-                "'></a>";
-            echo "<a id='delete-" .
-                esc_html($image_id) .
-                "' class='wpm-image-delete' onclick='remove_image_attachment(" .
-                esc_html($image_id) .
-                "," .
-                esc_html($post_id) .
-                ")'>[x]</a>";
-            echo "<a id='moveup-" .
-                esc_html($image_id) .
-                "' class='wpm-image-moveup' onclick='wpm_image_move(" .
-                esc_html($image_id) .
-                ", -1)'><span class='dashicons dashicons-arrow-left'></span></a>";
-            echo "<a id='movedown-" .
-                esc_html($image_id) .
-                "' class='wpm-image-movedown' onclick='wpm_image_move(" .
-                esc_html($image_id) .
-                ", +1)'><span class='dashicons dashicons-arrow-right'></span></a>";
-            echo "</div>";
-        }
-    }
-}
 
 /**
  * Gets all descendent posts (recursive children) of a post.

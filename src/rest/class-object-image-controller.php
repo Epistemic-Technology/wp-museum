@@ -140,7 +140,7 @@ class Object_Image_Controller extends \WP_REST_Controller {
 		} else {
 			return new \WP_Error(
 				'rest_cannot_update',
-				__( 'Updating image attachments, images not set.' )
+				__( 'Updating image attachments, images not set.', 'wp-museum' )
 			);
 		}
 
@@ -154,7 +154,7 @@ class Object_Image_Controller extends \WP_REST_Controller {
 		} else {
 			return new \WP_Error(
 				'rest_cannot_update',
-				__( 'There was an error updating the object image attachments.' )
+				__( 'There was an error updating the object image attachments.', 'wp-museum' )
 			);
 		}
 	}
@@ -213,31 +213,31 @@ class Object_Image_Controller extends \WP_REST_Controller {
 			'type'                 => 'object',
 			'properties'           => [
 				'title'       => [
-					'description' => __( 'Title of the image.' ),
+					'description' => __( 'Title of the image.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'caption'     => [
-					'description' => __( 'Caption for the image.' ),
+					'description' => __( 'Caption for the image.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'description' => [
-					'description' => __( 'Description of the image.' ),
+					'description' => __( 'Description of the image.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'alt'         => [
-					'description' => __( 'Alternative text for the image.' ),
+					'description' => __( 'Alternative text for the image.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'sort_order'  => [
-					'description' => __( 'Order in which image will be dispayed or listed.' ),
+					'description' => __( 'Order in which image will be dispayed or listed.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
@@ -247,20 +247,20 @@ class Object_Image_Controller extends \WP_REST_Controller {
 				'type'     => 'array',
 				'items'    => [
 					[
-						'description' => __( 'Image URL.' ),
+						'description' => __( 'Image URL.', 'wp-museum' ),
 						'type'        => 'string',
 						'format'      => 'uri',
 					],
 					[
-						'description' => __( 'Image width.' ),
+						'description' => __( 'Image width.', 'wp-museum' ),
 						'type'        => 'number',
 					],
 					[
-						'description' => __( 'Image height' ),
+						'description' => __( 'Image height', 'wp-museum' ),
 						'type'        => 'number',
 					],
 					[
-						'description' => __( 'Is this version resized from original?' ),
+						'description' => __( 'Is this version resized from original?', 'wp-museum' ),
 						'type'        => 'boolean',
 					],
 				],

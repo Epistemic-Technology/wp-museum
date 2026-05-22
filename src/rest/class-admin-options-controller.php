@@ -163,32 +163,32 @@ class Admin_Options_Controller extends \WP_REST_Controller {
 			'type'       => 'object',
 			'properties' => [
 				'allow_remote_requests'       => [
-					'description' => __( 'Whether remote REST requests should be allowed.' ),
+					'description' => __( 'Whether remote REST requests should be allowed.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'allow_unregistered_requests' => [
-					'description' => __( 'Whether remote REST requests from unregistered domains should be allowed.' ),
+					'description' => __( 'Whether remote REST requests from unregistered domains should be allowed.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'rest_authorized_domains'     => [
-					'description' => __( 'Comma-separated list of whitelisted domains.' ),
+					'description' => __( 'Comma-separated list of whitelisted domains.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'clear_data_on_uninstall'     => [
-					'description' => __( 'Whether to delete all museum data on plugin uninstall.' ),
+					'description' => __( 'Whether to delete all museum data on plugin uninstall.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'show_post_status'            => [
-					'description' => __( 'Whether to show post status in admin bar.' ),
+					'description' => __( 'Whether to show post status in admin bar.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'collection_override_taxonomy' => [
-					'description' => __( 'Whether to redirect collection taxonomy archive pages to collection posts.' ),
+					'description' => __( 'Whether to redirect collection taxonomy archive pages to collection posts.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],

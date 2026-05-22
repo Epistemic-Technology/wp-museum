@@ -128,26 +128,26 @@ class Site_Data_Controller extends \WP_REST_Controller {
 			'type'       => 'object',
 			'properties' => [
 				'title'        => [
-					'description' => __( 'Site title.' ),
+					'description' => __( 'Site title.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'description'  => [
-					'description' => __( 'Site description.' ),
+					'description' => __( 'Site description.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'url'          => [
-					'description' => __( 'Base url of the site.' ),
+					'description' => __( 'Base url of the site.', 'wp-museum' ),
 					'type'        => 'string',
 					'format'      => 'url',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'collections'  => [
-					'description' => __( 'List of museum collections on the site.' ),
+					'description' => __( 'List of museum collections on the site.', 'wp-museum' ),
 					'type'        => 'array',
 					'items'       => [
 						'type' => 'string',
@@ -156,7 +156,7 @@ class Site_Data_Controller extends \WP_REST_Controller {
 					'readonly'    => true,
 				],
 				'object_count' => [
-					'description' => __( 'Number of (published) musuem objects on the site.' ),
+					'description' => __( 'Number of (published) musuem objects on the site.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,

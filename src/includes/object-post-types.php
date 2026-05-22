@@ -26,7 +26,9 @@ function create_mobject_post_types()
 {
     global $wpdb;
     $kind_kinds_table = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $kind_rows = $wpdb->get_results("SELECT * FROM $kind_kinds_table"); //phpcs:ignore
+    $kind_rows = $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM %i", $kind_kinds_table)
+    );
 
     $kind_type_list = [];
 
@@ -58,32 +60,6 @@ function add_object_parent_link(\WP_POST $post)
             "(<a href='post.php?post=" .
             esc_html($parent->ID) .
             "&action=edit'>Edit</a>)</div>";
-    }
-}
-
-/**
- * Adds a div to top of object edit pages for the reporting of problems, and
- * report problems based on SESSION variable.
- *
- * Called at admin_notices.
- */
-function add_object_problem_div()
-{
-    global $post;
-    if (
-        !empty($post) &&
-        in_array($post->post_type, get_object_type_names(), true)
-    ) {
-        echo "<div id='wpm-post-check' class='error'";
-        if (!empty($_SESSION[WPM_PREFIX . "object_problems"])) {
-            echo ">";
-            echo esc_html(
-                \wp_kses($_SESSION[WPM_PREFIX . "object_problems"], "post")
-            );
-        } else {
-            echo "style='display:none'>";
-        }
-        echo "</div>";
     }
 }
 

@@ -22,7 +22,7 @@ class Collection_Tree_Widget extends \WP_Widget {
 		parent::__construct(
 			WPM_PREFIX . 'collection_tree_widget',
 			'Collection Tree Widget',
-			[ 'description' => __( 'Widget for displaying hierarchical list of collections with current collection indicated' ) ]
+			[ 'description' => __( 'Widget for displaying hierarchical list of collections with current collection indicated', 'wp-museum' ) ]
 		);
 	}
 

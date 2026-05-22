@@ -96,7 +96,9 @@ class RemoteClient {
 		$wpdb->show_errors = DB_SHOW_ERRORS;
 		$table_name        = $wpdb->prefix . WPM_PREFIX . 'remote_clients';
 
-		$results = $wpdb->get_results( "SELECT * FROM $table_name WHERE 1" );
+		$results = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT * FROM %i WHERE 1', $table_name )
+		);
 
 		if ( ! is_null( $results ) && count( $results ) > 0 ) {
 			foreach ( $results as $result ) {
@@ -140,7 +142,8 @@ class RemoteClient {
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE client_id=%s",
+				'SELECT * FROM %i WHERE client_id=%s',
+				$table_name,
 				$client_id
 			)
 		);
@@ -172,7 +175,8 @@ class RemoteClient {
 
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM $table_name WHERE uuid=%s",
+				'SELECT * FROM %i WHERE uuid=%s',
+				$table_name,
 				$uuid
 			)
 		);

@@ -128,7 +128,7 @@ class Collections_Controller extends \WP_REST_Controller {
 	protected function get_post( $id ) {
 		$error = new \WP_Error(
 			'rest_post_invalid_id',
-			__( 'Invalid post ID.' ),
+			__( 'Invalid post ID.', 'wp-museum' ),
 			array( 'status' => 404 )
 		);
 
@@ -340,7 +340,7 @@ class Collections_Controller extends \WP_REST_Controller {
 		if ( $page > $max_pages && $total_posts > 0 ) {
 			return new \WP_Error(
 				'rest_post_invalid_page_number',
-				__( 'The page number requested is larger than the number of pages available.' ),
+				__( 'The page number requested is larger than the number of pages available.', 'wp-museum' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -378,103 +378,103 @@ class Collections_Controller extends \WP_REST_Controller {
 			'type'       => 'object',
 			'properties' => [
 				'ID'                => [
-					'description' => __( 'Unique identifier for the collection.' ),
+					'description' => __( 'Unique identifier for the collection.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'menu_order'        => [
-					'description' => __( 'Order to display in menus.' ),
+					'description' => __( 'Order to display in menus.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => false,
 				],
 				'post_author'       => [
-					'description' => __( 'The ID for the author of the collection.' ),
+					'description' => __( 'The ID for the author of the collection.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context'     => [ 'view', 'edit', 'embed' ],
 				],
 				'post_date'         => [
-					'description' => __( "The date the collection was published, in the site's timezone." ),
+					'description' => __( "The date the collection was published, in the site's timezone.", 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'format'      => 'date-time',
 					'context'     => [ 'view', 'edit', 'embed' ],
 				],
 				'post_date_gmt'     => [
-					'description' => __( 'The date the collection was published, as GMT.' ),
+					'description' => __( 'The date the collection was published, as GMT.', 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'format'      => 'date-time',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'post_content'      => [
-					'description' => __( 'The rendered content for the collection.' ),
+					'description' => __( 'The rendered content for the collection.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit' ],
 				],
 				'post_title'        => [
-					'description' => __( 'The title of the collectiton.' ),
+					'description' => __( 'The title of the collectiton.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 				],
 				'excerpt'           => [
-					'description' => __( 'The excerpt for the collection.' ),
+					'description' => __( 'The excerpt for the collection.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 				],
 				'post_status'       => [
-					'description' => __( 'A named status for the collectionn.' ),
+					'description' => __( 'A named status for the collectionn.', 'wp-museum' ),
 					'type'        => 'string',
 					'enum'        => array_keys( get_post_stati( [ 'internal' => false ] ) ),
 					'context'     => [ 'view', 'edit' ],
 				],
 				'post_name'         => [
-					'description' => __( 'An alphanumeric identifier for the object unique to its type.' ),
+					'description' => __( 'An alphanumeric identifier for the object unique to its type.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'post_modified'     => [
-					'description' => __( "The date the object was last modified, in the site's timezone." ),
+					'description' => __( "The date the object was last modified, in the site's timezone.", 'wp-museum' ),
 					'type'        => 'string',
 					'format'      => 'date-time',
 					'context'     => [ 'view', 'edit' ],
 					'readonly'    => true,
 				],
 				'post_modified_gmt' => [
-					'description' => __( 'The date the object was last modified, as GMT.' ),
+					'description' => __( 'The date the object was last modified, as GMT.', 'wp-museum' ),
 					'type'        => 'string',
 					'format'      => 'date-time',
 					'context'     => [ 'view', 'edit' ],
 					'readonly'    => true,
 				],
 				'post_parent'       => [
-					'description' => __( 'Post ID of parent post, if one exists.' ),
+					'description' => __( 'Post ID of parent post, if one exists.', 'wp-museum' ),
 					'type'        => 'integer',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'post_type'         => [
-					'description' => __( 'Type of Post for the object.' ),
+					'description' => __( 'Type of Post for the object.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'link'              => [
-					'description' => __( 'URL to the object.' ),
+					'description' => __( 'URL to the object.', 'wp-museum' ),
 					'type'        => 'string',
 					'format'      => 'uri',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'edit_link'         => [
-					'description' => __( 'URL to the object edit page.' ),
+					'description' => __( 'URL to the object edit page.', 'wp-museum' ),
 					'type'        => [ 'string', 'null' ],
 					'format'      => 'uri',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
 				],
 				'thumbnail'         => [
-					'description' => __( 'Data for thumbnail image of object: [URL, W, H, Resized?]' ),
+					'description' => __( 'Data for thumbnail image of object: [URL, W, H, Resized?]', 'wp-museum' ),
 					'type'        => 'array',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
@@ -495,7 +495,7 @@ class Collections_Controller extends \WP_REST_Controller {
 					],
 				],
 				'featured_image'    => [
-					'description' => __( 'Data for featured image of collection, or of an object in the collection.' ),
+					'description' => __( 'Data for featured image of collection, or of an object in the collection.', 'wp-museum' ),
 					'type'        => 'array',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
@@ -516,7 +516,7 @@ class Collections_Controller extends \WP_REST_Controller {
 					],
 				],
 				'associated_ojects' => [
-					'description' => __( 'List of IDs of museum objects associated with this collection.' ),
+					'description' => __( 'List of IDs of museum objects associated with this collection.', 'wp-museum' ),
 					'type'        => 'array',
 					'context'     => [ 'view', 'edit', 'embed' ],
 					'readonly'    => true,
@@ -525,7 +525,7 @@ class Collections_Controller extends \WP_REST_Controller {
 					],
 				],
 				'taxonomies'        => [
-					'description'          => __( 'Taxonomy terms associated with the collection.' ),
+					'description'          => __( 'Taxonomy terms associated with the collection.', 'wp-museum' ),
 					'type'                 => 'object',
 					'context'              => [ 'view', 'edit', 'embed' ],
 					'readonly'             => true,

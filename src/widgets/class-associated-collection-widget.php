@@ -28,7 +28,7 @@ class Associated_Collection_Widget extends \WP_Widget {
 		parent::__construct(
 			WPM_PREFIX . 'associated_collection_widget',
 			'Associated Collection Widget',
-			[ 'description' => __( 'Widget for displaying collections associated with an object in the sidebar.' ) ]
+			[ 'description' => __( 'Widget for displaying collections associated with an object in the sidebar.', 'wp-museum' ) ]
 		);
 	}
 

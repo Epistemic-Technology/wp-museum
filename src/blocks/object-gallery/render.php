@@ -31,7 +31,6 @@ namespace MikeThicke\WPMuseum;
 
 defined( 'ABSPATH' ) || exit;
 
-//phpcs:disable
 $columns        = $attributes['columns'];
 $objectURL      = $attributes['objectURL'] ?? null;
 $imgData        = $attributes['imgData'];
@@ -52,10 +51,10 @@ foreach ( $imgData as $imgItem ) {
 	ob_start();
 	?>
 	<div
-		class = 'gallery-image-wrapper'
-		style = 'flex-basis: <?= $percentWidth ?>'
+		class='gallery-image-wrapper'
+		style='flex-basis: <?= esc_attr( $percentWidth ) ?>'
 	>
-		<img src = '<?= $imgItem['imgURL'] ?>' alt = '<?= esc_attr( $imgItem['alt'] ?: $imgItem['title'] ?: 'Gallery image' ) ?>' />
+		<img src='<?= esc_url( $imgItem['imgURL'] ) ?>' alt='<?= esc_attr( $imgItem['alt'] ?: $imgItem['title'] ?: 'Gallery image' ) ?>' />
 	</div>
 	<?php
 	$grid .= ob_get_contents();
@@ -63,29 +62,29 @@ foreach ( $imgData as $imgItem ) {
 }
 
 ?>
-<div class = 'object-gallery-block'>
-	<?php if ( $linkToObject && null !== $objectURL ): ?>
-		<a class = 'object-link' href = '<?= $objectURL ?>'>Hidden Link Text</a>
+<div class='object-gallery-block'>
+	<?php if ( $linkToObject && null !== $objectURL ) : ?>
+		<a class='object-link' href='<?= esc_url( $objectURL ) ?>'>Hidden Link Text</a>
 	<?php endif; ?>
-	<?php if ( $displayTitle && null !== $title ): ?>
-		<<?= $titleTag ?>>
-			<?= $title ?>
-		</<?= $titleTag ?>>
+	<?php if ( $displayTitle && null !== $title ) : ?>
+		<<?= tag_escape( $titleTag ) ?>>
+			<?= esc_html( $title ) ?>
+		</<?= tag_escape( $titleTag ) ?>>
 	<?php endif; ?>
-	<div class = 'gallery-grid'>
-		<?= $grid ?>
+	<div class='gallery-grid'>
+		<?= wp_kses_post( $grid ) ?>
 	</div>
 	<div
-		class = 'bottom-text-wrapper'
-		style = 'font-size: <?= $fontSize ?>em'
+		class='bottom-text-wrapper'
+		style='font-size: <?= esc_attr( floatval( $fontSize ) ) ?>em'
 	>
 		<?php if ( $displayCatID && null !== $catID ) : ?>
-			<div class = 'cat-id'>
-				<?= $catID ?>
+			<div class='cat-id'>
+				<?= esc_html( $catID ) ?>
 			</div>
 		<?php endif; ?>
-		<?php if ( $displayCaption && null !== $captionText ): ?>
-			<p><?= $captionText ?></p>
+		<?php if ( $displayCaption && null !== $captionText ) : ?>
+			<p><?= wp_kses_post( $captionText ) ?></p>
 		<?php endif; ?>
 	</div>
 </div>

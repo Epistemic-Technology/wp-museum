@@ -199,14 +199,6 @@ add_action("admin_init", __NAMESPACE__ . "\add_museum_capabilities");
 add_action("edit_form_top", __NAMESPACE__ . "\add_object_parent_link");
 
 /**
- * Adds a div to top of edit post pages for museum object post types to report
- * problems (eg. failing to assign post to a category).
- *
- * @see object-post-types.php::add_object_problem_div()
- */
-add_action("admin_notices", __NAMESPACE__ . "\add_object_problem_div");
-
-/**
  * Adds quick browse page to all museum object post types.
  *
  * @see quick-browse.php::add_quick_browse()
@@ -269,13 +261,6 @@ add_filter(
  *
  * Frontend Actions
  */
-
-/**
- * Enqueue fancybox javascript for frontend.
- *
- * @see object-ajax::enqueue_javascript()
- */
-add_action("wp_enqueue_scripts", __NAMESPACE__ . '\enqueue_javascript');
 
 /**
  * Generates CSS for museum objects, and inserts into page header

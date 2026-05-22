@@ -67,9 +67,14 @@ function handle_oai_pmh_request()
     // Get and validate verb. OAI-PMH is a public read-only harvesting endpoint
     // defined by the Open Archives Initiative, so WordPress nonces do not apply.
     // phpcs:disable WordPress.Security.NonceVerification
-    $raw_verb = $_GET["verb"] ?? ($_POST["verb"] ?? "");
+    if ( isset( $_GET["verb"] ) ) {
+        $verb = sanitize_text_field( wp_unslash( $_GET["verb"] ) );
+    } elseif ( isset( $_POST["verb"] ) ) {
+        $verb = sanitize_text_field( wp_unslash( $_POST["verb"] ) );
+    } else {
+        $verb = "";
+    }
     // phpcs:enable WordPress.Security.NonceVerification
-    $verb     = sanitize_text_field( wp_unslash( $raw_verb ) );
 
     if (empty($verb)) {
         output_oai_error("badVerb", "Missing verb argument");

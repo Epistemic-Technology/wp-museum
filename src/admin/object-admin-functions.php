@@ -87,11 +87,9 @@ function objects_admin_page(): void {
  * @return void
  */
 function display_object_admin_main(): void {
-	if ( isset( $_SERVER['PHP_SELF'] ) ) {
-		$form_url = wp_unslash( $_SERVER['PHP_SELF'] ); // phpcs:ignore
-	} else {
-		$form_url = '';
-	}
+	$form_url = isset( $_SERVER['PHP_SELF'] )
+		? sanitize_url( wp_unslash( $_SERVER['PHP_SELF'] ) )
+		: '';
 	echo (
 		"<div class='wrap'>
 			<h1>WordPress Museum Administration</h1>"
@@ -186,8 +184,7 @@ function display_kinds_admin_section(string $form_url): void {
 			],
 			$form_url
 		);
-		// phpcs:ignore
-		echo "<tr id='kind-row-{$kind->kind_id}'>";
+		echo "<tr id='kind-row-" . esc_attr( $kind->kind_id ) . "'>";
 		echo '<td>' . esc_html( $kind->label ) . '</td>';
 		echo '<td>' . esc_html( count( $all_mobject_posts ) ) . '</td>';
 		echo '<td>' . esc_html( count( $published_mobject_posts ) ) . '</td>';
@@ -323,15 +320,13 @@ function delete_kind_aj(): void {
 	if ( ! check_ajax_referer( 'kcDbrTMMfFqh6jy8&LrCGoH7p', 'nonce' ) ) {
 		wp_die( esc_html__( 'Failed nonce check.', 'wp-museum' ) );
 	}
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
+	}
 	if ( ! isset( $_POST['kind_id'] ) ) {
 		wp_die( esc_html__( 'Tried to delete kind, but kind_id not set.', 'wp-museum' ) );
 	}
 	$kind_id = intval( $_POST['kind_id'] );
-	if ( isset( $_SERVER['PHP_SELF'] ) ) {
-		$form_url = wp_unslash( $_SERVER['PHP_SELF'] ); // phpcs:ignore
-	} else {
-		$form_url = '';
-	}
 	if ( delete_kind( $kind_id ) ) {
 		wp_send_json_success( [] );
 	} else {
@@ -347,6 +342,9 @@ function delete_kind_aj(): void {
 function delete_image_zip_aj(): void {
 	if ( ! check_ajax_referer( 'kcDbrTMMfFqh6jy8&LrCGoH7p', 'nonce' ) ) {
 		wp_die( esc_html__( 'Failed nonce check.', 'wp-museum' ) );
+	}
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
 	}
 	if ( ! isset( $_POST['zip_item'] ) ) {
 		wp_die( esc_html__( 'Tried to delete image backup, but item name not set.', 'wp-museum' ) );
@@ -370,7 +368,10 @@ function edit_kind_form(int $kind_id = -1): void {
 		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wp-museum' ) );
 	}
 
-	$form_action = $_SERVER['PHP_SELF'] . '?page=wpm-objects-admin&wpm-objects-page=wpm-edit-kind'; //phpcs:ignore
+	$base_url    = isset( $_SERVER['PHP_SELF'] )
+		? sanitize_url( wp_unslash( $_SERVER['PHP_SELF'] ) )
+		: '';
+	$form_action = $base_url . '?page=wpm-objects-admin&wpm-objects-page=wpm-edit-kind';
 	if ( -1 !== $kind_id ) {
 		$form_action .= '&oid=' . $kind_id;
 	}
@@ -478,7 +479,8 @@ function edit_kind_form(int $kind_id = -1): void {
 			} elseif ( 1 === intval( $form_row['delete'] ) ) { // Delete fields.
 				$successful_delete = $wpdb->query(
 					$wpdb->prepare(
-						"DELETE FROM $kind_table WHERE kind_id=%d AND field_id=%d", //phpcs:ignore
+						'DELETE FROM %i WHERE kind_id=%d AND field_id=%d',
+						$kind_table,
 						$kind_id,
 						$form_row['field_id']
 					)
@@ -490,7 +492,9 @@ function edit_kind_form(int $kind_id = -1): void {
 				}
 			} else { // Update fields.
 				unset( $form_row['delete'] );
-				$db_rows     = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $kind_table WHERE kind_id=%s", $kind_id ) ); //phpcs:ignore
+				$db_rows     = $wpdb->get_results(
+					$wpdb->prepare( 'SELECT * FROM %i WHERE kind_id=%s', $kind_table, $kind_id )
+				);
 				$field_slugs = [];
 				$db_fields   = [];
 				foreach ( $db_rows as $db_row ) {
@@ -513,7 +517,8 @@ function edit_kind_form(int $kind_id = -1): void {
 						$meta_table = $wpdb->prefix . 'postmeta';
 						$wpdb->query(
 							$wpdb->prepare(
-								"UPDATE $meta_table SET meta_key=%s WHERE meta_key=%s", //phpcs:ignore
+								'UPDATE %i SET meta_key=%s WHERE meta_key=%s',
+								$meta_table,
 								$form_row['slug'],
 								$old_slug
 							)
@@ -532,9 +537,14 @@ function edit_kind_form(int $kind_id = -1): void {
 	}
 
 	if ( -1 !== $kind_id ) {
-		$rows         = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $kind_table WHERE kind_id = %d ORDER BY display_order", $kind_id ) ); // phpcs:ignore
+		$rows         = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT * FROM %i WHERE kind_id = %d ORDER BY display_order', $kind_table, $kind_id )
+		);
 		$object_table = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
-		$object_data  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $object_table WHERE kind_id = %d", $kind_id ), ARRAY_A )[0]; // phpcs:ignore
+		$object_data  = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT * FROM %i WHERE kind_id = %d', $object_table, $kind_id ),
+			ARRAY_A
+		)[0];
 	} else {
 		$rows = [];
 	}
@@ -565,11 +575,11 @@ function edit_kind_form(int $kind_id = -1): void {
 	$fields     = get_mobject_fields( $kind_id );
 	if ( ! is_null( $fields ) ) {
 		foreach ( $fields as $field ) {
-			$id_select .= "<option value='$field->field_id'";
+			$id_select .= "<option value='" . esc_attr( $field->field_id ) . "'";
 			if ( intval( $object_data['cat_field_id'] ) === $field->field_id ) {
 				$id_select .= " selected='selected' ";
 			}
-			$id_select .= ">$field->name</option>";
+			$id_select .= '>' . esc_html( $field->name ) . '</option>';
 		}
 	}
 	$id_select .= '</select>';
@@ -579,16 +589,16 @@ function edit_kind_form(int $kind_id = -1): void {
 	 */
 	?>
 	<div class="wrap">
-		<form name="object_fields_form" method="post" action="<?php echo esc_html( wp_unslash( $form_action ) ); ?>">
+		<form name="object_fields_form" method="post" action="<?php echo esc_url( $form_action ); ?>">
 		<?php wp_nonce_field( 'd78HG@YsELh2KByUgCTuDCepW', 'wpm-objects-admin-nonce' ); ?>
 		<div id='wpm-object-top-buttons'>
 			<input type="submit" class="button button-primary button-large" name="save-object" value="Save" />
 		</div>
 		<h1 class="wp-heading">Edit Museum Object Type</h1>
 			<table id="wpm-edit-kind" class="wpm-object">
-				<tr><th>Object Name:</th><td><input type="text" style="width:100%;" name="object_name" value="<?php echo esc_html( wp_unslash( $object_data['label'] ) ); ?>"/></td></tr>
-				<tr><th>Object Description:</th><td><textarea style="width:100%;" name="object_description"><?php echo esc_html( wp_unslash( $object_data['description'] ) ); ?></textarea></td></tr>
-				<tr><th>ID Field:</th></td><td><?php echo $id_select; //phpcs:ignore ?></td></tr>
+				<tr><th>Object Name:</th><td><input type="text" style="width:100%;" name="object_name" value="<?php echo esc_attr( $object_data['label'] ); ?>"/></td></tr>
+				<tr><th>Object Description:</th><td><textarea style="width:100%;" name="object_description"><?php echo esc_textarea( $object_data['description'] ); ?></textarea></td></tr>
+				<tr><th>ID Field:</th></td><td><?php echo wp_kses( $id_select, [ 'select' => [ 'name' => [] ], 'option' => [ 'value' => [], 'selected' => [] ] ] ); ?></td></tr>
 				<tr><th>Options:</th><td>
 					<table><tr>
 						<td><ul>

@@ -24,7 +24,7 @@ $encoded_attributes = wp_json_encode( $attributes );
 ?>
 <div 
 	class='wpm-advanced-search-block-frontend' 
-	data-attributes='<?= $encoded_attributes //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'
+	data-attributes='<?= esc_attr( $encoded_attributes ) ?>'
 >
 </div>
 
