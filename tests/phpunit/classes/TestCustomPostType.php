@@ -288,6 +288,7 @@ class TestCustomPostType extends WP_UnitTestCase
             "label" => "Test Save",
         ]);
         $custom_post_type->add_meta_field("test_field", "Test Field", "text");
+        register_post_type( "test_save", [ "label" => "Test Save", "public" => true ] );
 
         // Create a test post
         $post_id = $this->factory->post->create([
@@ -321,6 +322,7 @@ class TestCustomPostType extends WP_UnitTestCase
             "Checkbox Field",
             "checkbox"
         );
+        register_post_type( "test_checkbox", [ "label" => "Test Checkbox", "public" => true ] );
 
         // Create a test post
         $post_id = $this->factory->post->create([
