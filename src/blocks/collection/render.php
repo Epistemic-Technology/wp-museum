@@ -3,7 +3,7 @@
 namespace MikeThicke\WPMuseum;
 
 defined( 'ABSPATH' ) || exit;
-	
+
 $numObjects       = $attributes['numObjects'] ?? 4;
 $columns          = $attributes['columns'] ?? 2;
 $collectionID     = $attributes['collectionID'] ?? null;
@@ -29,17 +29,17 @@ $excerpt =
 	);
 remove_filter( 'excerpt_more', __NAMESPACE__ . '\rest_excerpt_filter', 10, 0 );
 
-$collection_objects = get_associated_objects( 'publish', $collectionID );
-$collection_object_data  = array_map(
-	function( $object ) {
-		$object_data = [];
+$collection_objects     = get_associated_objects( 'publish', $collectionID );
+$collection_object_data = array_map(
+	function ( $object ) {
+		$object_data          = [];
 		$object_data['title'] = $object->post_title;
-		$object_data['URL'] = get_permalink( $object );
-		$img_data = get_object_thumbnail( $object->ID );
+		$object_data['URL']   = get_permalink( $object );
+		$img_data             = get_object_thumbnail( $object->ID );
 		if ( count( $img_data ) > 0 ) {
 			$object_data['imgURL'] = $img_data[0];
 		} else {
-			$object_data['imgURL'] =  null;
+			$object_data['imgURL'] = null;
 		}
 		return $object_data;
 	},
@@ -47,7 +47,7 @@ $collection_object_data  = array_map(
 );
 $collection_object_data = array_filter(
 	$collection_object_data,
-	function( $object ) {
+	function ( $object ) {
 		return ( ! is_null( $object['imgURL'] ) );
 	}
 );

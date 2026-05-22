@@ -178,15 +178,15 @@ function create_new_se() {
 	if ( ! $parent_id || ! current_user_can( 'edit_post', $parent_id ) ) {
 		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
 	}
-	$category  = get_post_custom( $parent_id )['associated_category'];
-	$args      = [
+	$category = get_post_custom( $parent_id )['associated_category'];
+	$args     = [
 		'post_title'    => '',
 		'post_content'  => '',
 		'post_type'     => 'exhibit',
 		'post_parent'   => $parent_id,
 		'post_category' => $category,
 	];
-	$post_id   = wp_insert_post( $args );
+	$post_id  = wp_insert_post( $args );
 	echo intval( $post_id );
 	wp_die();
 }

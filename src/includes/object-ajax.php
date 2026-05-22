@@ -22,7 +22,7 @@ function create_new_obj_aj() {
 	if ( ! isset( $_POST['parent'] ) ) {
 		wp_die( esc_html__( 'Tried to create child post but parent post not found.', 'wp-museum' ) );
 	}
-	$parent_id   = intval( $_POST['parent'] );
+	$parent_id = intval( $_POST['parent'] );
 	if ( ! current_user_can( 'edit_post', $parent_id ) ) {
 		wp_send_json_error( [ 'message' => __( 'Insufficient permissions.', 'wp-museum' ) ], 403 );
 	}
@@ -53,4 +53,3 @@ function wpm_media_box_enqueue() {
 		true
 	);
 }
-

@@ -11,4 +11,3 @@ if ( $post_id ) {
 		(int) $post_id
 	);
 }
-

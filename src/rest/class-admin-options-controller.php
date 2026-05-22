@@ -162,27 +162,27 @@ class Admin_Options_Controller extends \WP_REST_Controller {
 			'title'      => 'museum-admin-options',
 			'type'       => 'object',
 			'properties' => [
-				'allow_remote_requests'       => [
+				'allow_remote_requests'        => [
 					'description' => __( 'Whether remote REST requests should be allowed.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
-				'allow_unregistered_requests' => [
+				'allow_unregistered_requests'  => [
 					'description' => __( 'Whether remote REST requests from unregistered domains should be allowed.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
-				'rest_authorized_domains'     => [
+				'rest_authorized_domains'      => [
 					'description' => __( 'Comma-separated list of whitelisted domains.', 'wp-museum' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit' ],
 				],
-				'clear_data_on_uninstall'     => [
+				'clear_data_on_uninstall'      => [
 					'description' => __( 'Whether to delete all museum data on plugin uninstall.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],
 				],
-				'show_post_status'            => [
+				'show_post_status'             => [
 					'description' => __( 'Whether to show post status in admin bar.', 'wp-museum' ),
 					'type'        => 'boolean',
 					'context'     => [ 'view', 'edit' ],

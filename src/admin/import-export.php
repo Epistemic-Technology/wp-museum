@@ -29,10 +29,10 @@ function export_csv() {
 	if ( ! current_user_can( 'edit_posts' ) ) {
 		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wp-museum' ) );
 	}
-	$kind_id = intval( $_GET[ WPM_PREFIX . 'ot_csv' ] );
+	$kind_id  = intval( $_GET[ WPM_PREFIX . 'ot_csv' ] );
 	$sort_col = isset( $_GET['sort_col'] ) ? sanitize_text_field( wp_unslash( $_GET['sort_col'] ) ) : 'post_title';
 	$sort_dir = isset( $_GET['sort_dir'] ) ? sanitize_text_field( wp_unslash( $_GET['sort_dir'] ) ) : 'asc';
-	$kind    = get_kind( $kind_id );
+	$kind     = get_kind( $kind_id );
 
 	if ( ! $kind ) {
 		wp_die( esc_html__( 'Invalid object kind.', 'wp-museum' ) );
@@ -45,11 +45,11 @@ function export_csv() {
 	];
 	$posts  = get_posts( $args );
 	$fields = get_mobject_fields( $kind_id );
-	
+
 	// Sort posts using the sophisticated wpm_sort_by_field function
 	wpm_sort_by_field( $posts, $sort_col, $sort_dir );
-	
-	$rows   = [];
+
+	$rows = [];
 	foreach ( $posts as $the_post ) {
 		$row          = get_post_custom( $the_post->ID );
 		$sorted_row   = sort_row_by_fields( $row, $fields );
@@ -79,10 +79,10 @@ function export_csv() {
 	}
 
 	$file = fopen( 'php://output', 'w' );
-	fputcsv( $file, $header_row, ',', '"', "\\" );
-	fputcsv( $file, $slug_row, ',', '"', "\\" );
+	fputcsv( $file, $header_row, ',', '"', '\\' );
+	fputcsv( $file, $slug_row, ',', '"', '\\' );
 	foreach ( $rows as $row ) {
-		fputcsv( $file, $row, ',', '"', "\\" );
+		fputcsv( $file, $row, ',', '"', '\\' );
 	}
 
 	// Allow tests to prevent exit
@@ -477,7 +477,7 @@ function export_images_aj() {
  *
  * @param   int/string $kind_id  The object's ID (a number).
  */
-function export_csv_button( int $kind_id, string $sort_col = 'post_title', string $sort_dir = 'asc') {
+function export_csv_button( int $kind_id, string $sort_col = 'post_title', string $sort_dir = 'asc' ) {
 	if ( isset( $_SERVER['PHP_SELF'] ) ) {
 		$url = esc_url(
 			add_query_arg(

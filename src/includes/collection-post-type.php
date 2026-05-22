@@ -54,21 +54,21 @@ $collection_post_type->register_post_meta( 'include_child_categories', 'boolean'
 $collection_post_type->register_post_meta( 'single_page', 'boolean', 'Single Page View', [ 'default' => true ] );
 $collection_post_type->register_post_meta( 'collection_term_id', 'number', 'Associated Collection Term ID' );
 $collection_post_type->register_post_meta( 'auto_collection', 'boolean', 'Automatically Add Objects to Collection', [ 'default' => false ] );
-$collection_post_type->register_post_meta( 
-	'object_tags', 
-	'array', 
-	'Object Tags', 
-	[ 
-		'default' => [], 
+$collection_post_type->register_post_meta(
+	'object_tags',
+	'array',
+	'Object Tags',
+	[
+		'default'      => [],
 		'show_in_rest' => [
 			'schema' => [
-				'type' => 'array',
+				'type'  => 'array',
 				'items' => [
-					'type' => 'string'
-				]
-			]
-		]
-	] 
+					'type' => 'string',
+				],
+			],
+		],
+	]
 );
 /*
  * Register the post type (CustomPostType)
@@ -114,33 +114,33 @@ function handle_collection_term_association( $post_id, $post, $update ) {
 
 	// Check if this collection already has an associated term
 	$existing_term_id = get_post_meta( $post_id, WPM_PREFIX . 'collection_term_id', true );
-	
+
 	// Get the parent term ID if the collection has a parent
 	$parent_term_id = 0;
 	if ( $post->post_parent ) {
 		$parent_term_id = get_post_meta( $post->post_parent, WPM_PREFIX . 'collection_term_id', true );
 	}
-	
+
 	if ( $existing_term_id ) {
 		// Update the existing term to match the collection
 		$term = get_term( $existing_term_id, WPM_PREFIX . 'collection_tax' );
-		
-		if ( $term && !is_wp_error( $term ) ) {
+
+		if ( $term && ! is_wp_error( $term ) ) {
 			$term_args = [];
-			
+
 			// Update the term name and slug if needed
 			if ( $term->name !== $post->post_title || $term->slug !== $post->post_name ) {
 				$term_args['name'] = $post->post_title;
 				$term_args['slug'] = $post->post_name;
 			}
-			
+
 			// Update parent if different from current parent
 			if ( $term->parent != $parent_term_id ) {
 				$term_args['parent'] = $parent_term_id;
 			}
-			
+
 			// Only update if there are changes
-			if ( !empty( $term_args ) ) {
+			if ( ! empty( $term_args ) ) {
 				wp_update_term(
 					$existing_term_id,
 					WPM_PREFIX . 'collection_tax',
@@ -153,12 +153,12 @@ function handle_collection_term_association( $post_id, $post, $update ) {
 				$post->post_title,
 				WPM_PREFIX . 'collection_tax',
 				[
-					'slug' => $post->post_name,
+					'slug'   => $post->post_name,
 					'parent' => $parent_term_id,
 				]
 			);
-			
-			if ( !is_wp_error( $result ) ) {
+
+			if ( ! is_wp_error( $result ) ) {
 				update_post_meta( $post_id, WPM_PREFIX . 'collection_term_id', $result['term_id'] );
 			}
 		}
@@ -168,12 +168,12 @@ function handle_collection_term_association( $post_id, $post, $update ) {
 			$post->post_title,
 			WPM_PREFIX . 'collection_tax',
 			[
-				'slug' => $post->post_name,
+				'slug'   => $post->post_name,
 				'parent' => $parent_term_id,
 			]
 		);
-		
-		if ( !is_wp_error( $result ) ) {
+
+		if ( ! is_wp_error( $result ) ) {
 			$term_id = $result['term_id'];
 			// Store the term ID in the collection post meta
 			update_post_meta( $post_id, WPM_PREFIX . 'collection_term_id', $term_id );
@@ -192,10 +192,10 @@ function handle_collection_deletion( $post_id ) {
 	if ( WPM_PREFIX . 'collection' !== get_post_type( $post_id ) ) {
 		return;
 	}
-	
+
 	// Get the associated term ID
 	$term_id = get_post_meta( $post_id, WPM_PREFIX . 'collection_term_id', true );
-	
+
 	if ( $term_id ) {
 		// Delete the term
 		wp_delete_term( $term_id, WPM_PREFIX . 'collection_tax' );
@@ -215,20 +215,20 @@ function handle_collection_hierarchy_change( $post_id, $parent_id ) {
 	if ( WPM_PREFIX . 'collection' !== get_post_type( $post_id ) ) {
 		return;
 	}
-	
+
 	// Get the associated term ID
 	$term_id = get_post_meta( $post_id, WPM_PREFIX . 'collection_term_id', true );
-	
-	if ( !$term_id ) {
+
+	if ( ! $term_id ) {
 		return;
 	}
-	
+
 	// Get the parent term ID
 	$parent_term_id = 0;
 	if ( $parent_id ) {
 		$parent_term_id = get_post_meta( $parent_id, WPM_PREFIX . 'collection_term_id', true );
 	}
-	
+
 	// Update the term's parent
 	wp_update_term(
 		$term_id,
@@ -237,27 +237,34 @@ function handle_collection_hierarchy_change( $post_id, $parent_id ) {
 			'parent' => $parent_term_id,
 		]
 	);
-	
+
 	// Now recursively update all child collections
-	$child_posts = get_posts([
-		'post_type' => WPM_PREFIX . 'collection',
-		'post_parent' => $post_id,
-		'posts_per_page' => -1,
-		'post_status' => 'any',
-	]);
-	
+	$child_posts = get_posts(
+		[
+			'post_type'      => WPM_PREFIX . 'collection',
+			'post_parent'    => $post_id,
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+		]
+	);
+
 	foreach ( $child_posts as $child_post ) {
 		handle_collection_hierarchy_change( $child_post->ID, $post_id );
 	}
 }
-add_action( 'wp_insert_post', function( $post_id, $post, $update ) {
-	if ( $update && WPM_PREFIX . 'collection' === $post->post_type ) {
-		// Get the previous parent
-		$previous_parent = wp_get_post_parent_id( $post_id );
-		
-		// If parent has changed, update the hierarchy
-		if ( $previous_parent !== $post->post_parent ) {
-			handle_collection_hierarchy_change( $post_id, $post->post_parent );
+add_action(
+	'wp_insert_post',
+	function ( $post_id, $post, $update ) {
+		if ( $update && WPM_PREFIX . 'collection' === $post->post_type ) {
+			// Get the previous parent
+			$previous_parent = wp_get_post_parent_id( $post_id );
+
+			// If parent has changed, update the hierarchy
+			if ( $previous_parent !== $post->post_parent ) {
+				handle_collection_hierarchy_change( $post_id, $post->post_parent );
+			}
 		}
-	}
-}, 20, 3 );
+	},
+	20,
+	3
+);

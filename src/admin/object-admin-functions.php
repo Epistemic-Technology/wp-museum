@@ -107,7 +107,7 @@ function display_object_admin_main(): void {
  * @param string $form_url The URL for the form action.
  * @return void
  */
-function display_images_admin_section(string $form_url): void {
+function display_images_admin_section( string $form_url ): void {
 	echo '<h2>Images</h2>';
 
 	echo '<div id="image-backups-table">';
@@ -134,7 +134,7 @@ function display_images_admin_section(string $form_url): void {
  * @param string $form_url The URL for the form action.
  * @return void
  */
-function display_kinds_admin_section(string $form_url): void {
+function display_kinds_admin_section( string $form_url ): void {
 	$csv_url = add_query_arg(
 		[
 			'page'                    => 'wpm-objects-admin',
@@ -363,7 +363,7 @@ function delete_image_zip_aj(): void {
  * @param int $kind_id The ID of the kind to edit.
  * @return void
  */
-function edit_kind_form(int $kind_id = -1): void {
+function edit_kind_form( int $kind_id = -1 ): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'wp-museum' ) );
 	}
@@ -598,7 +598,20 @@ function edit_kind_form(int $kind_id = -1): void {
 			<table id="wpm-edit-kind" class="wpm-object">
 				<tr><th>Object Name:</th><td><input type="text" style="width:100%;" name="object_name" value="<?php echo esc_attr( $object_data['label'] ); ?>"/></td></tr>
 				<tr><th>Object Description:</th><td><textarea style="width:100%;" name="object_description"><?php echo esc_textarea( $object_data['description'] ); ?></textarea></td></tr>
-				<tr><th>ID Field:</th></td><td><?php echo wp_kses( $id_select, [ 'select' => [ 'name' => [] ], 'option' => [ 'value' => [], 'selected' => [] ] ] ); ?></td></tr>
+				<tr><th>ID Field:</th></td><td>
+				<?php
+				echo wp_kses(
+					$id_select,
+					[
+						'select' => [ 'name' => [] ],
+						'option' => [
+							'value'    => [],
+							'selected' => [],
+						],
+					]
+				);
+				?>
+												</td></tr>
 				<tr><th>Options:</th><td>
 					<table><tr>
 						<td><ul>

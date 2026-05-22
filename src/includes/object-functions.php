@@ -15,14 +15,13 @@ defined( 'ABSPATH' ) || exit;
  *
  * @return Array List of WordPress custom post type names.
  */
-function get_object_type_names(): array
-{
-    $mobject_kinds = get_mobject_kinds();
-    $type_names = [];
-    foreach ($mobject_kinds as $kind) {
-        $type_names[] = $kind->type_name;
-    }
-    return $type_names;
+function get_object_type_names(): array {
+	$mobject_kinds = get_mobject_kinds();
+	$type_names    = [];
+	foreach ( $mobject_kinds as $kind ) {
+		$type_names[] = $kind->type_name;
+	}
+	return $type_names;
 }
 
 /**
@@ -33,18 +32,19 @@ function get_object_type_names(): array
  *
  * @return [WP_POST] Array of posts with object post types.
  */
-function get_object_posts($type = null, $post_status = "any")
-{
-    if ($type) {
-        $post_types = [$type];
-    } else {
-        $post_types = get_object_type_names();
-    }
-    return get_posts([
-        "numberposts" => -1,
-        "post_type" => $post_types,
-        "post_status" => $post_status,
-    ]);
+function get_object_posts( $type = null, $post_status = 'any' ) {
+	if ( $type ) {
+		$post_types = [ $type ];
+	} else {
+		$post_types = get_object_type_names();
+	}
+	return get_posts(
+		[
+			'numberposts' => -1,
+			'post_type'   => $post_types,
+			'post_status' => $post_status,
+		]
+	);
 }
 
 /**
@@ -54,15 +54,14 @@ function get_object_posts($type = null, $post_status = "any")
  *
  * @return ObjectKind An object representing the museum object kind.
  */
-function kind_from_type($type_name)
-{
-    $mobject_kinds = get_mobject_kinds();
-    foreach ($mobject_kinds as $object_kind) {
-        if ($object_kind->type_name === $type_name) {
-            return $object_kind;
-        }
-    }
-    return false;
+function kind_from_type( $type_name ) {
+	$mobject_kinds = get_mobject_kinds();
+	foreach ( $mobject_kinds as $object_kind ) {
+		if ( $object_kind->type_name === $type_name ) {
+			return $object_kind;
+		}
+	}
+	return false;
 }
 
 /**
@@ -72,9 +71,8 @@ function kind_from_type($type_name)
  *
  * @return ObjectKind The kind of that object.
  */
-function kind_from_post($post_type)
-{
-    return kind_from_type($post_type->post_type);
+function kind_from_post( $post_type ) {
+	return kind_from_type( $post_type->post_type );
 }
 
 /**
@@ -88,14 +86,13 @@ function kind_from_post($post_type)
  *
  * @return bool  True if successful.
  */
-function set_object_image_box_attachments($attached_image_array, $post_id)
-{
-    if (!is_array($attached_image_array)) {
-        return false;
-    }
-    update_post_meta($post_id, "wpm_gallery_attach_ids", $attached_image_array);
+function set_object_image_box_attachments( $attached_image_array, $post_id ) {
+	if ( ! is_array( $attached_image_array ) ) {
+		return false;
+	}
+	update_post_meta( $post_id, 'wpm_gallery_attach_ids', $attached_image_array );
 
-    return true;
+	return true;
 }
 
 /**
@@ -105,17 +102,19 @@ function set_object_image_box_attachments($attached_image_array, $post_id)
  *
  * @return [int=>int] An array of image_id => sort_order
  */
-function get_object_image_attachments($post_id)
-{
-    $attached_image_array = [];
-    $attach_ids = get_post_meta($post_id, "wpm_gallery_attach_ids", true);
-    if (!is_array($attach_ids)) {
-        return [];
-    }
-    $attach_ids = array_map(function ($item) {
-        return intval($item);
-    }, $attach_ids);
-    return array_flip($attach_ids);
+function get_object_image_attachments( $post_id ) {
+	$attached_image_array = [];
+	$attach_ids           = get_post_meta( $post_id, 'wpm_gallery_attach_ids', true );
+	if ( ! is_array( $attach_ids ) ) {
+		return [];
+	}
+	$attach_ids = array_map(
+		function ( $item ) {
+			return intval( $item );
+		},
+		$attach_ids
+	);
+	return array_flip( $attach_ids );
 }
 
 
@@ -127,22 +126,23 @@ function get_object_image_attachments($post_id)
  *
  * @return [WP_Post] Array of descendent posts.
  */
-function get_post_descendants($post_id, $post_status = "publish")
-{
-    $parent_post = get_post($post_id);
-    $descendants = [];
-    $children = get_posts([
-        "numberposts" => -1,
-        "post_status" => $post_status,
-        "post_type" => $parent_post->post_type,
-        "post_parent" => $post_id,
-    ]);
-    foreach ($children as $child) {
-        $grand_children = get_post_descendants($child->ID, $post_status);
-        $descendants = array_merge($descendants, $grand_children);
-    }
-    $descendants = array_merge($descendants, $children);
-    return $descendants;
+function get_post_descendants( $post_id, $post_status = 'publish' ) {
+	$parent_post = get_post( $post_id );
+	$descendants = [];
+	$children    = get_posts(
+		[
+			'numberposts' => -1,
+			'post_status' => $post_status,
+			'post_type'   => $parent_post->post_type,
+			'post_parent' => $post_id,
+		]
+	);
+	foreach ( $children as $child ) {
+		$grand_children = get_post_descendants( $child->ID, $post_status );
+		$descendants    = array_merge( $descendants, $grand_children );
+	}
+	$descendants = array_merge( $descendants, $children );
+	return $descendants;
 }
 
 /**
@@ -151,23 +151,22 @@ function get_post_descendants($post_id, $post_status = "publish")
  * @param integer $post_id ID of the current post.
  * @return integer the ID of the thumbnail or the first image.
  */
-function object_thumbnail_id($post_id)
-{
-    if (has_post_thumbnail($post_id)) {
-        $attach_id = get_post_thumbnail_id($post_id);
-    } else {
-        $attachments = get_attached_media("image", $post_id);
-        if ($attachments) {
-            $attachment = reset($attachments);
-            $attach_id = $attachment->ID;
-        }
-    }
+function object_thumbnail_id( $post_id ) {
+	if ( has_post_thumbnail( $post_id ) ) {
+		$attach_id = get_post_thumbnail_id( $post_id );
+	} else {
+		$attachments = get_attached_media( 'image', $post_id );
+		if ( $attachments ) {
+			$attachment = reset( $attachments );
+			$attach_id  = $attachment->ID;
+		}
+	}
 
-    if (isset($attach_id)) {
-        return $attach_id;
-    } else {
-        return false;
-    }
+	if ( isset( $attach_id ) ) {
+		return $attach_id;
+	} else {
+		return false;
+	}
 }
 
 /**
@@ -179,29 +178,28 @@ function object_thumbnail_id($post_id)
  *
  * @return WP_Post|null A WordPress post matching that id, or null.
  */
-function get_object_post_from_id($kind, $cat_id, $post_status = "any")
-{
-    if (is_int($kind)) {
-        $kind = get_kind($kind);
-    }
-    $id_field = get_mobject_field($kind->kind_id, $kind->cat_field_id);
+function get_object_post_from_id( $kind, $cat_id, $post_status = 'any' ) {
+	if ( is_int( $kind ) ) {
+		$kind = get_kind( $kind );
+	}
+	$id_field = get_mobject_field( $kind->kind_id, $kind->cat_field_id );
 
-    if (!$id_field) {
-        return null;
-    }
+	if ( ! $id_field ) {
+		return null;
+	}
 
-    $args = [
-        "post_type" => $kind->type_name,
-        "post_status" => $post_status,
-        "meta_key" => $id_field->slug,
-        "meta_value" => $cat_id,
-    ];
-    $posts = get_posts($args);
-    if (1 === count($posts)) {
-        return $posts[0];
-    } else {
-        return null;
-    }
+	$args  = [
+		'post_type'   => $kind->type_name,
+		'post_status' => $post_status,
+		'meta_key'    => $id_field->slug,
+		'meta_value'  => $cat_id,
+	];
+	$posts = get_posts( $args );
+	if ( 1 === count( $posts ) ) {
+		return $posts[0];
+	} else {
+		return null;
+	}
 }
 
 /**
@@ -213,24 +211,24 @@ function get_object_post_from_id($kind, $cat_id, $post_status = "any")
  * @return WP_Post|null A WordPress post matching that id, or null.
  */
 function get_any_object_post_from_id(
-    string $id,
-    string $post_status = "any"
+	string $id,
+	string $post_status = 'any'
 ): ?\WP_Post {
-    $kinds = get_mobject_kinds();
-    foreach ($kinds as $kind) {
-        $id_field = get_mobject_field($kind->kind_id, $kind->cat_field_id);
-        $args = [
-            "post_type" => $kind->type_name,
-            "post_status" => $post_status,
-            "meta_key" => $id_field->slug,
-            "meta_value" => $id,
-        ];
-        $posts = get_posts($args);
-        if (1 === count($posts)) {
-            return $posts[0];
-        }
-    }
-    return null;
+	$kinds = get_mobject_kinds();
+	foreach ( $kinds as $kind ) {
+		$id_field = get_mobject_field( $kind->kind_id, $kind->cat_field_id );
+		$args     = [
+			'post_type'   => $kind->type_name,
+			'post_status' => $post_status,
+			'meta_key'    => $id_field->slug,
+			'meta_value'  => $id,
+		];
+		$posts    = get_posts( $args );
+		if ( 1 === count( $posts ) ) {
+			return $posts[0];
+		}
+	}
+	return null;
 }
 
 /**
@@ -241,25 +239,24 @@ function get_any_object_post_from_id(
  *
  * @return Array Meta query that can be added to a WordPress query in the meta_query field.
  */
-function build_meta($kind_id, $request)
-{
-    $mobject_fields = get_mobject_fields($kind_id);
-    $meta_query = ["relation" => "AND"];
-    foreach ($mobject_fields as $field) {
-        $field_query = $request->get_param($field->slug);
-        if (!empty($field_query) && $field->public) {
-            $meta_query[] = [
-                "key" => $field->slug,
-                "value" => $field_query,
-                "compare" => "LIKE",
-            ];
-        }
-    }
-    if (count($meta_query) > 1) {
-        return $meta_query;
-    } else {
-        return [];
-    }
+function build_meta( $kind_id, $request ) {
+	$mobject_fields = get_mobject_fields( $kind_id );
+	$meta_query     = [ 'relation' => 'AND' ];
+	foreach ( $mobject_fields as $field ) {
+		$field_query = $request->get_param( $field->slug );
+		if ( ! empty( $field_query ) && $field->public ) {
+			$meta_query[] = [
+				'key'     => $field->slug,
+				'value'   => $field_query,
+				'compare' => 'LIKE',
+			];
+		}
+	}
+	if ( count( $meta_query ) > 1 ) {
+		return $meta_query;
+	} else {
+		return [];
+	}
 }
 
 /**
@@ -269,17 +266,16 @@ function build_meta($kind_id, $request)
  *
  * @return Array Array of image data [url, height, width] or [] if none.
  */
-function get_object_thumbnail(int $post_id): array
-{
-    $attach_id = get_object_thumbnail_id($post_id);
+function get_object_thumbnail( int $post_id ): array {
+	$attach_id = get_object_thumbnail_id( $post_id );
 
-    if ($attach_id !== false) {
-        $img_data = wp_get_attachment_image_src($attach_id, "thumbnail");
-    } else {
-        $img_data = [];
-    }
+	if ( $attach_id !== false ) {
+		$img_data = wp_get_attachment_image_src( $attach_id, 'thumbnail' );
+	} else {
+		$img_data = [];
+	}
 
-    return $img_data;
+	return $img_data;
 }
 
 /**
@@ -289,22 +285,21 @@ function get_object_thumbnail(int $post_id): array
  *
  * @return int Thumbnail ID or 0 if none.
  */
-function get_object_thumbnail_id(int $post_id): int|false
-{
-    $attach_id = false;
+function get_object_thumbnail_id( int $post_id ): int|false {
+	$attach_id = false;
 
-    $thumbnail_id = (int) get_post_meta($post_id, "_thumbnail_id", true);
-    if ($thumbnail_id !== 0) {
-        $attach_id = $thumbnail_id;
-    } else {
-        $attachments = get_object_image_attachments($post_id);
-        if (count($attachments) > 0) {
-            reset($attachments);
-            $attach_id = key($attachments);
-        }
-    }
+	$thumbnail_id = (int) get_post_meta( $post_id, '_thumbnail_id', true );
+	if ( $thumbnail_id !== 0 ) {
+		$attach_id = $thumbnail_id;
+	} else {
+		$attachments = get_object_image_attachments( $post_id );
+		if ( count( $attachments ) > 0 ) {
+			reset( $attachments );
+			$attach_id = key( $attachments );
+		}
+	}
 
-    return $attach_id;
+	return $attach_id;
 }
 
 /**
@@ -312,100 +307,99 @@ function get_object_thumbnail_id(int $post_id): int|false
  *
  * @param WP_REST_Request $request A REST POST request json encoded.
  */
-function do_advanced_search($request)
-{
-    global $wpdb;
+function do_advanced_search( $request ) {
+	global $wpdb;
 
-    $search_terms = $request->get_json_params();
-    $post_status = "publish";
+	$search_terms = $request->get_json_params();
+	$post_status  = 'publish';
 
-    if (isset($search_terms["page"])) {
-        $paged = $search_terms["page"];
-    } else {
-        $paged = 1;
-    }
+	if ( isset( $search_terms['page'] ) ) {
+		$paged = $search_terms['page'];
+	} else {
+		$paged = 1;
+	}
 
-    if (isset($search_terms["numberposts"])) {
-        $number_posts = $search_terms["numberposts"];
-    } elseif (isset($search_terms["posts_per_page"])) {
-        $number_posts = $search_terms["posts_per_page"];
-    } else {
-        $number_posts = DEFAULT_NUMBERPOSTS;
-    }
+	if ( isset( $search_terms['numberposts'] ) ) {
+		$number_posts = $search_terms['numberposts'];
+	} elseif ( isset( $search_terms['posts_per_page'] ) ) {
+		$number_posts = $search_terms['posts_per_page'];
+	} else {
+		$number_posts = DEFAULT_NUMBERPOSTS;
+	}
 
-    if (isset($search_terms["selectedKind"])) {
-        $kind = get_kind($search_terms["selectedKind"]);
-    } else {
-        $kinds = get_mobject_kinds();
-        if (empty($kinds)) {
-            return [];
-        }
-        $kind = $kinds[0];
-    }
+	if ( isset( $search_terms['selectedKind'] ) ) {
+		$kind = get_kind( $search_terms['selectedKind'] );
+	} else {
+		$kinds = get_mobject_kinds();
+		if ( empty( $kinds ) ) {
+			return [];
+		}
+		$kind = $kinds[0];
+	}
 
-    $query_args = [
-        "post_status" => $post_status,
-        "paged" => $paged,
-        "post_type" => $kind->type_name,
-        "posts_per_page" => $number_posts,
-        "suppress_filters" => false,
-    ];
+	$query_args = [
+		'post_status'      => $post_status,
+		'paged'            => $paged,
+		'post_type'        => $kind->type_name,
+		'posts_per_page'   => $number_posts,
+		'suppress_filters' => false,
+	];
 
-    if (!empty($search_terms["searchText"])) {
-        if (empty($search_terms["onlyTitle"])) {
-            $query_args["s"] = $search_terms["searchText"];
-        } else {
-            $query_args["post_title"] = $search_terms["searchText"];
-        }
-    }
+	if ( ! empty( $search_terms['searchText'] ) ) {
+		if ( empty( $search_terms['onlyTitle'] ) ) {
+			$query_args['s'] = $search_terms['searchText'];
+		} else {
+			$query_args['post_title'] = $search_terms['searchText'];
+		}
+	}
 
-    $included_categories = [];
-    if (!empty($search_terms["selectedCollections"])) {
-        foreach ($search_terms["selectedCollections"] as $collection_id) {
-            $post_custom = get_post_custom($collection_id);
-            if (!empty($post_custom["associated_category"])) {
-                $included_categories = array_merge(
-                    $included_categories,
-                    $post_custom["associated_category"]
-                );
-            }
-            if (
-                isset($post_custom["include_sub_collections"]) &&
-                "1" === $post_custom["include_sub_collections"][0]
-            ) {
-                $descendants = get_post_descendants(
-                    $collection_id,
-                    $post_status
-                );
-                foreach ($descendants as $descendant) {
-                    $d_custom = get_post_custom($descendant->ID);
-                    $included_categories = array_merge(
-                        $included_categories,
-                        $d_custom["associated_category"]
-                    );
-                }
-            }
-        }
-    }
-    if (!empty($included_categories)) {
-        if (
-            isset($post_custom["include_child_categories"]) &&
-            "1" === $post_custom["include_child_categories"][0]
-        ) {
-            $query_args["cat"] = implode(",", $included_categories);
-        } else {
-            $query_args["category__in"] = $included_categories;
-        }
-    }
+	$included_categories = [];
+	if ( ! empty( $search_terms['selectedCollections'] ) ) {
+		foreach ( $search_terms['selectedCollections'] as $collection_id ) {
+			$post_custom = get_post_custom( $collection_id );
+			if ( ! empty( $post_custom['associated_category'] ) ) {
+				$included_categories = array_merge(
+					$included_categories,
+					$post_custom['associated_category']
+				);
+			}
+			if (
+				isset( $post_custom['include_sub_collections'] ) &&
+				'1' === $post_custom['include_sub_collections'][0]
+			) {
+				$descendants = get_post_descendants(
+					$collection_id,
+					$post_status
+				);
+				foreach ( $descendants as $descendant ) {
+					$d_custom            = get_post_custom( $descendant->ID );
+					$included_categories = array_merge(
+						$included_categories,
+						$d_custom['associated_category']
+					);
+				}
+			}
+		}
+	}
+	if ( ! empty( $included_categories ) ) {
+		if (
+			isset( $post_custom['include_child_categories'] ) &&
+			'1' === $post_custom['include_child_categories'][0]
+		) {
+			$query_args['cat'] = implode( ',', $included_categories );
+		} else {
+			$query_args['category__in'] = $included_categories;
+		}
+	}
 
-    add_object_meta_query_filter($search_terms, $kind);
-    $search_query = new \WP_Query($query_args);
-    $found_posts = $search_query->posts;
-    $query_data = [
-        "num_pages" => $search_query->max_num_pages,
-        "current_page" => $search_query->get("paged", 1),
-    ];
-    return combine_post_data_array($found_posts, $query_data);
+	add_object_meta_query_filter( $search_terms, $kind );
+	$search_query = new \WP_Query( $query_args );
+	$found_posts  = $search_query->posts;
+	$query_data   = [
+		'num_pages'    => $search_query->max_num_pages,
+		'current_page' => $search_query->get( 'paged', 1 ),
+	];
+	return combine_post_data_array( $found_posts, $query_data );
 }
 
 /**
@@ -443,198 +437,201 @@ function do_advanced_search($request)
  * shouldn't be called on any page that queries standard WordPress posts. It is
  * intended to support REST requests and should only be used in that context.
  */
-function add_object_meta_query_filter($search_terms, $kind)
-{
-    global $wpdb;
+function add_object_meta_query_filter( $search_terms, $kind ) {
+	global $wpdb;
 
-    $search_all_fields_sql = [];
-    $meta_fields_sql = [];
-    if (current_user_can("edit_posts")) {
-        $public_fields_only = false;
-    } else {
-        $public_fields_only = true;
-    }
-    if (
-        empty($search_terms["onlyTitle"]) &&
-        !empty($search_terms["searchText"])
-    ) {
-        $search_all_fields_args = [
-            "relation" => "OR",
-        ];
+	$search_all_fields_sql = [];
+	$meta_fields_sql       = [];
+	if ( current_user_can( 'edit_posts' ) ) {
+		$public_fields_only = false;
+	} else {
+		$public_fields_only = true;
+	}
+	if (
+		empty( $search_terms['onlyTitle'] ) &&
+		! empty( $search_terms['searchText'] )
+	) {
+		$search_all_fields_args = [
+			'relation' => 'OR',
+		];
 
-        if (is_array($kind)) {
-            $mobject_fields = [];
-            foreach ($kind as $single_kind) {
-                $mobject_fields = array_merge(
-                    $mobject_fields,
-                    get_mobject_fields(
-                        $single_kind->kind_id,
-                        $public_fields_only
-                    )
-                );
-            }
-        } else {
-            $mobject_fields = get_mobject_fields($kind->kind_id);
-        }
-        foreach ($mobject_fields as $field) {
-            $search_all_fields_args[] = [
-                "key" => $field->slug,
-                "value" => $search_terms["searchText"],
-                "compare" => "LIKE",
-            ];
-        }
-        $search_all_fields_query = new \WP_Meta_Query($search_all_fields_args);
-        $search_all_fields_sql = $search_all_fields_query->get_sql(
-            "post",
-            $wpdb->posts,
-            "ID",
-            null
-        );
-        $join_clause = $search_all_fields_sql["join"];
-    }
-    $meta_filter_args = [
-        "relation" => "AND",
-    ];
-    if (!empty($search_terms["selectedFlags"])) {
-        foreach ($search_terms["selectedFlags"] as $set_flag) {
-            $meta_filter_args[] = [
-                "key" => $set_flag,
-                "value" => "1",
-                "compare" => "=",
-            ];
-        }
-    }
-    if (!empty($search_terms["searchFields"])) {
-        foreach ($search_terms["searchFields"] as $search_field) {
-            $meta_filter_args[] = [
-                "key" => $search_field["field"],
-                "value" => $search_field["search"],
-                "compare" => "LIKE",
-            ];
-        }
-    }
-    if (count($meta_filter_args) > 1) {
-        $meta_filter_query = new \WP_Meta_Query($meta_filter_args);
-        $meta_fields_sql = $meta_filter_query->get_sql(
-            "post",
-            $wpdb->posts,
-            "ID",
-            null
-        );
-        $join_clause = $meta_fields_sql["join"];
-    }
-    if (isset($join_clause)) {
-        add_filter(
-            "posts_where",
-            function ($where, $query) use (
-                $search_all_fields_sql,
-                $meta_fields_sql
-            ) {
-                if (!is_object_query($query)) {
-                    return $where;
-                }
-                global $wpdb;
-                $new_where = "";
-                if (!empty($search_all_fields_sql)) {
-                    $start_index = strpos($where, $wpdb->posts . ".post_title");
-                    if (false === $start_index) {
-                        return $where;
-                    }
-                    $where_first_part = substr($where, 0, $start_index);
-                    $where_last_part = substr($where, $start_index);
-                    $where_middle_part = substr(
-                        $search_all_fields_sql["where"],
-                        7
-                    );
-                    $where_middle_part = substr($where_middle_part, 0, -2);
-                    $new_where =
-                        $where_first_part .
-                        $where_middle_part .
-                        " OR " .
-                        $where_last_part;
-                }
-                if ("" === $new_where) {
-                    $new_where = $where;
-                }
-                if (!empty($meta_fields_sql)) {
-                    $new_where .= $meta_fields_sql["where"];
-                }
-                return $new_where;
-            },
-            10,
-            2
-        );
-        add_filter(
-            "posts_join",
-            function ($join, $query) use ($join_clause) {
-                if (!is_object_query($query)) {
-                    return $join;
-                }
-                return $join . $join_clause;
-            },
-            10,
-            2
-        );
-        add_filter(
-            "posts_distinct",
-            function ($distinct, $query) {
-                if (!is_object_query($query)) {
-                    return $distinct;
-                }
-                return " DISTINCT ";
-            },
-            10,
-            2
-        );
-    }
+		if ( is_array( $kind ) ) {
+			$mobject_fields = [];
+			foreach ( $kind as $single_kind ) {
+				$mobject_fields = array_merge(
+					$mobject_fields,
+					get_mobject_fields(
+						$single_kind->kind_id,
+						$public_fields_only
+					)
+				);
+			}
+		} else {
+			$mobject_fields = get_mobject_fields( $kind->kind_id );
+		}
+		foreach ( $mobject_fields as $field ) {
+			$search_all_fields_args[] = [
+				'key'     => $field->slug,
+				'value'   => $search_terms['searchText'],
+				'compare' => 'LIKE',
+			];
+		}
+		$search_all_fields_query = new \WP_Meta_Query( $search_all_fields_args );
+		$search_all_fields_sql   = $search_all_fields_query->get_sql(
+			'post',
+			$wpdb->posts,
+			'ID',
+			null
+		);
+		$join_clause             = $search_all_fields_sql['join'];
+	}
+	$meta_filter_args = [
+		'relation' => 'AND',
+	];
+	if ( ! empty( $search_terms['selectedFlags'] ) ) {
+		foreach ( $search_terms['selectedFlags'] as $set_flag ) {
+			$meta_filter_args[] = [
+				'key'     => $set_flag,
+				'value'   => '1',
+				'compare' => '=',
+			];
+		}
+	}
+	if ( ! empty( $search_terms['searchFields'] ) ) {
+		foreach ( $search_terms['searchFields'] as $search_field ) {
+			$meta_filter_args[] = [
+				'key'     => $search_field['field'],
+				'value'   => $search_field['search'],
+				'compare' => 'LIKE',
+			];
+		}
+	}
+	if ( count( $meta_filter_args ) > 1 ) {
+		$meta_filter_query = new \WP_Meta_Query( $meta_filter_args );
+		$meta_fields_sql   = $meta_filter_query->get_sql(
+			'post',
+			$wpdb->posts,
+			'ID',
+			null
+		);
+		$join_clause       = $meta_fields_sql['join'];
+	}
+	if ( isset( $join_clause ) ) {
+		add_filter(
+			'posts_where',
+			function (
+				$where,
+				$query
+			) use (
+				$search_all_fields_sql,
+				$meta_fields_sql
+			) {
+				if ( ! is_object_query( $query ) ) {
+					return $where;
+				}
+				global $wpdb;
+				$new_where = '';
+				if ( ! empty( $search_all_fields_sql ) ) {
+					$start_index = strpos( $where, $wpdb->posts . '.post_title' );
+					if ( false === $start_index ) {
+						return $where;
+					}
+					$where_first_part  = substr( $where, 0, $start_index );
+					$where_last_part   = substr( $where, $start_index );
+					$where_middle_part = substr(
+						$search_all_fields_sql['where'],
+						7
+					);
+					$where_middle_part = substr( $where_middle_part, 0, -2 );
+					$new_where         =
+						$where_first_part .
+						$where_middle_part .
+						' OR ' .
+						$where_last_part;
+				}
+				if ( '' === $new_where ) {
+					$new_where = $where;
+				}
+				if ( ! empty( $meta_fields_sql ) ) {
+					$new_where .= $meta_fields_sql['where'];
+				}
+				return $new_where;
+			},
+			10,
+			2
+		);
+		add_filter(
+			'posts_join',
+			function ( $join, $query ) use ( $join_clause ) {
+				if ( ! is_object_query( $query ) ) {
+					return $join;
+				}
+				return $join . $join_clause;
+			},
+			10,
+			2
+		);
+		add_filter(
+			'posts_distinct',
+			function ( $distinct, $query ) {
+				if ( ! is_object_query( $query ) ) {
+					return $distinct;
+				}
+				return ' DISTINCT ';
+			},
+			10,
+			2
+		);
+	}
 }
 
-function is_object_query(\WP_Query $query): bool
-{
-    $type = $query->query_vars["post_type"];
-    $object_types = get_object_type_names();
-    if (is_array($type)) {
-        return count(array_intersect($type, $object_types)) > 0;
-    }
-    return in_array($type, $object_types, true);
+function is_object_query( \WP_Query $query ): bool {
+	$type         = $query->query_vars['post_type'];
+	$object_types = get_object_type_names();
+	if ( is_array( $type ) ) {
+		return count( array_intersect( $type, $object_types ) ) > 0;
+	}
+	return in_array( $type, $object_types, true );
 }
 
 function add_object_results_to_main_search_query(
-    array $posts,
-    \WP_Query $query
+	array $posts,
+	\WP_Query $query
 ): array {
-    if (!is_main_query() || !is_search()) {
-        return $posts;
-    }
-    if (!isset($query->query["s"])) {
-        return $posts;
-    }
-    // Prevent infinite recursion
-    if (
-        isset($query->query_vars["post_type"]) &&
-        is_array($query->query_vars["post_type"])
-    ) {
-        foreach ($query->query_vars["post_type"] as $type) {
-            if (in_array($type, get_object_type_names(), true)) {
-                return $posts;
-            }
-        }
-    }
-    add_object_meta_query_filter(
-        ["searchText" => $query->query["s"]],
-        get_mobject_kinds()
-    );
-    $new_posts = get_posts([
-        "post_type" => get_object_type_names(),
-        "s" => $query->query["s"],
-        "suppress_filters" => false,
-    ]);
-    foreach ($new_posts as $new_post) {
-        if (!in_array($new_post, $posts)) {
-            $posts[] = $new_post;
-        }
-    }
-    return $posts;
+	if ( ! is_main_query() || ! is_search() ) {
+		return $posts;
+	}
+	if ( ! isset( $query->query['s'] ) ) {
+		return $posts;
+	}
+	// Prevent infinite recursion
+	if (
+		isset( $query->query_vars['post_type'] ) &&
+		is_array( $query->query_vars['post_type'] )
+	) {
+		foreach ( $query->query_vars['post_type'] as $type ) {
+			if ( in_array( $type, get_object_type_names(), true ) ) {
+				return $posts;
+			}
+		}
+	}
+	add_object_meta_query_filter(
+		[ 'searchText' => $query->query['s'] ],
+		get_mobject_kinds()
+	);
+	$new_posts = get_posts(
+		[
+			'post_type'        => get_object_type_names(),
+			's'                => $query->query['s'],
+			'suppress_filters' => false,
+		]
+	);
+	foreach ( $new_posts as $new_post ) {
+		if ( ! in_array( $new_post, $posts ) ) {
+			$posts[] = $new_post;
+		}
+	}
+	return $posts;
 }
 
 /**
@@ -646,161 +643,164 @@ function add_object_results_to_main_search_query(
  * @return void
  */
 function wpm_sort_by_field(
-    array &$target_array,
-    string $sort_col,
-    string $sort_dir
+	array &$target_array,
+	string $sort_col,
+	string $sort_dir
 ): void {
-    if (empty($target_array)) {
-        return;
-    }
+	if ( empty( $target_array ) ) {
+		return;
+	}
 
-    if ("post_title" === $sort_col) {
-        $sort_field = null;
-    } else {
-        $fields = get_mobject_fields(kind_from_post($target_array[0])->kind_id);
-        $sort_field = null;
-        foreach ($fields as $field) {
-            if ($field->slug === $sort_col) {
-                $sort_field = $field;
-                break;
-            }
-        }
-    }
-    if ("asc" === $sort_dir) {
-        $rv = 1;
-    } else {
-        $rv = -1;
-    }
-    usort($target_array, function ($a, $b) use ($sort_field, $rv, $sort_col) {
-        if ("post_title" === $sort_col) {
-            $a_field_val = $a->post_title;
-            $b_field_val = $b->post_title;
-        } else {
-            $a_custom = get_post_custom($a->ID);
-            $b_custom = get_post_custom($b->ID);
+	if ( 'post_title' === $sort_col ) {
+		$sort_field = null;
+	} else {
+		$fields     = get_mobject_fields( kind_from_post( $target_array[0] )->kind_id );
+		$sort_field = null;
+		foreach ( $fields as $field ) {
+			if ( $field->slug === $sort_col ) {
+				$sort_field = $field;
+				break;
+			}
+		}
+	}
+	if ( 'asc' === $sort_dir ) {
+		$rv = 1;
+	} else {
+		$rv = -1;
+	}
+	usort(
+		$target_array,
+		function ( $a, $b ) use ( $sort_field, $rv, $sort_col ) {
+			if ( 'post_title' === $sort_col ) {
+				$a_field_val = $a->post_title;
+				$b_field_val = $b->post_title;
+			} else {
+				$a_custom = get_post_custom( $a->ID );
+				$b_custom = get_post_custom( $b->ID );
 
-            if (isset($a_custom[$sort_col])) {
-                $a_field_val = $a_custom[$sort_col][0];
-            } else {
-                return -1 * $rv;
-            }
+				if ( isset( $a_custom[ $sort_col ] ) ) {
+					$a_field_val = $a_custom[ $sort_col ][0];
+				} else {
+					return -1 * $rv;
+				}
 
-            if (isset($b_custom[$sort_col])) {
-                $b_field_val = $b_custom[$sort_col][0];
-            } else {
-                return $rv;
-            }
+				if ( isset( $b_custom[ $sort_col ] ) ) {
+					$b_field_val = $b_custom[ $sort_col ][0];
+				} else {
+					return $rv;
+				}
 
-            if (
-                $sort_field &&
-                isset($sort_field->field_schema) &&
-                !empty($sort_field->field_schema)
-            ) {
-                $a_matches = [];
-                $b_matches = [];
-                $pattern = "/" . $sort_field->field_schema . "/";
-                if (
-                    preg_match($pattern, $a_field_val, $a_matches) &&
-                    preg_match($pattern, $b_field_val, $b_matches)
-                ) {
-                    $a_named_capture_keys = array_filter(
-                        array_keys($a_matches),
-                        "is_string"
-                    );
-                    $b_named_capture_keys = array_filter(
-                        array_keys($b_matches),
-                        "is_string"
-                    );
-                    $named_capture_keys = array_intersect(
-                        $a_named_capture_keys,
-                        $b_named_capture_keys
-                    );
-                    if (count($named_capture_keys) > 0) {
-                        // Named capture groups.
-                        sort($named_capture_keys);
-                        foreach ($named_capture_keys as $key) {
-                            if (
-                                is_numeric($a_matches[$key]) &&
-                                is_numeric($b_matches[$key])
-                            ) {
-                                if (
-                                    intval($a_matches[$key]) >
-                                    intval($b_matches[$key])
-                                ) {
-                                    return $rv;
-                                } elseif (
-                                    intval($a_matches[$key]) <
-                                    intval($b_matches[$key])
-                                ) {
-                                    return -1 * $rv;
-                                }
-                            } elseif (
-                                strcasecmp($a_matches[$key], $b_matches[$key]) >
-                                0
-                            ) {
-                                return $rv;
-                            } elseif (
-                                strcasecmp($a_matches[$key], $b_matches[$key]) <
-                                0
-                            ) {
-                                return -1 * $rv;
-                            }
-                        }
-                    } else {
-                        // Sequential capture groups.
-                        $limit = min(count($a_matches), count($b_matches));
-                        for ($i = 1; $i < $limit; $i++) {
-                            if (
-                                is_numeric($a_matches[$i]) &&
-                                is_numeric($b_matches[$i])
-                            ) {
-                                if (
-                                    intval($a_matches[$i]) >
-                                    intval($b_matches[$i])
-                                ) {
-                                    return $rv;
-                                } elseif (
-                                    intval($a_matches[$i]) <
-                                    intval($b_matches[$i])
-                                ) {
-                                    return -1 * $rv;
-                                }
-                            } elseif (
-                                strcasecmp($a_matches[$i], $b_matches[$i]) > 0
-                            ) {
-                                return $rv;
-                            } elseif (
-                                strcasecmp($a_matches[$i], $b_matches[$i]) < 0
-                            ) {
-                                return -1 * $rv;
-                            }
-                        }
-                    }
-                    if (count($a_matches) > count($b_matches)) {
-                        return 1 * $rv;
-                    } elseif (count($a_matches) < count($b_matches)) {
-                        return -1 * $rv;
-                    } else {
-                        return 0;
-                    }
-                }
-            }
-        }
+				if (
+				$sort_field &&
+				isset( $sort_field->field_schema ) &&
+				! empty( $sort_field->field_schema )
+				) {
+					$a_matches = [];
+					$b_matches = [];
+					$pattern   = '/' . $sort_field->field_schema . '/';
+					if (
+					preg_match( $pattern, $a_field_val, $a_matches ) &&
+					preg_match( $pattern, $b_field_val, $b_matches )
+					) {
+						$a_named_capture_keys = array_filter(
+							array_keys( $a_matches ),
+							'is_string'
+						);
+						$b_named_capture_keys = array_filter(
+							array_keys( $b_matches ),
+							'is_string'
+						);
+						$named_capture_keys   = array_intersect(
+							$a_named_capture_keys,
+							$b_named_capture_keys
+						);
+						if ( count( $named_capture_keys ) > 0 ) {
+								// Named capture groups.
+								sort( $named_capture_keys );
+							foreach ( $named_capture_keys as $key ) {
+								if (
+								is_numeric( $a_matches[ $key ] ) &&
+								is_numeric( $b_matches[ $key ] )
+								) {
+									if (
+											intval( $a_matches[ $key ] ) >
+											intval( $b_matches[ $key ] )
+										) {
+										return $rv;
+									} elseif (
+											intval( $a_matches[ $key ] ) <
+											intval( $b_matches[ $key ] )
+										) {
+										return -1 * $rv;
+									}
+								} elseif (
+								strcasecmp( $a_matches[ $key ], $b_matches[ $key ] ) >
+								0
+								) {
+									return $rv;
+								} elseif (
+								strcasecmp( $a_matches[ $key ], $b_matches[ $key ] ) <
+								0
+								) {
+									return -1 * $rv;
+								}
+							}
+						} else {
+							// Sequential capture groups.
+							$limit = min( count( $a_matches ), count( $b_matches ) );
+							for ( $i = 1; $i < $limit; $i++ ) {
+								if (
+									is_numeric( $a_matches[ $i ] ) &&
+									is_numeric( $b_matches[ $i ] )
+								) {
+									if (
+										intval( $a_matches[ $i ] ) >
+										intval( $b_matches[ $i ] )
+									) {
+											return $rv;
+									} elseif (
+										intval( $a_matches[ $i ] ) <
+										intval( $b_matches[ $i ] )
+									) {
+										return -1 * $rv;
+									}
+								} elseif (
+								strcasecmp( $a_matches[ $i ], $b_matches[ $i ] ) > 0
+								) {
+									return $rv;
+								} elseif (
+								strcasecmp( $a_matches[ $i ], $b_matches[ $i ] ) < 0
+								) {
+									return -1 * $rv;
+								}
+							}
+						}
+						if ( count( $a_matches ) > count( $b_matches ) ) {
+							return 1 * $rv;
+						} elseif ( count( $a_matches ) < count( $b_matches ) ) {
+							return -1 * $rv;
+						} else {
+							return 0;
+						}
+					}
+				}
+			}
 
-        if (is_numeric($a_field_val) && is_numeric($b_field_val)) {
-            if (intval($a_field_val) > intval($b_field_val)) {
-                return $rv;
-            } elseif ($a_field_val > $b_field_val) {
-                return -1 * $rv;
-            } else {
-                return 0;
-            }
-        } elseif (strcasecmp($a_field_val, $b_field_val) > 0) {
-            return $rv;
-        } elseif (strcasecmp($a_field_val, $b_field_val) < 0) {
-            return -1 * $rv;
-        } else {
-            return 0;
-        }
-    });
+			if ( is_numeric( $a_field_val ) && is_numeric( $b_field_val ) ) {
+				if ( intval( $a_field_val ) > intval( $b_field_val ) ) {
+					return $rv;
+				} elseif ( $a_field_val > $b_field_val ) {
+					return -1 * $rv;
+				} else {
+					return 0;
+				}
+			} elseif ( strcasecmp( $a_field_val, $b_field_val ) > 0 ) {
+				return $rv;
+			} elseif ( strcasecmp( $a_field_val, $b_field_val ) < 0 ) {
+				return -1 * $rv;
+			} else {
+				return 0;
+			}
+		}
+	);
 }

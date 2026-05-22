@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function register_collection_taxonomy() {
 	$object_types = get_object_type_names();
-	
+
 	$labels = array(
 		'name'                       => _x( 'Collections', 'taxonomy general name', 'wp-museum' ),
 		'singular_name'              => _x( 'Collection', 'taxonomy singular name', 'wp-museum' ),
@@ -76,17 +76,17 @@ function get_object_collection_terms( $post_id ) {
  * @return string HTML string containing links to each collection.
  */
 function object_collection_terms_string( $post_id, $separator = '' ) {
-	$terms = get_object_collection_terms( $post_id );
+	$terms         = get_object_collection_terms( $post_id );
 	$return_string = '';
-	
+
 	foreach ( $terms as $term ) {
 		if ( '' !== $return_string ) {
 			$return_string .= $separator;
 		}
-		$permalink = get_term_link( $term );
+		$permalink      = get_term_link( $term );
 		$return_string .= "<a href='" . esc_url( $permalink ) . "'>" . esc_html( $term->name ) . '</a>';
 	}
-	
+
 	return $return_string;
 }
 
@@ -100,7 +100,7 @@ function object_collection_terms_string( $post_id, $separator = '' ) {
  */
 function get_collection_term_objects( $term_id, $post_status = 'publish', $include_children = false ) {
 	$mobject_kinds = get_object_type_names();
-	
+
 	$args = array(
 		'post_type'      => $mobject_kinds,
 		'post_status'    => $post_status,
@@ -114,7 +114,7 @@ function get_collection_term_objects( $term_id, $post_status = 'publish', $inclu
 			),
 		),
 	);
-	
+
 	$query = new \WP_Query( $args );
 	return $query->posts;
-} 
+}

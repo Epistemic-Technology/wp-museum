@@ -90,10 +90,10 @@ class Collections_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'permission_callback' => [ $this, 'get_items_permissions_check' ],
 					'args'                => [
-						'id'            => $this->get_id_arg(),
+						'id'               => $this->get_id_arg(),
 						'include_children' => [
-							'default' => 'false',
-							'validate_callback' => function( $value ) {
+							'default'           => 'false',
+							'validate_callback' => function ( $value ) {
 								return is_bool( $value );
 							},
 						],
@@ -557,7 +557,7 @@ class Collections_Controller extends \WP_REST_Controller {
 			$associated_objects = get_collection_term_objects( $term_id, 'publish', $request['include_children'] );
 		}
 
-		$object_data = [];
+		$object_data        = [];
 		$objects_controller = new Objects_Controller();
 
 		foreach ( $associated_objects as $post ) {

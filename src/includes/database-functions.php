@@ -12,31 +12,29 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Checks whether site database schema is up-to-date and updates if not.
  */
-function db_version_check()
-{
-    $version = get_site_option("wpm_db_version");
-    if (DB_VERSION !== $version) {
-        create_mobject_kinds_table();
-        create_mobject_fields_table();
-        create_remote_clients_table();
+function db_version_check() {
+	$version = get_site_option( 'wpm_db_version' );
+	if ( DB_VERSION !== $version ) {
+		create_mobject_kinds_table();
+		create_mobject_fields_table();
+		create_remote_clients_table();
 
-        // Only update the version option if not in test environment
-        // This allows tests to run the setup multiple times if needed
-        if (!defined("WP_TESTS_DOMAIN")) {
-            update_option("wpm_db_version", DB_VERSION);
-        }
-    }
+		// Only update the version option if not in test environment
+		// This allows tests to run the setup multiple times if needed
+		if ( ! defined( 'WP_TESTS_DOMAIN' ) ) {
+			update_option( 'wpm_db_version', DB_VERSION );
+		}
+	}
 }
 
 /**
  * Create table for museum object kinds, or sync site table.
  */
-function create_mobject_kinds_table()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $wpdb->show_errors = DB_SHOW_ERRORS;
-    $sql = "CREATE TABLE $table_name (
+function create_mobject_kinds_table() {
+	global $wpdb;
+	$table_name        = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$wpdb->show_errors = DB_SHOW_ERRORS;
+	$sql               = "CREATE TABLE $table_name (
         kind_id mediumint(9) NOT NULL AUTO_INCREMENT,
         cat_field_id mediumint(9),
         name varchar(255),
@@ -55,32 +53,30 @@ function create_mobject_kinds_table()
         PRIMARY KEY  (kind_id)
     );";
 
-    require_once ABSPATH . "wp-admin/includes/upgrade.php";
-    dbDelta($sql);
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	dbDelta( $sql );
 }
 
 /**
  * Delete table for museum object kinds.
  */
-function delete_mobject_kinds_table()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $wpdb->show_errors = DB_SHOW_ERRORS;
-    return $wpdb->query(
-        $wpdb->prepare("DROP TABLE IF EXISTS %i;", $table_name)
-    );
+function delete_mobject_kinds_table() {
+	global $wpdb;
+	$table_name        = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$wpdb->show_errors = DB_SHOW_ERRORS;
+	return $wpdb->query(
+		$wpdb->prepare( 'DROP TABLE IF EXISTS %i;', $table_name )
+	);
 }
 
 /**
  * Create / sync table for museum object fields.
  */
-function create_mobject_fields_table()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_fields";
-    $wpdb->show_errors = DB_SHOW_ERRORS;
-    $sql = "CREATE TABLE $table_name (
+function create_mobject_fields_table() {
+	global $wpdb;
+	$table_name        = $wpdb->prefix . WPM_PREFIX . 'mobject_fields';
+	$wpdb->show_errors = DB_SHOW_ERRORS;
+	$sql               = "CREATE TABLE $table_name (
         field_id mediumint(9) NOT NULL AUTO_INCREMENT,
         slug varchar(255),
         kind_id mediumint(9),
@@ -101,32 +97,30 @@ function create_mobject_fields_table()
         PRIMARY KEY  (field_id)
     );";
 
-    require_once ABSPATH . "wp-admin/includes/upgrade.php";
-    dbDelta($sql);
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	dbDelta( $sql );
 }
 
 /**
  * Delete table for museum object fields table.
  */
-function delete_mobject_fields_table()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_fields";
-    $wpdb->show_errors = DB_SHOW_ERRORS;
-    return $wpdb->query(
-        $wpdb->prepare("DROP TABLE IF EXISTS %i;", $table_name)
-    );
+function delete_mobject_fields_table() {
+	global $wpdb;
+	$table_name        = $wpdb->prefix . WPM_PREFIX . 'mobject_fields';
+	$wpdb->show_errors = DB_SHOW_ERRORS;
+	return $wpdb->query(
+		$wpdb->prepare( 'DROP TABLE IF EXISTS %i;', $table_name )
+	);
 }
 
 /**
  * Create / sync table for remote museum clients.
  */
-function create_remote_clients_table()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "remote_clients";
-    $wpdb->show_errors = DB_SHOW_ERRORS;
-    $sql = "CREATE TABLE $table_name (
+function create_remote_clients_table() {
+	global $wpdb;
+	$table_name        = $wpdb->prefix . WPM_PREFIX . 'remote_clients';
+	$wpdb->show_errors = DB_SHOW_ERRORS;
+	$sql               = "CREATE TABLE $table_name (
 			client_id mediumint(9) NOT NULL AUTO_INCREMENT,
 			uuid VARCHAR(36),
 			title TEXT,
@@ -136,21 +130,20 @@ function create_remote_clients_table()
 			PRIMARY KEY (client_id),
 			UNIQUE KEY uuid (uuid)
 		);";
-    require_once ABSPATH . "wp-admin/includes/upgrade.php";
-    dbDelta($sql);
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	dbDelta( $sql );
 }
 
 /**
  * Delete table for remote museum clients table.
  */
-function delete_remote_clients_table()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "remote_clients";
-    $wpdb->show_errors = DB_SHOW_ERRORS;
-    return $wpdb->query(
-        $wpdb->prepare("DROP TABLE IF EXISTS %i;", $table_name)
-    );
+function delete_remote_clients_table() {
+	global $wpdb;
+	$table_name        = $wpdb->prefix . WPM_PREFIX . 'remote_clients';
+	$wpdb->show_errors = DB_SHOW_ERRORS;
+	return $wpdb->query(
+		$wpdb->prepare( 'DROP TABLE IF EXISTS %i;', $table_name )
+	);
 }
 
 /**
@@ -160,29 +153,28 @@ function delete_remote_clients_table()
  *
  * @return  object      Database entry for object as object.
  */
-function get_kind($id)
-{
-    if (is_null($id)) {
-        return null;
-    }
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $kind = wp_cache_get("get_kind_" . $id, CACHE_GROUP);
-    if (!$kind) {
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM %i WHERE kind_id=%s",
-                $table_name,
-                $id
-            )
-        );
-        if (is_null($results) || 0 === count($results)) {
-            return null;
-        }
-        $kind = new ObjectKind($results[0]);
-        wp_cache_add("get_kind_" . $id, $kind, CACHE_GROUP);
-    }
-    return $kind;
+function get_kind( $id ) {
+	if ( is_null( $id ) ) {
+		return null;
+	}
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$kind       = wp_cache_get( 'get_kind_' . $id, CACHE_GROUP );
+	if ( ! $kind ) {
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE kind_id=%s',
+				$table_name,
+				$id
+			)
+		);
+		if ( is_null( $results ) || 0 === count( $results ) ) {
+			return null;
+		}
+		$kind = new ObjectKind( $results[0] );
+		wp_cache_add( 'get_kind_' . $id, $kind, CACHE_GROUP );
+	}
+	return $kind;
 }
 
 /**
@@ -192,27 +184,26 @@ function get_kind($id)
  *
  * @return  object      Database entry for object as object.
  */
-function get_kind_from_typename($type_name)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $kind = wp_cache_get("get_kind_" . $type_name, CACHE_GROUP);
-    if (!$kind) {
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM %i WHERE `type_name`=%s",
-                $table_name,
-                $type_name
-            )
-        );
-        if (count($results) === 1) {
-            $kind = new ObjectKind($results[0]);
-        } else {
-            return null;
-        }
-        wp_cache_add("get_kind_" . $type_name, $kind, CACHE_GROUP);
-    }
-    return $kind;
+function get_kind_from_typename( $type_name ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$kind       = wp_cache_get( 'get_kind_' . $type_name, CACHE_GROUP );
+	if ( ! $kind ) {
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE `type_name`=%s',
+				$table_name,
+				$type_name
+			)
+		);
+		if ( count( $results ) === 1 ) {
+			$kind = new ObjectKind( $results[0] );
+		} else {
+			return null;
+		}
+		wp_cache_add( 'get_kind_' . $type_name, $kind, CACHE_GROUP );
+	}
+	return $kind;
 }
 
 /**
@@ -222,23 +213,22 @@ function get_kind_from_typename($type_name)
  *
  * @return  string  The kinds's ID (a number).
  */
-function get_kind_id($kind_name)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $kind_id = wp_cache_get("get_kind_id_" . $kind_name, CACHE_GROUP);
-    if (!$kind_id) {
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT kind_id FROM %i WHERE name=%s",
-                $table_name,
-                $kind_name
-            )
-        );
-        $kind_id = $results[0]->kind_id;
-        wp_cache_add("get_kind_id_" . $kind_name, $kind_id, CACHE_GROUP);
-    }
-    return $kind_id;
+function get_kind_id( $kind_name ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$kind_id    = wp_cache_get( 'get_kind_id_' . $kind_name, CACHE_GROUP );
+	if ( ! $kind_id ) {
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT kind_id FROM %i WHERE name=%s',
+				$table_name,
+				$kind_name
+			)
+		);
+		$kind_id = $results[0]->kind_id;
+		wp_cache_add( 'get_kind_id_' . $kind_name, $kind_id, CACHE_GROUP );
+	}
+	return $kind_id;
 }
 
 /**
@@ -248,27 +238,26 @@ function get_kind_id($kind_name)
  *
  * @return  string      The object kind's name.
  */
-function kind_name_from_id($kind_id)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $kind_name = wp_cache_get("kind_name_from_id_" . $kind_id, CACHE_GROUP);
-    if (!$kind_name) {
-        $result = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT name FROM %i WHERE kind_id = %s",
-                $table_name,
-                $kind_id
-            )
-        );
-        if (count($result) > 0) {
-            $kind_name = $result[0]->name;
-        } else {
-            $kind_name = "";
-        }
-        wp_cache_add("kind_name_from_id_" . $kind_id, $kind_name, CACHE_GROUP);
-    }
-    return $kind_name;
+function kind_name_from_id( $kind_id ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$kind_name  = wp_cache_get( 'kind_name_from_id_' . $kind_id, CACHE_GROUP );
+	if ( ! $kind_name ) {
+		$result = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT name FROM %i WHERE kind_id = %s',
+				$table_name,
+				$kind_id
+			)
+		);
+		if ( count( $result ) > 0 ) {
+			$kind_name = $result[0]->name;
+		} else {
+			$kind_name = '';
+		}
+		wp_cache_add( 'kind_name_from_id_' . $kind_id, $kind_name, CACHE_GROUP );
+	}
+	return $kind_name;
 }
 
 /**
@@ -276,34 +265,33 @@ function kind_name_from_id($kind_id)
  *
  * @return [ObjectKind] Array of kinds.
  */
-function get_mobject_kinds()
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $kinds = wp_cache_get("get_mobject_kinds", CACHE_GROUP);
-    if (!$kinds) {
-        // Check if the table exists before querying it
-        $table_exists = $wpdb->get_var(
-            $wpdb->prepare("SHOW TABLES LIKE %s", $table_name)
-        );
+function get_mobject_kinds() {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$kinds      = wp_cache_get( 'get_mobject_kinds', CACHE_GROUP );
+	if ( ! $kinds ) {
+		// Check if the table exists before querying it
+		$table_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name )
+		);
 
-        // If table doesn't exist (e.g., during tests), return empty array
-        if (!$table_exists) {
-            $kinds = [];
-            wp_cache_add("get_mobject_kinds", $kinds, CACHE_GROUP);
-            return $kinds;
-        }
+		// If table doesn't exist (e.g., during tests), return empty array
+		if ( ! $table_exists ) {
+			$kinds = [];
+			wp_cache_add( 'get_mobject_kinds', $kinds, CACHE_GROUP );
+			return $kinds;
+		}
 
-        $results = $wpdb->get_results(
-            $wpdb->prepare("SELECT * FROM %i", $table_name)
-        );
-        $kinds = [];
-        foreach ($results as $result) {
-            $kinds[] = new ObjectKind($result);
-        }
-        wp_cache_add("get_mobject_kinds", $kinds, CACHE_GROUP);
-    }
-    return $kinds;
+		$results = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT * FROM %i', $table_name )
+		);
+		$kinds   = [];
+		foreach ( $results as $result ) {
+			$kinds[] = new ObjectKind( $result );
+		}
+		wp_cache_add( 'get_mobject_kinds', $kinds, CACHE_GROUP );
+	}
+	return $kinds;
 }
 
 /**
@@ -314,29 +302,28 @@ function get_mobject_kinds()
  *
  * @return  Array   Array of MObjectField objects corresponding to rows of object field table.
  */
-function get_mobject_fields($kind_id, $only_public = false)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_fields";
-    $fields = wp_cache_get("get_mobject_fields" . $kind_id, CACHE_GROUP);
-    if (!$fields) {
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM %i WHERE kind_id=%s ORDER BY display_order",
-                $table_name,
-                $kind_id
-            )
-        );
-        $fields = [];
-        foreach ($results as $result) {
-            $new_field = MObjectField::from_database($result);
-            if (!$only_public || $new_field->public) {
-                $fields[$new_field->slug] = $new_field;
-            }
-        }
-        wp_cache_add("get_mobject_fields", $fields, CACHE_GROUP);
-    }
-    return $fields;
+function get_mobject_fields( $kind_id, $only_public = false ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_fields';
+	$fields     = wp_cache_get( 'get_mobject_fields' . $kind_id, CACHE_GROUP );
+	if ( ! $fields ) {
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE kind_id=%s ORDER BY display_order',
+				$table_name,
+				$kind_id
+			)
+		);
+		$fields  = [];
+		foreach ( $results as $result ) {
+			$new_field = MObjectField::from_database( $result );
+			if ( ! $only_public || $new_field->public ) {
+				$fields[ $new_field->slug ] = $new_field;
+			}
+		}
+		wp_cache_add( 'get_mobject_fields', $fields, CACHE_GROUP );
+	}
+	return $fields;
 }
 
 /**
@@ -347,31 +334,30 @@ function get_mobject_fields($kind_id, $only_public = false)
  *
  * @return MObjectField Field object corresponding to field table row.
  */
-function get_mobject_field($kind_id, $field_id)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_fields";
-    $field = wp_cache_get(
-        "get_mobject_field_" . $kind_id . "_" . $field_id,
-        CACHE_GROUP
-    );
-    if (!$field) {
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM %i WHERE kind_id=%s AND field_id=%s ORDER BY display_order",
-                $table_name,
-                $kind_id,
-                $field_id
-            )
-        );
-        if (count($results) > 0) {
-            $result = $results[0];
-            $field = MObjectField::from_database($result);
-        } else {
-            $field = null;
-        }
-    }
-    return $field;
+function get_mobject_field( $kind_id, $field_id ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_fields';
+	$field      = wp_cache_get(
+		'get_mobject_field_' . $kind_id . '_' . $field_id,
+		CACHE_GROUP
+	);
+	if ( ! $field ) {
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE kind_id=%s AND field_id=%s ORDER BY display_order',
+				$table_name,
+				$kind_id,
+				$field_id
+			)
+		);
+		if ( count( $results ) > 0 ) {
+			$result = $results[0];
+			$field  = MObjectField::from_database( $result );
+		} else {
+			$field = null;
+		}
+	}
+	return $field;
 }
 
 /**
@@ -382,17 +368,16 @@ function get_mobject_field($kind_id, $field_id)
  *
  * @return bool True if update is successful.
  */
-function update_kind($kind_id, $data)
-{
-    if (-1 === $kind_id) {
-        return -1;
-    }
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    if (isset($data["label"])) {
-        $data["name"] = ObjectKind::name_from_label($data["label"]);
-    }
-    return $wpdb->update($table_name, $data, ["kind_id" => $kind_id]);
+function update_kind( $kind_id, $data ) {
+	if ( -1 === $kind_id ) {
+		return -1;
+	}
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	if ( isset( $data['label'] ) ) {
+		$data['name'] = ObjectKind::name_from_label( $data['label'] );
+	}
+	return $wpdb->update( $table_name, $data, [ 'kind_id' => $kind_id ] );
 }
 
 /**
@@ -402,17 +387,16 @@ function update_kind($kind_id, $data)
  *
  * @return bool True if delete is successful.
  */
-function delete_kind($kind_id)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $result = $wpdb->delete($table_name, ["kind_id" => $kind_id]);
-    if ($result > 0) {
-        $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_fields";
-        $result = $wpdb->delete($table_name, ["kind_id" => $kind_id]);
-        return true;
-    }
-    return false;
+function delete_kind( $kind_id ) {
+	global $wpdb;
+	$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$result     = $wpdb->delete( $table_name, [ 'kind_id' => $kind_id ] );
+	if ( $result > 0 ) {
+		$table_name = $wpdb->prefix . WPM_PREFIX . 'mobject_fields';
+		$result     = $wpdb->delete( $table_name, [ 'kind_id' => $kind_id ] );
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -422,32 +406,31 @@ function delete_kind($kind_id)
  *
  * @return bool True if kind is inserted into the database successfully.
  */
-function new_kind($data)
-{
-    if (!isset($data["label"]) || "" === $data["label"]) {
-        return -1;
-    }
-    global $wpdb;
-    $table_name = $wpdb->prefix . WPM_PREFIX . "mobject_kinds";
-    $data["name"] = ObjectKind::name_from_label($data["label"]);
-    $type_name = WPM_PREFIX . $data["name"];
-    if (strlen($type_name) > 20) {
-        $type_name = substr($type_name, 0, 19);
-    }
-    // Collision checking.
-    $results = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT type_name FROM %i WHERE type_name LIKE %s",
-            $table_name,
-            "%" . $wpdb->esc_like($type_name) . "%"
-        )
-    );
-    if (0 < count($results)) {
-        $type_name = substr($type_name, 0, 18) . "_" . count($results);
-    }
-    $data["type_name"] = $type_name;
-    $wpdb->insert($table_name, $data);
-    return $wpdb->insert_id;
+function new_kind( $data ) {
+	if ( ! isset( $data['label'] ) || '' === $data['label'] ) {
+		return -1;
+	}
+	global $wpdb;
+	$table_name   = $wpdb->prefix . WPM_PREFIX . 'mobject_kinds';
+	$data['name'] = ObjectKind::name_from_label( $data['label'] );
+	$type_name    = WPM_PREFIX . $data['name'];
+	if ( strlen( $type_name ) > 20 ) {
+		$type_name = substr( $type_name, 0, 19 );
+	}
+	// Collision checking.
+	$results = $wpdb->get_results(
+		$wpdb->prepare(
+			'SELECT type_name FROM %i WHERE type_name LIKE %s',
+			$table_name,
+			'%' . $wpdb->esc_like( $type_name ) . '%'
+		)
+	);
+	if ( 0 < count( $results ) ) {
+		$type_name = substr( $type_name, 0, 18 ) . '_' . count( $results );
+	}
+	$data['type_name'] = $type_name;
+	$wpdb->insert( $table_name, $data );
+	return $wpdb->insert_id;
 }
 
 /**
@@ -458,16 +441,15 @@ function new_kind($data)
  *
  * @return [string]     An array ordered the same as $fields containing the content for each field.
  */
-function sort_row_by_fields($row, $fields)
-{
-    $sorted_row = [];
-    foreach ($fields as $field) {
-        $index = $field->slug;
-        if (isset($row[$index])) {
-            $sorted_row[] = $row[$index][0];
-        } else {
-            $sorted_row[] = "";
-        }
-    }
-    return $sorted_row;
+function sort_row_by_fields( $row, $fields ) {
+	$sorted_row = [];
+	foreach ( $fields as $field ) {
+		$index = $field->slug;
+		if ( isset( $row[ $index ] ) ) {
+			$sorted_row[] = $row[ $index ][0];
+		} else {
+			$sorted_row[] = '';
+		}
+	}
+	return $sorted_row;
 }

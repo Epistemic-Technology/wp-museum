@@ -182,7 +182,7 @@ class Remote_Client_Controller extends \WP_REST_Controller {
 	public function get_items( $request ) {
 		$client_array = RemoteClient::get_all_clients_assoc_array();
 
-		$client_data = [];
+		$client_data         = [];
 		$response_collection = [];
 
 		foreach ( $client_array as $client_data ) {
