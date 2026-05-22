@@ -208,7 +208,7 @@ fi
 # ============================================================================
 
 info "Bumping version in ${PLUGIN_FILE}..."
-sed -i '' "s/\\* Version: ${CURRENT_VERSION}/* Version: ${NEW_VERSION}/" "$PLUGIN_FILE"
+sed -i.bak "s/\\* Version: ${CURRENT_VERSION}/* Version: ${NEW_VERSION}/" "$PLUGIN_FILE" && rm "${PLUGIN_FILE}.bak"
 
 # Verify the change
 UPDATED_VERSION=$(read_version)
@@ -265,7 +265,7 @@ if [ -d ./languages ]; then
 fi
 
 # Patch DEV_BUILD to false in the release copy
-sed -i '' 's/const DEV_BUILD = true/const DEV_BUILD = false/' "$RELEASE_DIR/wp-museum.php"
+sed -i.bak 's/const DEV_BUILD = true/const DEV_BUILD = false/' "$RELEASE_DIR/wp-museum.php" && rm "$RELEASE_DIR/wp-museum.php.bak"
 
 # Create zip
 cd "$BASE_RELEASE_DIR"
