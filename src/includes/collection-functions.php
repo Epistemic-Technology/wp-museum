@@ -294,6 +294,33 @@ function object_collections_string( int $post_id, string $separator = '' ) {
 }
 
 /**
+ * Look up the collection post associated with a collection taxonomy term.
+ *
+ * Each collection post stores a meta value (`wpm_collection_term_id`)
+ * pointing at its taxonomy term; this resolves the inverse mapping.
+ *
+ * @param int $term_id The collection taxonomy term ID.
+ * @return \WP_Post|null The collection post, or null if no match.
+ */
+function get_collection_post_for_term( $term_id ) {
+	$query = new \WP_Query(
+		[
+			'post_type'      => WPM_PREFIX . 'collection',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'meta_query'     => [
+				[
+					'key'   => WPM_PREFIX . 'collection_term_id',
+					'value' => $term_id,
+				],
+			],
+		]
+	);
+
+	return $query->have_posts() ? $query->posts[0] : null;
+}
+
+/**
  * Callback to redirect collection taxonomy term archives.
  *
  * If collection_override_taxonomy option is set, redirect collection taxonomy term
@@ -315,25 +342,9 @@ function collection_redirect() {
 		return;
 	}
 
-	// Get the term ID
-	$term_id = $wp_query->queried_object->term_id;
-
-	// Find the collection post that corresponds to this term
-	$args = [
-		'post_type'      => WPM_PREFIX . 'collection',
-		'post_status'    => 'publish',
-		'posts_per_page' => 1,
-		'meta_query'     => [
-			[
-				'key'   => WPM_PREFIX . 'collection_term_id',
-				'value' => $term_id,
-			],
-		],
-	];
-
-	$query = new \WP_Query( $args );
-	if ( $query->have_posts() ) {
-		wp_safe_redirect( get_permalink( $query->posts[0]->ID ), 308 );
+	$collection_post = get_collection_post_for_term( $wp_query->queried_object->term_id );
+	if ( $collection_post ) {
+		wp_safe_redirect( get_permalink( $collection_post->ID ), 308 );
 		exit();
 	}
 }

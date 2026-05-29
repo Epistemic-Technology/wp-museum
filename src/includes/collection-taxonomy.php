@@ -83,8 +83,14 @@ function object_collection_terms_string( $post_id, $separator = '' ) {
 		if ( '' !== $return_string ) {
 			$return_string .= $separator;
 		}
-		$permalink      = get_term_link( $term );
-		$return_string .= "<a href='" . esc_url( $permalink ) . "'>" . esc_html( $term->name ) . '</a>';
+		// Prefer the collection post permalink so breadcrumbs land on the
+		// curated collection page rather than the bare taxonomy archive
+		// (#117). Fall back to the term archive if no matching post exists.
+		$collection_post = get_collection_post_for_term( $term->term_id );
+		$permalink       = $collection_post
+			? get_permalink( $collection_post )
+			: get_term_link( $term );
+		$return_string  .= "<a href='" . esc_url( $permalink ) . "'>" . esc_html( $term->name ) . '</a>';
 	}
 
 	return $return_string;
