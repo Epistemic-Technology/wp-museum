@@ -27,6 +27,9 @@ if ( defined( 'WP_DEBUG' ) && WP_DEBUG === true ) {
 		'init',
 		function () {
 			wp_deregister_script( 'heartbeat' );
+			// wp-auth-check depends on heartbeat; deregister to avoid a
+			// doing-it-wrong notice in WP 6.9.1+ for the orphaned dependency.
+			wp_deregister_script( 'wp-auth-check' );
 		},
 		1
 	);
