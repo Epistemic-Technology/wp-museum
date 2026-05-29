@@ -231,6 +231,28 @@ class Kinds_Controller extends \WP_REST_Controller {
 					);
 				}
 				if ( isset( $kind_data->delete ) && true === $kind_data->delete ) {
+					$post_count = $kind->count_associated_posts();
+					if ( $post_count > 0 ) {
+						return new \WP_Error(
+							'rest_kind_has_posts',
+							sprintf(
+								/* translators: 1: kind label, 2: number of associated posts */
+								_n(
+									'Cannot delete kind "%1$s": %2$d post still uses it. Delete those posts first.',
+									'Cannot delete kind "%1$s": %2$d posts still use it. Delete those posts first.',
+									$post_count,
+									'wp-museum'
+								),
+								$kind->label,
+								$post_count
+							),
+							[
+								'status'     => 409,
+								'kind_id'    => $kind->kind_id,
+								'post_count' => $post_count,
+							]
+						);
+					}
 					$kind->delete_from_db();
 				} elseif ( false === $kind->save_to_db() ) {
 					return new \WP_Error(

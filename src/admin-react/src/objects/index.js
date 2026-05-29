@@ -35,9 +35,16 @@ const ObjectAdminControl = () => {
       path: `${baseRestPath}/mobject_kinds`,
       method: "POST",
       data: objectKinds,
-    }).then(() => {
-      refreshKindData();
-    });
+    })
+      .then(() => {
+        refreshKindData();
+      })
+      .catch((err) => {
+        // Surface the server error (e.g., 409 when a kind still has posts)
+        // and re-sync from the server so local state matches reality.
+        alert(err?.message || "Failed to save object kinds.");
+        refreshKindData();
+      });
   }, [objectKinds, refreshKindData]);
 
   useEffect(() => {
@@ -272,7 +279,7 @@ const ObjectAdminControl = () => {
   const deleteKind = (kindItem) => {
     // TODO: Replace with accessible modal dialog for better accessibility
     let confirmDelete = confirm(
-      "Really delete kind? Objects associated with this kind will remain in database but will be inaccessible.",
+      "Really delete this kind? Kinds with associated objects cannot be deleted — delete those objects first.",
     );
     if (confirmDelete) {
       const kindIndex = objectKinds.findIndex(

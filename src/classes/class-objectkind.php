@@ -489,7 +489,30 @@ class ObjectKind {
 		foreach ( $fields as $field ) {
 			$field->delete_from_db();
 		}
-		return $wpdb->delete( $table_name, [ 'kind_id' => $this->kind_id ] );
+		$result = $wpdb->delete( $table_name, [ 'kind_id' => $this->kind_id ] );
+		wp_cache_delete( 'get_mobject_kinds', CACHE_GROUP );
+		wp_cache_delete( 'get_kind_' . $this->kind_id, CACHE_GROUP );
+		return $result;
+	}
+
+	/**
+	 * Count posts associated with this kind across all statuses.
+	 *
+	 * Once a kind row is deleted its post type stops being registered,
+	 * so any surviving posts of that type become inaccessible. Callers
+	 * use this to guard the destructive path (#52).
+	 *
+	 * @return int Number of associated posts.
+	 */
+	public function count_associated_posts() {
+		if ( empty( $this->type_name ) ) {
+			return 0;
+		}
+		$counts = wp_count_posts( $this->type_name );
+		if ( ! $counts ) {
+			return 0;
+		}
+		return (int) array_sum( (array) $counts );
 	}
 
 	/**
