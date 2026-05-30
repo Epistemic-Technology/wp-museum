@@ -237,6 +237,7 @@ const FieldEdit = (props) => {
     { value: "factor", label: "Factor" },
     { value: "multiple", label: "Multiple Factor" },
     { value: "flag", label: "Flag" },
+    { value: "links", label: "Links" },
   ];
 
   const getFieldTypeLabel = (type) => {

@@ -309,3 +309,60 @@ function post_status_indicator( $wp_admin_bar ) {
 		);
 	}
 }
+
+/**
+ * Render a "links" field value as an HTML unordered list of anchors.
+ *
+ * Each item is one of:
+ *   { type: 'post', post_id: int, url?: string, label?: string }
+ *   { type: 'url',  url: string,  label?: string }
+ *
+ * Internal post items are re-resolved to the post's current permalink
+ * (and title, if no override label) so a renamed post stays linkable.
+ *
+ * @param mixed $links Stored value (array of items, possibly null/empty).
+ * @return string HTML for an `ul.wpm-links` list, or empty string when none.
+ */
+function render_links_field( $links ) {
+	if ( ! is_array( $links ) || empty( $links ) ) {
+		return '';
+	}
+	$items_html = '';
+	foreach ( $links as $link ) {
+		if ( ! is_array( $link ) ) {
+			continue;
+		}
+		$type  = isset( $link['type'] ) ? (string) $link['type'] : 'url';
+		$href  = '';
+		$label = isset( $link['label'] ) ? (string) $link['label'] : '';
+
+		if ( 'post' === $type && ! empty( $link['post_id'] ) ) {
+			$resolved = get_permalink( (int) $link['post_id'] );
+			if ( $resolved ) {
+				$href = $resolved;
+				if ( '' === $label ) {
+					$label = get_the_title( (int) $link['post_id'] );
+				}
+			}
+		}
+		if ( '' === $href && ! empty( $link['url'] ) ) {
+			$href = (string) $link['url'];
+		}
+		if ( '' === $href ) {
+			continue;
+		}
+		if ( '' === $label ) {
+			$label = $href;
+		}
+
+		$items_html .= sprintf(
+			'<li><a href="%1$s">%2$s</a></li>',
+			esc_url( $href ),
+			esc_html( $label )
+		);
+	}
+	if ( '' === $items_html ) {
+		return '';
+	}
+	return '<ul class="wpm-links">' . $items_html . '</ul>';
+}

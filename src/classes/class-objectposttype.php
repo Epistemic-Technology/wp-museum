@@ -121,6 +121,26 @@ class ObjectPostType {
 							],
 						],
 					];
+				} elseif ( 'links' === $field->type ) {
+					$type         = 'array';
+					$show_in_rest = [
+						'schema' => [
+							'type'  => 'array',
+							'items' => [
+								'type'                 => 'object',
+								'properties'           => [
+									'type'    => [
+										'type' => 'string',
+										'enum' => [ 'post', 'url' ],
+									],
+									'post_id' => [ 'type' => 'integer' ],
+									'url'     => [ 'type' => 'string' ],
+									'label'   => [ 'type' => 'string' ],
+								],
+								'additionalProperties' => false,
+							],
+						],
+					];
 				} else {
 					$type = 'string';
 				}

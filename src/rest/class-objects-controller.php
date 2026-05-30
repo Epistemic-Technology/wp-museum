@@ -896,6 +896,22 @@ class Objects_Controller extends \WP_REST_Controller {
 				case 'flag':
 					$properties[ $field->slug ]['type'] = 'boolean';
 					break;
+				case 'links':
+					// Each item is { type: 'post'|'url', post_id?: int, url?: string, label?: string }.
+					$properties[ $field->slug ]['type']  = 'array';
+					$properties[ $field->slug ]['items'] = [
+						'type'       => 'object',
+						'properties' => [
+							'type'    => [
+								'type' => 'string',
+								'enum' => [ 'post', 'url' ],
+							],
+							'post_id' => [ 'type' => 'integer' ],
+							'url'     => [ 'type' => 'string' ],
+							'label'   => [ 'type' => 'string' ],
+						],
+					];
+					break;
 			}
 		}
 

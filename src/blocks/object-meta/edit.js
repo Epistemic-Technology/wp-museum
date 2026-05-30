@@ -13,6 +13,7 @@ import {
 } from "@wordpress/components";
 
 import { stripslashes, isEmpty } from "../../javascript/util";
+import LinksControl from "./links-control";
 
 const ObjectMetaField = (props) => {
   const { fieldData, fieldValue, errorText, onChange, onFocus, onBlur } = props;
@@ -141,6 +142,8 @@ const ObjectMetaField = (props) => {
         </div>
       );
     }
+  } else if (fieldType == "links") {
+    inputElement = <LinksControl value={fieldValue} onChange={onChange} />;
   } else {
     inputElement = <div name={fieldSlug}>{fieldValue}</div>;
   }

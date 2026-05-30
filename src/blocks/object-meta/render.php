@@ -69,6 +69,8 @@ foreach ( $fields as $field ) {
 					}
 				}
 			}
+		} elseif ( 'links' === $field->type ) {
+			$field_text .= render_links_field( $meta_value );
 		} else {
 			$field_text .= $meta_value;
 		}

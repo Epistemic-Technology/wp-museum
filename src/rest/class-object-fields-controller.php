@@ -183,7 +183,7 @@ class Object_Fields_Controller extends \WP_REST_Controller {
 				'type'                  => [
 					'description' => __( 'Datatype of the field.', 'wp-museum' ),
 					'type'        => 'string',
-					'enum'        => [ 'plain', 'rich', 'date', 'factor', 'multiple', 'measure', 'flag' ],
+					'enum'        => [ 'plain', 'rich', 'date', 'factor', 'multiple', 'measure', 'flag', 'links' ],
 					'context '    => [ 'view', 'edit' ],
 				],
 				'display_order'         => [

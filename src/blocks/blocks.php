@@ -51,6 +51,8 @@ function register_object_meta_block() {
 			$type = 'array';
 		} elseif ( 'measure' === $field->type ) {
 			$type = 'array';
+		} elseif ( 'links' === $field->type ) {
+			$type = 'array';
 		} else {
 			$type = 'string';
 		}
