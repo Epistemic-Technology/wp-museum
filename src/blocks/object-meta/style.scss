@@ -1,0 +1,33 @@
+// Field descriptions surfaced from the admin's "Public Description" field.
+// Display mode is chosen per-site in the customizer (mobject_style ->
+// field_description_display): none | inline | expander | tooltip.
+.wpm_field-description {
+  font-size: 0.875em;
+  color: #6b7280;
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+details.wpm_field-description {
+  margin-top: 4px;
+
+  > summary {
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 0.875em;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      content: "\2139\fe0e\00a0"; // information source glyph + nbsp
+    }
+  }
+
+  &[open] > summary {
+    margin-bottom: 4px;
+  }
+}

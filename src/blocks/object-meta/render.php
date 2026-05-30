@@ -42,10 +42,16 @@ foreach ( $fields as $field ) {
 			$bool_yes_fields[] = $field->name;
 		}
 	} else {
+		$description_mode = $display_options['field_description_display'] ?? 'none';
+		$has_description  = ! empty( $field->public_description );
+		$label_title_attr = '';
+		if ( 'tooltip' === $description_mode && $has_description ) {
+			$label_title_attr = ' title="' . esc_attr( $field->public_description ) . '"';
+		}
 		if ( ! is_string( $meta_value ) || strlen( $meta_value ) > 39 ) {
-			$field_text = '<div class="' . WPM_PREFIX . 'field-label-div">' . $field->name . ':</div>';
+			$field_text = '<div class="' . WPM_PREFIX . 'field-label-div"' . $label_title_attr . '>' . $field->name . ':</div>';
 		} else {
-			$field_text = '<span class="' . WPM_PREFIX . 'field-label">' . $field->name . ':</span> ';
+			$field_text = '<span class="' . WPM_PREFIX . 'field-label"' . $label_title_attr . '>' . $field->name . ':</span> ';
 		}
 		if ( 'flag' === $field->type ) {
 			if ( '1' === $meta_value ) {
@@ -76,6 +82,19 @@ foreach ( $fields as $field ) {
 		}
 		$field_text          = \html_entity_decode( $field_text );
 		$custom_fields_html .= apply_filters( 'the_content', $field_text, true );
+
+		if ( $has_description && 'inline' === $description_mode ) {
+			$custom_fields_html .=
+				'<div class="' . WPM_PREFIX . 'field-description">' .
+				esc_html( $field->public_description ) .
+				'</div>';
+		} elseif ( $has_description && 'expander' === $description_mode ) {
+			$custom_fields_html .=
+				'<details class="' . WPM_PREFIX . 'field-description">' .
+				'<summary>' . esc_html__( "What's this?", 'wp-museum' ) . '</summary>' .
+				esc_html( $field->public_description ) .
+				'</details>';
+		}
 	}
 	$custom_fields_html .= '</div>';
 }

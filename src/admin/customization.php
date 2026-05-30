@@ -26,6 +26,7 @@ $style_defaults = [
 		'field_text_color'             => '',
 		'short_description_max_length' => 100,
 		'yes_no_display'               => 'list',           // Can be list|normal.
+		'field_description_display'    => 'inline',         // Can be none|inline|expander|tooltip.
 		'display_image_gallery'        => true,
 		'image_gallery_position'       => 'right',          // Can be top|bottom|left|right.
 		'image_gallery_margin'         => 20,
@@ -263,6 +264,23 @@ function add_controls( $wp_customize ) {
 				[
 					'list'   => __( 'List', 'wp-museum' ),
 					'normal' => __( 'Normal', 'wp-museum' ),
+				],
+		]
+	);
+	$wp_customize->add_control(
+		WPM_PREFIX . 'mobject_style[field_description_display]',
+		[
+			'label'       => __( 'Show field descriptions to readers', 'wp-museum' ),
+			'description' => __( 'How the "Public Description" set on each field is shown on the public object page.', 'wp-museum' ),
+			'setting'     => WPM_PREFIX . 'mobject_style[field_description_display]',
+			'section'     => WPM_PREFIX . 'mobject_style_section',
+			'type'        => 'radio',
+			'choices'     =>
+				[
+					'none'     => __( 'Don\'t show', 'wp-museum' ),
+					'inline'   => __( 'Inline below the value', 'wp-museum' ),
+					'expander' => __( 'Collapsible "What\'s this?" expander', 'wp-museum' ),
+					'tooltip'  => __( 'Tooltip on hover of the field label', 'wp-museum' ),
 				],
 		]
 	);
