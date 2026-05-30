@@ -59,9 +59,20 @@ const LinksControl = ({ value, onChange }) => {
       <ul className="wpm-links-list">
         {links.map((link, index) => (
           <li key={index} className="wpm-link-row">
-            <span className="wpm-link-row-label">
-              {link.label || link.url || __("(untitled link)", "wp-museum")}
-            </span>
+            {link.url ? (
+              <a
+                className="wpm-link-row-label"
+                href={link.url}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {link.label || link.url}
+              </a>
+            ) : (
+              <span className="wpm-link-row-label wpm-link-row-label--empty">
+                {link.label || __("(untitled link)", "wp-museum")}
+              </span>
+            )}
             <div className="wpm-link-row-actions">
               <Button
                 variant="tertiary"
