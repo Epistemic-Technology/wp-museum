@@ -11,26 +11,31 @@ import { __ } from "@wordpress/i18n";
  * Stored shape (per item):
  *   { type: 'post' | 'url', post_id?: int, url?: string, label?: string }
  *
- * Internal links keep `url` as a cached snapshot for editor display, but
- * the public renderer re-resolves the post's current permalink at render
- * time so a renamed post still resolves correctly.
+ * `label` is the user's custom override (typed into the popover's "Custom
+ * label" field) and is empty by default. The public renderer mirrors:
+ *   - empty label  → auto-derived (post title + cat ID, or the URL)
+ *   - filled label → rendered verbatim, no cat ID appended
+ *
+ * Internal post titles and cat IDs are looked up async via
+ * /wp-museum/v1/all/<id> and cached so the editor stays consistent with
+ * what readers will see.
  */
 const LinksControl = ({ value, onChange }) => {
   const links = Array.isArray(value) ? value : [];
   const [editingIndex, setEditingIndex] = useState(null);
-  // post_id -> cat ID string, or "" if the target has no cat field.
-  // "" is kept so we don't re-fetch a target that has none.
-  const [catIds, setCatIds] = useState({});
+  // post_id -> { title, catId }. `catId` is "" when the target has no cat
+  // field; both keys present means we've already fetched (don't retry).
+  const [postInfo, setPostInfo] = useState({});
 
-  // For every internal-post link whose cat ID we haven't fetched yet,
-  // call /wp-museum/v1/all/<id> — that endpoint returns the cat_field
-  // slug plus all field values, so cat ID is `data[data.cat_field]`.
-  // Non-museum-object posts (regular pages) return cat_field: null and
-  // we cache an empty string to avoid retrying.
+  // For every internal-post link we haven't fetched yet, call
+  // /wp-museum/v1/all/<id> — that endpoint returns the post title, the
+  // cat_field slug, and all field values. Non-museum-object posts
+  // (regular pages) return cat_field: null and we cache an empty cat ID
+  // so we don't retry.
   useEffect(() => {
     const missing = links
       .filter(
-        (l) => l.type === "post" && l.post_id && !(l.post_id in catIds),
+        (l) => l.type === "post" && l.post_id && !(l.post_id in postInfo),
       )
       .map((l) => l.post_id);
     if (missing.length === 0) return undefined;
@@ -42,15 +47,16 @@ const LinksControl = ({ value, onChange }) => {
           .then((data) => {
             const slug = data && data.cat_field;
             const catValue = slug && data[slug] ? String(data[slug]) : "";
-            return [id, catValue];
+            const title = data && data.post_title ? String(data.post_title) : "";
+            return [id, { title, catId: catValue }];
           })
-          .catch(() => [id, ""]),
+          .catch(() => [id, { title: "", catId: "" }]),
       ),
     ).then((results) => {
       if (cancelled) return;
-      setCatIds((prev) => {
+      setPostInfo((prev) => {
         const next = { ...prev };
-        for (const [id, val] of results) next[id] = val;
+        for (const [id, info] of results) next[id] = info;
         return next;
       });
     });
@@ -61,13 +67,15 @@ const LinksControl = ({ value, onChange }) => {
   }, [links]);
 
   const labelFor = (link) => {
-    const base = link.label || link.url || "";
-    if (!base) return "";
+    // Custom label always wins, no cat ID appended.
+    if (link.label) return link.label;
     if (link.type === "post" && link.post_id) {
-      const catId = catIds[link.post_id];
-      if (catId) return `${base} (${catId})`;
+      const info = postInfo[link.post_id];
+      const title = info && info.title ? info.title : link.url || "";
+      const catId = info && info.catId ? info.catId : "";
+      return catId ? `${title} (${catId})` : title;
     }
-    return base;
+    return link.url || "";
   };
 
   const updateLink = (index, newLink) => {
@@ -92,18 +100,21 @@ const LinksControl = ({ value, onChange }) => {
     id: link.post_id || undefined,
   });
 
-  const fromLinkControl = (next) =>
+  // Preserve the user's custom label across LinkControl re-picks. Don't
+  // copy LinkControl's auto-derived `title` into our `label` field —
+  // that would defeat the "label set ⇒ user customized" signal.
+  const fromLinkControl = (next, prev) =>
     next.id
       ? {
           type: "post",
           post_id: next.id,
           url: next.url || "",
-          label: next.title || "",
+          label: (prev && prev.label) || "",
         }
       : {
           type: "url",
           url: next.url || "",
-          label: next.title || "",
+          label: (prev && prev.label) || "",
         };
 
   return (
@@ -151,7 +162,7 @@ const LinksControl = ({ value, onChange }) => {
                   <LinkControl
                     value={linkControlValue(link)}
                     onChange={(next) =>
-                      updateLink(index, fromLinkControl(next))
+                      updateLink(index, fromLinkControl(next, link))
                     }
                     showInitialSuggestions
                   />
