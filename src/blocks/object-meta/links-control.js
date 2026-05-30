@@ -1,6 +1,7 @@
+import apiFetch from "@wordpress/api-fetch";
 import { __experimentalLinkControl as LinkControl } from "@wordpress/block-editor";
 import { Button, Popover } from "@wordpress/components";
-import { useState } from "@wordpress/element";
+import { useEffect, useState } from "@wordpress/element";
 import { __ } from "@wordpress/i18n";
 
 /**
@@ -17,6 +18,57 @@ import { __ } from "@wordpress/i18n";
 const LinksControl = ({ value, onChange }) => {
   const links = Array.isArray(value) ? value : [];
   const [editingIndex, setEditingIndex] = useState(null);
+  // post_id -> cat ID string, or "" if the target has no cat field.
+  // "" is kept so we don't re-fetch a target that has none.
+  const [catIds, setCatIds] = useState({});
+
+  // For every internal-post link whose cat ID we haven't fetched yet,
+  // call /wp-museum/v1/all/<id> — that endpoint returns the cat_field
+  // slug plus all field values, so cat ID is `data[data.cat_field]`.
+  // Non-museum-object posts (regular pages) return cat_field: null and
+  // we cache an empty string to avoid retrying.
+  useEffect(() => {
+    const missing = links
+      .filter(
+        (l) => l.type === "post" && l.post_id && !(l.post_id in catIds),
+      )
+      .map((l) => l.post_id);
+    if (missing.length === 0) return undefined;
+
+    let cancelled = false;
+    Promise.all(
+      missing.map((id) =>
+        apiFetch({ path: `/wp-museum/v1/all/${id}` })
+          .then((data) => {
+            const slug = data && data.cat_field;
+            const catValue = slug && data[slug] ? String(data[slug]) : "";
+            return [id, catValue];
+          })
+          .catch(() => [id, ""]),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setCatIds((prev) => {
+        const next = { ...prev };
+        for (const [id, val] of results) next[id] = val;
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [links]);
+
+  const labelFor = (link) => {
+    const base = link.label || link.url || "";
+    if (!base) return "";
+    if (link.type === "post" && link.post_id) {
+      const catId = catIds[link.post_id];
+      if (catId) return `${base} (${catId})`;
+    }
+    return base;
+  };
 
   const updateLink = (index, newLink) => {
     const next = links.slice();
@@ -66,7 +118,7 @@ const LinksControl = ({ value, onChange }) => {
                 target="_blank"
                 rel="noreferrer noopener"
               >
-                {link.label || link.url}
+                {labelFor(link)}
               </a>
             ) : (
               <span className="wpm-link-row-label wpm-link-row-label--empty">
