@@ -110,9 +110,10 @@ test.describe("Links frontend: cat IDs and custom labels (#115)", () => {
     internalTargetPostId = (await targetResp.json()).id;
 
     // Host object whose links field points at:
-    //   1. internal museum object (no custom label, expect "Title (CAT)")
-    //   2. external URL with a custom label "New York Times"
-    //   3. external URL with no label
+    //   1. internal museum object, no custom label  → "Title (CAT)"
+    //   2. external URL with a custom label         → label verbatim
+    //   3. external URL with no label               → URL
+    //   4. internal museum object with custom label → label verbatim, NO cat ID
     const linksValue = [
       {
         type: "post",
@@ -129,6 +130,12 @@ test.describe("Links frontend: cat IDs and custom labels (#115)", () => {
         type: "url",
         url: "https://example.com/no-label",
         label: "",
+      },
+      {
+        type: "post",
+        post_id: internalTargetPostId,
+        url: "",
+        label: "My Favorite Spectroscope",
       },
     ];
     const hostResp = await page.request.post(
@@ -155,10 +162,21 @@ test.describe("Links frontend: cat IDs and custom labels (#115)", () => {
     await page.waitForLoadState("domcontentloaded");
 
     const anchors = page.locator("ul.wpm-links li a");
-    await expect(anchors).toHaveCount(3);
+    await expect(anchors).toHaveCount(4);
     await expect(anchors.nth(0)).toHaveText(
       `${internalTargetTitle} (${internalTargetCatId})`
     );
+  });
+
+  test("internal-post link with custom label renders the label verbatim (no cat ID)", async ({
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    await page.goto(`/?p=${hostObjectPostId}`);
+    await page.waitForLoadState("domcontentloaded");
+
+    const anchors = page.locator("ul.wpm-links li a");
+    await expect(anchors.nth(3)).toHaveText("My Favorite Spectroscope");
   });
 
   test("external link with custom label renders the label verbatim", async ({

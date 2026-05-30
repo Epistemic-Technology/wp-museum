@@ -363,19 +363,24 @@ function render_links_field( $links ) {
 		$href  = '';
 		$label = isset( $link['label'] ) ? (string) $link['label'] : '';
 
+		// Custom label (non-empty) wins verbatim — no cat ID appended.
+		// Empty label falls back to post title + cat ID for internal links,
+		// or the URL for external links.
+		$label_is_custom = ( '' !== $label );
+
 		$cat_id_suffix = '';
 		if ( 'post' === $type && ! empty( $link['post_id'] ) ) {
 			$post_id  = (int) $link['post_id'];
 			$resolved = get_permalink( $post_id );
 			if ( $resolved ) {
 				$href = $resolved;
-				if ( '' === $label ) {
-					$label = get_the_title( $post_id );
+				if ( ! $label_is_custom ) {
+					$label  = get_the_title( $post_id );
+					$cat_id = get_cat_id_for_post( $post_id );
+					if ( '' !== $cat_id ) {
+						$cat_id_suffix = " ($cat_id)";
+					}
 				}
-			}
-			$cat_id = get_cat_id_for_post( $post_id );
-			if ( '' !== $cat_id ) {
-				$cat_id_suffix = " ($cat_id)";
 			}
 		}
 		if ( '' === $href && ! empty( $link['url'] ) ) {
