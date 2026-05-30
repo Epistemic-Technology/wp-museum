@@ -184,6 +184,14 @@ add_filter( 'posts_where', __NAMESPACE__ . '\post_search_filter', 10, 2 );
  */
 add_filter( 'query_vars', __NAMESPACE__ . '\add_title_content_query_vars' );
 
+/**
+ * Extend search to also match catalogue ID fields on museum objects so
+ * LinkControl and core's /wp/v2/search find objects by ID, not just title.
+ *
+ * @see object-functions.php::extend_object_search_to_cat_fields()
+ */
+add_filter( 'posts_search', __NAMESPACE__ . '\extend_object_search_to_cat_fields', 10, 2 );
+
 add_filter(
 	'posts_results',
 	__NAMESPACE__ . '\add_object_results_to_main_search_query',
