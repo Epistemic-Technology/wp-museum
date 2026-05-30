@@ -253,3 +253,14 @@
     }
   }
 }
+
+.wpm-link-edit-popover {
+  padding: 8px;
+  min-width: 320px;
+
+  .wpm-link-edit-popover__label-override {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #ddd;
+  }
+}

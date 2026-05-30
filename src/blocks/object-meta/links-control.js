@@ -1,6 +1,6 @@
 import apiFetch from "@wordpress/api-fetch";
 import { __experimentalLinkControl as LinkControl } from "@wordpress/block-editor";
-import { Button, Popover } from "@wordpress/components";
+import { Button, Popover, TextControl } from "@wordpress/components";
 import { useEffect, useState } from "@wordpress/element";
 import { __ } from "@wordpress/i18n";
 
@@ -147,13 +147,28 @@ const LinksControl = ({ value, onChange }) => {
                 placement="bottom-start"
                 onClose={() => setEditingIndex(null)}
               >
-                <LinkControl
-                  value={linkControlValue(link)}
-                  onChange={(next) =>
-                    updateLink(index, fromLinkControl(next))
-                  }
-                  showInitialSuggestions
-                />
+                <div className="wpm-link-edit-popover">
+                  <LinkControl
+                    value={linkControlValue(link)}
+                    onChange={(next) =>
+                      updateLink(index, fromLinkControl(next))
+                    }
+                    showInitialSuggestions
+                  />
+                  <div className="wpm-link-edit-popover__label-override">
+                    <TextControl
+                      label={__("Custom label (optional)", "wp-museum")}
+                      help={__(
+                        "Overrides the post title or URL when shown to readers.",
+                        "wp-museum",
+                      )}
+                      value={link.label || ""}
+                      onChange={(val) =>
+                        updateLink(index, { ...link, label: val })
+                      }
+                    />
+                  </div>
+                </div>
               </Popover>
             )}
           </li>

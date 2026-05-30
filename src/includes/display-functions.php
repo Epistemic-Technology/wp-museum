@@ -311,6 +311,33 @@ function post_status_indicator( $wp_admin_bar ) {
 }
 
 /**
+ * Resolve a post's catalogue ID value, if it has one.
+ *
+ * Returns the value of the post's kind's cat field as a string, or an
+ * empty string if the post isn't a museum object, the kind has no cat
+ * field configured, or the meta value is empty.
+ *
+ * @param int $post_id Post ID.
+ * @return string Cat ID string (empty if none).
+ */
+function get_cat_id_for_post( $post_id ) {
+	$post_type = get_post_type( $post_id );
+	if ( ! $post_type ) {
+		return '';
+	}
+	$kind = get_kind_from_typename( $post_type );
+	if ( empty( $kind ) || empty( $kind->cat_field_id ) ) {
+		return '';
+	}
+	$cat_field = get_mobject_field( $kind->kind_id, $kind->cat_field_id );
+	if ( empty( $cat_field ) || empty( $cat_field->slug ) ) {
+		return '';
+	}
+	$value = get_post_meta( $post_id, $cat_field->slug, true );
+	return $value ? (string) $value : '';
+}
+
+/**
  * Render a "links" field value as an HTML unordered list of anchors.
  *
  * Each item is one of:
@@ -336,13 +363,19 @@ function render_links_field( $links ) {
 		$href  = '';
 		$label = isset( $link['label'] ) ? (string) $link['label'] : '';
 
+		$cat_id_suffix = '';
 		if ( 'post' === $type && ! empty( $link['post_id'] ) ) {
-			$resolved = get_permalink( (int) $link['post_id'] );
+			$post_id  = (int) $link['post_id'];
+			$resolved = get_permalink( $post_id );
 			if ( $resolved ) {
 				$href = $resolved;
 				if ( '' === $label ) {
-					$label = get_the_title( (int) $link['post_id'] );
+					$label = get_the_title( $post_id );
 				}
+			}
+			$cat_id = get_cat_id_for_post( $post_id );
+			if ( '' !== $cat_id ) {
+				$cat_id_suffix = " ($cat_id)";
 			}
 		}
 		if ( '' === $href && ! empty( $link['url'] ) ) {
@@ -358,7 +391,7 @@ function render_links_field( $links ) {
 		$items_html .= sprintf(
 			'<li><a href="%1$s">%2$s</a></li>',
 			esc_url( $href ),
-			esc_html( $label )
+			esc_html( $label . $cat_id_suffix )
 		);
 	}
 	if ( '' === $items_html ) {
