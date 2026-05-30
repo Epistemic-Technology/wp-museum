@@ -44,7 +44,7 @@ class MObjectField {
 	public $name;
 
 	/**
-	 * Datatype of the field: plain|rich|date|factor|multiple|measure|flag.
+	 * Datatype of the field: plain|rich|date|factor|multiple|measure|flag|links.
 	 *
 	 * @var string $type
 	 */

@@ -804,3 +804,85 @@ function wpm_sort_by_field(
 		}
 	);
 }
+
+/**
+ * Extend the SQL search clause to also match each museum kind's catalogue
+ * ID field (#115). Without this, `LinkControl` (and any other consumer of
+ * core's `/wp/v2/search` or a plain `s=` query) finds objects only by
+ * title/excerpt/content. With this filter, typing a cat ID like "T.123"
+ * also surfaces the matching object.
+ *
+ * Only kicks in when the query touches at least one registered museum
+ * object post type, so generic searches keep their default cost.
+ *
+ * @param string    $search   Existing SQL search clause (e.g., " AND ((...))").
+ * @param \WP_Query $wp_query The current query.
+ * @return string Modified search clause.
+ */
+function extend_object_search_to_cat_fields( $search, $wp_query ) {
+	global $wpdb;
+
+	if ( empty( $search ) ) {
+		return $search;
+	}
+	$search_term = $wp_query->get( 's' );
+	if ( empty( $search_term ) || ! is_string( $search_term ) ) {
+		return $search;
+	}
+
+	$object_types = get_object_type_names();
+	if ( empty( $object_types ) ) {
+		return $search;
+	}
+
+	$query_types = (array) $wp_query->get( 'post_type' );
+	// Only matters when the query touches museum object post types.
+	if ( ! empty( $query_types ) && ! in_array( 'any', $query_types, true ) ) {
+		if ( empty( array_intersect( $query_types, $object_types ) ) ) {
+			return $search;
+		}
+	}
+
+	// Collect the cat field slug for every museum kind that has one set.
+	$cat_slugs = [];
+	foreach ( get_mobject_kinds() as $kind ) {
+		if ( empty( $kind->cat_field_id ) ) {
+			continue;
+		}
+		$cat_field = get_mobject_field( $kind->kind_id, $kind->cat_field_id );
+		if ( $cat_field && ! empty( $cat_field->slug ) ) {
+			$cat_slugs[ $cat_field->slug ] = true;
+		}
+	}
+	if ( empty( $cat_slugs ) ) {
+		return $search;
+	}
+
+	$like    = '%' . $wpdb->esc_like( $search_term ) . '%';
+	$clauses = [];
+	foreach ( array_keys( $cat_slugs ) as $slug ) {
+		// EXISTS subquery — no JOIN, so doesn't disturb other postmeta joins
+		// elsewhere in the query.
+		$clauses[] = $wpdb->prepare(
+			"EXISTS (SELECT 1 FROM {$wpdb->postmeta} WHERE post_id = {$wpdb->posts}.ID AND meta_key = %s AND meta_value LIKE %s)",
+			$slug,
+			$like
+		);
+	}
+	$cat_match = '(' . implode( ' OR ', $clauses ) . ')';
+
+	// $search is shaped like ` AND ((title LIKE …) OR (excerpt LIKE …) OR (content LIKE …))`,
+	// optionally followed by ` AND (wp_posts.post_password = '')` for
+	// unauthenticated queries. We must inject OR <cat_match> inside the
+	// title-group's outermost parens — not after the password clause,
+	// which would let every published row match.
+	$password_marker = ' AND (' . $wpdb->posts . '.post_password';
+	$password_pos    = strpos( $search, $password_marker );
+	$scan_end        = ( false === $password_pos ) ? strlen( $search ) : $password_pos;
+
+	$title_close_pos = strrpos( substr( $search, 0, $scan_end ), ')' );
+	if ( false === $title_close_pos ) {
+		return $search;
+	}
+	return substr( $search, 0, $title_close_pos ) . ' OR ' . $cat_match . substr( $search, $title_close_pos );
+}

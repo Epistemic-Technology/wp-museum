@@ -28,7 +28,10 @@ const FieldSearchElement = (props) => {
   const fieldOptions =
     fieldDataArray.length > 0
       ? fieldDataArray
-          .filter((fieldItem) => fieldItem.type !== "flag")
+          .filter(
+            (fieldItem) =>
+              fieldItem.type !== "flag" && fieldItem.type !== "links",
+          )
           .map((fieldItem) => {
             return { label: fieldItem.name, value: fieldItem.slug };
           })
