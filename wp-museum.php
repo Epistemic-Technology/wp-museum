@@ -111,6 +111,10 @@ require_once $require_prefix . 'admin/admin-icon.php';
 require_once $require_prefix . 'includes/remote.php';
 require_once $require_prefix . 'includes/cleanup.php';
 require_once $require_prefix . 'includes/migration.php';
+require_once $require_prefix . 'includes/default-kind.php';
+
+// Install bundled starter kind on first activation when no kinds exist.
+register_activation_hook( __FILE__, __NAMESPACE__ . '\install_default_kind_if_empty' );
 
 /*
  * Scripts

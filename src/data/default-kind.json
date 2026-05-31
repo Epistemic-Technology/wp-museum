@@ -1,0 +1,59 @@
+{
+  "label": "Object",
+  "label_plural": "Objects",
+  "description": "A generic museum object. Edit the fields below, or create additional kinds for specific object types (instruments, artworks, specimens, etc).",
+  "categorized": false,
+  "hierarchical": false,
+  "must_featured_image": false,
+  "strict_checking": false,
+  "exclude_from_search": false,
+  "cat_field_name": "Accession Number",
+  "fields": [
+    {
+      "name": "Accession Number",
+      "type": "plain",
+      "required": true,
+      "quick_browse": true,
+      "public": true,
+      "help_text": "The unique inventory ID assigned by your museum.",
+      "public_description": "Unique inventory ID."
+    },
+    {
+      "name": "Description",
+      "type": "rich",
+      "required": false,
+      "quick_browse": false,
+      "public": true,
+      "help_text": "A short description of the object."
+    },
+    {
+      "name": "Materials",
+      "type": "plain",
+      "required": false,
+      "quick_browse": true,
+      "public": true,
+      "help_text": "What the object is made of (e.g., \"brass, glass\").",
+      "public_description": "Materials."
+    },
+    {
+      "name": "Date",
+      "type": "date",
+      "required": false,
+      "quick_browse": true,
+      "public": true,
+      "help_text": "When the object was made or used.",
+      "public_description": "Date."
+    },
+    {
+      "name": "Dimensions",
+      "type": "measure",
+      "required": false,
+      "quick_browse": false,
+      "public": true,
+      "units": "cm",
+      "dimensions": { "n": 3, "labels": ["Length", "Width", "Height"] },
+      "help_text": "Physical dimensions.",
+      "public_description": "Dimensions."
+    }
+  ]
+}
