@@ -5,8 +5,8 @@
  * screen, which made the plugin feel broken until they manually
  * configured a kind. The activation hook now reads
  * `data/default-kind.json` and installs a starter "Object" kind with
- * common fields (Accession Number, Description, Materials, Date,
- * Dimensions) when no kinds exist yet.
+ * common fields (Catalogue Number, Description, Location, Date,
+ * Date Examined, Related) when no kinds exist yet.
  *
  * The installer is idempotent — it skips if any kind is already
  * present, so re-activating the plugin doesn't duplicate or stomp
@@ -64,18 +64,17 @@ test.describe("Default kind on activation (#4)", () => {
     const fields = Object.values(await fieldsResp.json());
     const byName = Object.fromEntries(fields.map((f) => [f.name, f]));
 
-    expect(byName["Accession Number"]).toBeTruthy();
-    expect(byName["Accession Number"].type).toBe("plain");
-    expect(byName["Accession Number"].required).toBe(true);
+    expect(byName["Catalogue Number"]).toBeTruthy();
+    expect(byName["Catalogue Number"].type).toBe("plain");
+    expect(byName["Catalogue Number"].required).toBe(true);
 
-    expect(byName["Description"]).toBeTruthy();
-    expect(byName["Description"].type).toBe("rich");
-
-    expect(byName["Materials"]?.type).toBe("plain");
+    expect(byName["Description"]?.type).toBe("rich");
+    expect(byName["Location"]?.type).toBe("plain");
     expect(byName["Date"]?.type).toBe("date");
-    expect(byName["Dimensions"]?.type).toBe("measure");
+    expect(byName["Date Examined"]?.type).toBe("date");
+    expect(byName["Related"]?.type).toBe("links");
 
-    // cat_field_id on the kind should point at Accession Number.
-    expect(byName["Accession Number"].field_id).toBe(kind.cat_field_id);
+    // cat_field_id on the kind should point at Catalogue Number.
+    expect(byName["Catalogue Number"].field_id).toBe(kind.cat_field_id);
   });
 });

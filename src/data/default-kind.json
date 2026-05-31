@@ -7,16 +7,16 @@
   "must_featured_image": false,
   "strict_checking": false,
   "exclude_from_search": false,
-  "cat_field_name": "Accession Number",
+  "cat_field_name": "Catalogue Number",
   "fields": [
     {
-      "name": "Accession Number",
+      "name": "Catalogue Number",
       "type": "plain",
       "required": true,
       "quick_browse": true,
       "public": true,
-      "help_text": "The unique inventory ID assigned by your museum.",
-      "public_description": "Unique inventory ID."
+      "help_text": "The unique catalogue ID assigned by your museum.",
+      "public_description": "Catalogue number."
     },
     {
       "name": "Description",
@@ -27,13 +27,13 @@
       "help_text": "A short description of the object."
     },
     {
-      "name": "Materials",
+      "name": "Location",
       "type": "plain",
       "required": false,
       "quick_browse": true,
       "public": true,
-      "help_text": "What the object is made of (e.g., \"brass, glass\").",
-      "public_description": "Materials."
+      "help_text": "Where the object is stored or displayed.",
+      "public_description": "Location."
     },
     {
       "name": "Date",
@@ -45,15 +45,21 @@
       "public_description": "Date."
     },
     {
-      "name": "Dimensions",
-      "type": "measure",
+      "name": "Date Examined",
+      "type": "date",
+      "required": false,
+      "quick_browse": false,
+      "public": false,
+      "help_text": "When the object was last examined or catalogued."
+    },
+    {
+      "name": "Related",
+      "type": "links",
       "required": false,
       "quick_browse": false,
       "public": true,
-      "units": "cm",
-      "dimensions": { "n": 3, "labels": ["Length", "Width", "Height"] },
-      "help_text": "Physical dimensions.",
-      "public_description": "Dimensions."
+      "help_text": "Related objects, pages, or external resources.",
+      "public_description": "Related."
     }
   ]
 }
