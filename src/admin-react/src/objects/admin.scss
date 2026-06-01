@@ -1,6 +1,17 @@
 // Museum Objects Administration specific styles
 // Common styles are in parent admin.scss
 
+@keyframes wpm-field-accordion-flash {
+  0% {
+    background-color: #fff8dc;
+    box-shadow: 0 0 0 3px #fcd34d;
+  }
+  100% {
+    background-color: #fff;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
 // Objects list page specific styles
 .museum-admin-main {
   .kinds-list {
@@ -140,6 +151,17 @@
     &.drag-over {
       border-color: #0073aa;
       box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2);
+    }
+
+    // Brief highlight applied after Add New Field, so the row is
+    // obvious when it lands below the fold (#122).
+    &.field-accordion--just-added {
+      animation: wpm-field-accordion-flash 1.6s ease-out;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+        box-shadow: 0 0 0 3px #fcd34d;
+      }
     }
 
     .field-header {

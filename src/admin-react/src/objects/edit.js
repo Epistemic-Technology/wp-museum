@@ -322,9 +322,31 @@ const Edit = (props) => {
         sortedFields[0]["display_order"] + 1;
     }
 
+    const newFieldDomId = `field-accordion-${nextFieldId}`;
+
     setNextFieldId(nextFieldId - 1);
     setFieldData(updatedFieldData);
     setFieldsSaveState((prev) => ({ ...prev, hasUnsavedChanges: true }));
+
+    // Scroll the newly inserted field into view and flash a highlight so
+    // it's obvious something happened even when the row lands below the
+    // fold (#122). RAF waits for React to commit the new row before we
+    // query the DOM.
+    requestAnimationFrame(() => {
+      const element = document.getElementById(newFieldDomId);
+      if (!element) return;
+      const reduceMotion = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)",
+      )?.matches;
+      element.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "center",
+      });
+      element.classList.add("field-accordion--just-added");
+      setTimeout(() => {
+        element.classList.remove("field-accordion--just-added");
+      }, 1600);
+    });
 
     try {
       await apiFetch({
