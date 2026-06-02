@@ -80,7 +80,11 @@ foreach ( $fields as $field ) {
 		} else {
 			$field_text .= $meta_value;
 		}
-		$field_text          = \html_entity_decode( $field_text );
+		// Don't html_entity_decode here: rich-text values may contain
+		// HTML attributes (most notably anchor hrefs) that were correctly
+		// entity-escaped by the editor. Decoding turns "&lt;" inside a
+		// URL back into a literal "<", which the browser then parses as
+		// the start of a new tag and the anchor blows up (#116).
 		$custom_fields_html .= apply_filters( 'the_content', $field_text, true );
 
 		if ( $has_description && 'inline' === $description_mode ) {
