@@ -72,14 +72,17 @@ function install_kind_from_array( $data ) {
 	global $wpdb;
 
 	$kind_row = (object) [
-		'label'               => $data['label'] ?? 'Object',
-		'label_plural'        => $data['label_plural'] ?? ( ( $data['label'] ?? 'Object' ) . 's' ),
-		'description'         => $data['description'] ?? '',
-		'categorized'         => ! empty( $data['categorized'] ),
-		'hierarchical'        => ! empty( $data['hierarchical'] ),
-		'must_featured_image' => ! empty( $data['must_featured_image'] ),
-		'strict_checking'     => ! empty( $data['strict_checking'] ),
-		'exclude_from_search' => ! empty( $data['exclude_from_search'] ),
+		'label'                => $data['label'] ?? 'Object',
+		'label_plural'         => $data['label_plural'] ?? ( ( $data['label'] ?? 'Object' ) . 's' ),
+		'description'          => $data['description'] ?? '',
+		'categorized'          => ! empty( $data['categorized'] ),
+		'hierarchical'         => ! empty( $data['hierarchical'] ),
+		'must_featured_image'  => ! empty( $data['must_featured_image'] ),
+		'strict_checking'      => ! empty( $data['strict_checking'] ),
+		'exclude_from_search'  => ! empty( $data['exclude_from_search'] ),
+		'cat_id_auto_generate' => ! empty( $data['cat_id_auto_generate'] ),
+		'cat_id_prefix'        => $data['cat_id_prefix'] ?? '',
+		'cat_id_pad_length'    => intval( $data['cat_id_pad_length'] ?? 0 ),
 	];
 
 	$kind = new ObjectKind( $kind_row );

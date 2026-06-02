@@ -254,6 +254,9 @@ const ObjectAdminControl = () => {
     strict_checking: false,
     exclude_from_search: false,
     parent_kind_id: null,
+    cat_id_auto_generate: false,
+    cat_id_prefix: "",
+    cat_id_pad_length: 0,
   };
 
   const setObjectKinds = (newKindArray) => {

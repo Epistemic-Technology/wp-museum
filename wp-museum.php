@@ -27,7 +27,7 @@ const WPM_PREFIX     = 'wpm_'; // Prefix for database tables.
 const CSS_VERSION    = '0.5.3'; // Change to force reload of CSS.
 const SCRIPT_VERSION = '0.5.2'; // Change to force reload of JS.
 const CACHE_GROUP    = 'MikeThicke\WPMuseum'; // For caching db queries.
-const DB_VERSION     = '0.6.69'; // Change to update db structure.
+const DB_VERSION     = '0.6.70'; // Change to update db structure.
 const DB_SHOW_ERRORS = false; // Have WP report db errors (only enable during local debugging).
 const IMAGE_DIR      = 'wp-museum'; // Directory to save exported images.
 const REST_NAMESPACE = 'wp-museum/v1'; // Root for rest routes.
@@ -112,6 +112,7 @@ require_once $require_prefix . 'includes/remote.php';
 require_once $require_prefix . 'includes/cleanup.php';
 require_once $require_prefix . 'includes/migration.php';
 require_once $require_prefix . 'includes/default-kind.php';
+require_once $require_prefix . 'includes/cat-id-generator.php';
 
 // Install bundled starter kind on first activation when no kinds exist.
 register_activation_hook( __FILE__, __NAMESPACE__ . '\install_default_kind_if_empty' );

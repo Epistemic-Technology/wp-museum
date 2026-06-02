@@ -415,6 +415,33 @@ class Kinds_Controller extends \WP_REST_Controller {
 					'context'     => [ 'view', 'edit' ],
 					'readonly'    => false,
 				],
+				'cat_id_auto_generate'         => [
+					'description' => __(
+						'Whether to auto-generate the catalogue ID field when saving an object with that field empty.',
+						'wp-museum'
+					),
+					'type'        => 'boolean',
+					'context'     => [ 'view', 'edit' ],
+					'readonly'    => false,
+				],
+				'cat_id_prefix'                => [
+					'description' => __(
+						'Optional prefix prepended to auto-generated catalogue IDs.',
+						'wp-museum'
+					),
+					'type'        => 'string',
+					'context'     => [ 'view', 'edit' ],
+					'readonly'    => false,
+				],
+				'cat_id_pad_length'            => [
+					'description' => __(
+						'Zero-pad auto-generated catalogue ID numbers to this many digits. 0 = no padding.',
+						'wp-museum'
+					),
+					'type'        => 'integer',
+					'context'     => [ 'view', 'edit' ],
+					'readonly'    => false,
+				],
 			],
 		];
 

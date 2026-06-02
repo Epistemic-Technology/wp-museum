@@ -127,6 +127,30 @@ class ObjectKind {
 	public $oai_pmh_mappings = null;
 
 	/**
+	 * Whether to auto-generate the catalogue ID field value when an object
+	 * is saved with that field empty (#30).
+	 *
+	 * @var bool $cat_id_auto_generate
+	 */
+	public $cat_id_auto_generate = false;
+
+	/**
+	 * Optional prefix prepended to auto-generated catalogue IDs
+	 * (e.g. "OBJ-" → "OBJ-1"). Empty for plain numeric IDs.
+	 *
+	 * @var string $cat_id_prefix
+	 */
+	public $cat_id_prefix = '';
+
+	/**
+	 * Zero-pad auto-generated catalogue ID numbers to this many digits
+	 * (e.g. 4 → "OBJ-0001"). 0 = no padding.
+	 *
+	 * @var int $cat_id_pad_length
+	 */
+	public $cat_id_pad_length = 0;
+
+	/**
 	 * Converts museum object kind's label to name: all lowercase, spaces replaced by dashes.
 	 *
 	 * @param   string $kind_label The object kind's label.
@@ -289,6 +313,15 @@ class ObjectKind {
 		} else {
 			$this->oai_pmh_mappings = OaiPmhMappings::with_defaults();
 		}
+		if ( isset( $kind_row->cat_id_auto_generate ) ) {
+			$this->cat_id_auto_generate = (bool) intval( $kind_row->cat_id_auto_generate );
+		}
+		if ( isset( $kind_row->cat_id_prefix ) ) {
+			$this->cat_id_prefix = (string) $kind_row->cat_id_prefix;
+		}
+		if ( isset( $kind_row->cat_id_pad_length ) ) {
+			$this->cat_id_pad_length = max( 0, intval( $kind_row->cat_id_pad_length ) );
+		}
 	}
 
 	/**
@@ -369,24 +402,27 @@ class ObjectKind {
 	 * Return properties as associative array.
 	 */
 	public function to_array() {
-		$arr                        = [];
-		$arr['kind_id']             = $this->kind_id;
-		$arr['cat_field_id']        = $this->cat_field_id;
-		$arr['name']                = $this->name;
-		$arr['type_name']           = $this->type_name;
-		$arr['label']               = $this->label;
-		$arr['label_plural']        = $this->label_plural;
-		$arr['description']         = $this->description;
-		$arr['categorized']         = $this->categorized;
-		$arr['hierarchical']        = $this->hierarchical;
-		$arr['must_featured_image'] = $this->must_featured_image;
-		$arr['must_gallery']        = $this->must_gallery;
-		$arr['strict_checking']     = $this->strict_checking;
-		$arr['exclude_from_search'] = $this->exclude_from_search;
-		$arr['parent_kind_id']      = $this->parent_kind_id;
-		$arr['oai_pmh_mappings']    = json_encode(
+		$arr                         = [];
+		$arr['kind_id']              = $this->kind_id;
+		$arr['cat_field_id']         = $this->cat_field_id;
+		$arr['name']                 = $this->name;
+		$arr['type_name']            = $this->type_name;
+		$arr['label']                = $this->label;
+		$arr['label_plural']         = $this->label_plural;
+		$arr['description']          = $this->description;
+		$arr['categorized']          = $this->categorized;
+		$arr['hierarchical']         = $this->hierarchical;
+		$arr['must_featured_image']  = $this->must_featured_image;
+		$arr['must_gallery']         = $this->must_gallery;
+		$arr['strict_checking']      = $this->strict_checking;
+		$arr['exclude_from_search']  = $this->exclude_from_search;
+		$arr['parent_kind_id']       = $this->parent_kind_id;
+		$arr['oai_pmh_mappings']     = json_encode(
 			$this->get_oai_pmh_mappings()->to_array()
 		);
+		$arr['cat_id_auto_generate'] = $this->cat_id_auto_generate ? 1 : 0;
+		$arr['cat_id_prefix']        = $this->cat_id_prefix;
+		$arr['cat_id_pad_length']    = $this->cat_id_pad_length;
 		return $arr;
 	}
 
@@ -413,6 +449,9 @@ class ObjectKind {
 		$arr['available_fields_for_oai_pmh'] = $this->get_available_fields_for_oai_pmh();
 		$arr['block_template']               = $this->block_template();
 		$arr['children']                     = $this->get_children_array();
+		$arr['cat_id_auto_generate']         = (bool) $this->cat_id_auto_generate;
+		$arr['cat_id_prefix']                = $this->cat_id_prefix;
+		$arr['cat_id_pad_length']            = $this->cat_id_pad_length;
 		return $arr;
 	}
 

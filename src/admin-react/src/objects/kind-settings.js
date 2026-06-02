@@ -14,6 +14,9 @@ const KindSettings = memo(
       must_gallery: mustGallery,
       parent_kind_id: parentKindId,
       strict_checking: strictChecking,
+      cat_id_auto_generate: catIdAutoGenerate,
+      cat_id_prefix: catIdPrefix,
+      cat_id_pad_length: catIdPadLength,
     } = kindData;
 
     const parentKindOptions =
@@ -97,6 +100,50 @@ const KindSettings = memo(
             {idFieldOptions}
           </select>
         </label>
+
+        {catFieldId ? (
+          <div className="kind-cat-id-auto">
+            <label className="kind-cat-id-auto-generate-field">
+              <input
+                type="checkbox"
+                name="kind-cat-id-auto-generate"
+                className="kind-cat-id-auto-generate-checkbox"
+                checked={!!catIdAutoGenerate}
+                onChange={onFieldChange("cat_id_auto_generate")}
+                disabled={disabled}
+              />
+              Auto-generate ID when empty
+            </label>
+            {catIdAutoGenerate ? (
+              <div className="kind-cat-id-auto-options">
+                <label className="kind-cat-id-prefix-field">
+                  Prefix
+                  <input
+                    type="text"
+                    name="kind-cat-id-prefix"
+                    className="kind-cat-id-prefix-input"
+                    value={catIdPrefix || ""}
+                    onChange={onFieldChange("cat_id_prefix")}
+                    placeholder="e.g. OBJ-"
+                    disabled={disabled}
+                  />
+                </label>
+                <label className="kind-cat-id-pad-length-field">
+                  Pad to digits
+                  <input
+                    type="number"
+                    min="0"
+                    name="kind-cat-id-pad-length"
+                    className="kind-cat-id-pad-length-input"
+                    value={catIdPadLength ?? 0}
+                    onChange={onFieldChange("cat_id_pad_length")}
+                    disabled={disabled}
+                  />
+                </label>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="kind-options">
           <label className="kind-strict-checking-field">

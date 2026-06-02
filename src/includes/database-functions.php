@@ -50,6 +50,9 @@ function create_mobject_kinds_table() {
 		strict_checking tinyint(1),
 		parent_kind_id mediumint(9),
 		oai_pmh_mappings text,
+		cat_id_auto_generate tinyint(1) DEFAULT 0,
+		cat_id_prefix varchar(255) DEFAULT '',
+		cat_id_pad_length tinyint DEFAULT 0,
         PRIMARY KEY  (kind_id)
     );";
 
