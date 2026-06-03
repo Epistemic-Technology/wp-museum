@@ -9,7 +9,7 @@
  * Plugin Name: Museum for WordPress
  * Plugin URI: https://github.com/mikethicke/wp-museum
  * Description: Manages a database of museum objects.
- * Version: 0.8.1
+ * Version: 0.9.0
  * Requires at least: 6.9
  * Requires PHP: 8.2
  * Tested up to: 6.9.4
