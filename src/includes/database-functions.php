@@ -28,6 +28,27 @@ function db_version_check() {
 }
 
 /**
+ * Returns names of the plugin's custom database tables that don't exist.
+ *
+ * @return [string] Array of missing table names, empty if all exist.
+ */
+function missing_museum_tables() {
+	global $wpdb;
+	$tables  = [ 'mobject_kinds', 'mobject_fields', 'remote_clients' ];
+	$missing = [];
+	foreach ( $tables as $table ) {
+		$table_name   = $wpdb->prefix . WPM_PREFIX . $table;
+		$table_exists = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name )
+		);
+		if ( ! $table_exists ) {
+			$missing[] = $table_name;
+		}
+	}
+	return $missing;
+}
+
+/**
  * Create table for museum object kinds, or sync site table.
  */
 function create_mobject_kinds_table() {

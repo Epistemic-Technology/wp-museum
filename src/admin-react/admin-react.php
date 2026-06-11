@@ -39,6 +39,7 @@ function enqueue_admin_react( $hook_suffix ) {
 			'wpVersion'      => get_bloginfo( 'version' ),
 			'phpVersion'     => phpversion(),
 			'phpMemoryLimit' => ini_get( 'memory_limit' ),
+			'dbTablesOk'     => count( missing_museum_tables() ) === 0,
 		)
 	);
 
