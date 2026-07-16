@@ -109,31 +109,6 @@ export const getParam = (key, defaultValue = null) => {
 };
 
 /**
- * Get breadcrumb data based on current route.
- */
-export const getBreadcrumbs = () => {
-  const params = getUrlParams();
-  const breadcrumbs = [{ label: "Museum Administration", url: null }];
-
-  const currentPage = params.page || "";
-
-  if (currentPage.includes("objects")) {
-    breadcrumbs.push({ label: "Objects", url: `?page=${currentPage}` });
-    if (params.view === "edit") {
-      breadcrumbs.push({ label: "Edit", url: null });
-    }
-  } else if (currentPage.includes("general")) {
-    breadcrumbs.push({ label: "General", url: null });
-  } else if (currentPage.includes("remote")) {
-    breadcrumbs.push({ label: "Museum Remote", url: null });
-  } else if (currentPage.includes("oai-pmh")) {
-    breadcrumbs.push({ label: "OAI-PMH", url: null });
-  }
-
-  return breadcrumbs;
-};
-
-/**
  * Check if we can navigate back (has history).
  */
 export const canGoBack = () => {

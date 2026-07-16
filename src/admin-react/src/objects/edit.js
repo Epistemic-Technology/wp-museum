@@ -1,12 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from "@wordpress/element";
-import { Button, Spinner, Card, CardBody } from "@wordpress/components";
+import {
+  Button,
+  Spinner,
+  Card,
+  CardBody,
+  Panel,
+  PanelBody,
+} from "@wordpress/components";
 import apiFetch from "@wordpress/api-fetch";
 
 import FieldEdit from "./field-edit";
 import KindSettings from "./kind-settings";
 import { useKindForm } from "./use-kind-form";
 import { navigateToMain } from "../router";
-import Breadcrumbs from "../components/breadcrumbs";
+
+const HELP_PANEL_STORAGE_KEY = "wpm-field-types-help-open";
 
 const Edit = (props) => {
   const { kindItem, kinds, updateKind, saveKindData } = props;
@@ -37,6 +45,20 @@ const Edit = (props) => {
   // Drag and drop state
   const [draggedField, setDraggedField] = useState(null);
   const [dragOverField, setDragOverField] = useState(null);
+
+  // Field Types help panel collapse state, persisted across page loads
+  const [helpPanelOpen, setHelpPanelOpen] = useState(
+    () => window.localStorage.getItem(HELP_PANEL_STORAGE_KEY) !== "closed",
+  );
+
+  const toggleHelpPanel = () => {
+    const nextOpen = !helpPanelOpen;
+    setHelpPanelOpen(nextOpen);
+    window.localStorage.setItem(
+      HELP_PANEL_STORAGE_KEY,
+      nextOpen ? "open" : "closed",
+    );
+  };
 
   // Use custom hook for kind form management
   const kindForm = useKindForm(kindItem, async (formData) => {
@@ -471,8 +493,6 @@ const Edit = (props) => {
 
   return (
     <div className="edit-container">
-      <Breadcrumbs />
-
       <div className="edit-header">
         <Button onClick={handleBackClick} variant="secondary">
           ← Back to Objects
@@ -553,9 +573,12 @@ const Edit = (props) => {
         </div>
 
         <div className="help-panel">
-          <Card>
-            <CardBody>
-              <h3>Field Types</h3>
+          <Panel>
+            <PanelBody
+              title="Field Types"
+              opened={helpPanelOpen}
+              onToggle={toggleHelpPanel}
+            >
               <ul>
                 <li>
                   <strong>Plain Text:</strong> Simple text input
@@ -580,8 +603,8 @@ const Edit = (props) => {
                   <strong>Flag:</strong> Yes/No checkbox
                 </li>
               </ul>
-            </CardBody>
-          </Card>
+            </PanelBody>
+          </Panel>
         </div>
       </div>
     </div>

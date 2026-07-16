@@ -24,7 +24,6 @@ The admin React interface now uses URL-based routing instead of internal state m
 
 ### Navigation Helpers
 
-- `getBreadcrumbs()` - Generate breadcrumb navigation data
 - `canGoBack()` - Check if browser can navigate back
 - `goBack()` - Navigate back in browser history
 - `useRouter(callback)` - Hook for handling route changes
@@ -91,13 +90,6 @@ const goBack = () => {
 - Browser warning when leaving page with unsaved changes
 - Confirmation dialog when navigating away
 - Visual indicators for unsaved state
-
-### Double-click Navigation
-- Double-click object types to quickly edit them
-
-### Breadcrumb Navigation
-- Automatic breadcrumb generation based on current route
-- Clickable navigation for complex page hierarchies
 
 ## Development
 

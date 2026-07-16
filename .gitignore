@@ -34,3 +34,4 @@ debug-*
 docker/certs/
 local/
 site/
+.playwright-mcp/
