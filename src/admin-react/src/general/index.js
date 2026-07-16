@@ -69,11 +69,6 @@ const GeneralOptions = () => {
                   {__("Delete all museum data on uninstall")}
                 </span>
               </label>
-              <p className="help-text">
-                {__(
-                  "When checked, all museum objects, collections, and custom settings will be permanently deleted when the plugin is uninstalled.",
-                )}
-              </p>
             </div>
 
             <div className="option-item">
@@ -90,11 +85,6 @@ const GeneralOptions = () => {
                   {__("Show post status in admin bar")}
                 </span>
               </label>
-              <p className="help-text">
-                {__(
-                  "Display the current post's publish status in the WordPress admin bar for easy reference.",
-                )}
-              </p>
             </div>
 
             <div className="option-item">
@@ -116,11 +106,6 @@ const GeneralOptions = () => {
                   )}
                 </span>
               </label>
-              <p className="help-text">
-                {__(
-                  "Automatically redirect visitors from collection taxonomy archive pages to the corresponding collection post pages.",
-                )}
-              </p>
             </div>
           </div>
 
