@@ -23,15 +23,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-
-    &[title="Double-click to edit"] {
-      &:hover {
-        .kind-label {
-          color: #0073aa;
-        }
-      }
-    }
   }
 
   // Action buttons for each object kind

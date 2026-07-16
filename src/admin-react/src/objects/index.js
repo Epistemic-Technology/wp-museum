@@ -303,10 +303,6 @@ const ObjectAdminControl = () => {
     setSelectedPage("edit");
   };
 
-  const handleKindDoubleClick = (kindItem) => {
-    editKind(kindItem);
-  };
-
   const exportKind = async (kindItem) => {
     try {
       // Fetch fields data first
@@ -350,7 +346,6 @@ const ObjectAdminControl = () => {
           deleteKind={deleteKind}
           exportKind={exportKind}
           importKind={importKind}
-          handleKindDoubleClick={handleKindDoubleClick}
         />
       );
     case "edit":
@@ -377,7 +372,6 @@ const Main = (props) => {
     deleteKind,
     exportKind,
     importKind,
-    handleKindDoubleClick,
   } = props;
   const fileInputRef = useRef(null);
 
@@ -416,12 +410,7 @@ const Main = (props) => {
           typeof kindItem.delete === "undefined" || !kindItem.delete,
       )
       .map((kindItem, index) => (
-        <div
-          key={index}
-          className="kind-item"
-          onDoubleClick={() => handleKindDoubleClick(kindItem)}
-          title="Double-click to edit"
-        >
+        <div key={index} className="kind-item">
           <div className="kind-label">{kindItem.label}</div>
           <div className="object-action-buttons">
             <Button onClick={() => editKind(kindItem)} isLarge isSecondary>
@@ -451,11 +440,7 @@ const Main = (props) => {
       <div className="museum-admin-main">
         <div className="admin-header">
           <h1>Museum Administration</h1>
-          <p>
-            Manage your museum object types and their fields.{" "}
-            <strong>Tip:</strong> Double-click any object type to edit it
-            quickly.
-          </p>
+          <p>Manage your museum object types and their fields.</p>
         </div>
         <div className="kinds-list">{kindRows}</div>
         <div className="main-actions">
