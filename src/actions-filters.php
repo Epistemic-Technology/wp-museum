@@ -233,6 +233,15 @@ add_action( 'admin_menu', __NAMESPACE__ . '\add_quick_browse' );
 add_action( 'admin_menu', __NAMESPACE__ . '\export_csv' );
 
 /**
+ * Filter object admin lists by dashboard health check results.
+ *
+ * @see health-list-filters.php::filter_object_list_by_health
+ * @see health-list-filters.php::health_filter_admin_notice
+ */
+add_filter( 'posts_clauses', __NAMESPACE__ . '\filter_object_list_by_health', 10, 2 );
+add_action( 'admin_notices', __NAMESPACE__ . '\health_filter_admin_notice' );
+
+/**
  * Adds javascript to upload image attachments to object posts.
  *
  * @see object-ajax.php::wpm_media_box_enqueue

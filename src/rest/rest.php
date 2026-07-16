@@ -118,4 +118,12 @@ function rest_routes() {
 	 */
 	$remote_client_controller = new Remote_Client_Controller();
 	$remote_client_controller->register_routes();
+
+	/**
+	 * Registers the following route:
+	 *
+	 * /dashboard_health              Health check results for the dashboard.
+	 */
+	$dashboard_health_controller = new Dashboard_Health_Controller();
+	$dashboard_health_controller->register_routes();
 }

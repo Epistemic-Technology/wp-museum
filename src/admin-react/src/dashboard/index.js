@@ -493,6 +493,7 @@ const SystemStatus = () => {
   const wpVersion = window.wpmAdminData?.wpVersion || "Unknown";
   const phpVersion = window.wpmAdminData?.phpVersion || "Unknown";
   const phpMemoryLimit = window.wpmAdminData?.phpMemoryLimit || "Unknown";
+  const dbTablesOk = window.wpmAdminData?.dbTablesOk;
 
   return (
     <div className="dashboard-section">
@@ -516,7 +517,11 @@ const SystemStatus = () => {
         </div>
         <div className="status-item">
           <span className="status-label">Database Tables:</span>
-          <span className="status-value status-success">Active</span>
+          {dbTablesOk === false ? (
+            <span className="status-value status-error">Missing</span>
+          ) : (
+            <span className="status-value status-success">Active</span>
+          )}
         </div>
       </div>
     </div>
@@ -524,18 +529,82 @@ const SystemStatus = () => {
 };
 
 /**
- * Placeholder Component
+ * Quick Actions Component
  */
-const PlaceholderSection = ({ title, description }) => {
+const QuickActions = () => {
+  const [objectKinds, setObjectKinds] = useState([]);
+
+  useEffect(() => {
+    apiFetch({ path: `${baseRestPath}/mobject_kinds` })
+      .then((kinds) => setObjectKinds(kinds || []))
+      .catch(() => setObjectKinds([]));
+  }, []);
+
+  const actions = [
+    ...objectKinds.map((kind) => ({
+      label: `Add ${kind.label}`,
+      href: `post-new.php?post_type=${kind.type_name}`,
+    })),
+    { label: "Add Collection", href: "post-new.php?post_type=wpm_collection" },
+    {
+      label: "Manage Object Kinds",
+      href: "admin.php?page=wpm-react-admin-objects",
+    },
+    { label: "Import / Export CSV", href: "admin.php?page=wpm-objects-admin" },
+  ];
+
   return (
-    <div className="dashboard-section placeholder-section">
-      <h2>{title}</h2>
-      <div className="placeholder-content">
-        <p className="placeholder-message">Coming Soon</p>
-        {description && (
-          <p className="placeholder-description">{description}</p>
-        )}
+    <div className="dashboard-section">
+      <h2>Quick Actions</h2>
+      <div className="quick-actions-list">
+        {actions.map((action) => (
+          <a key={action.href} href={action.href} className="quick-action-link">
+            {action.label}
+          </a>
+        ))}
       </div>
+    </div>
+  );
+};
+
+/**
+ * Health Panel Component
+ */
+const HealthPanel = () => {
+  const [checks, setChecks] = useState(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    apiFetch({ path: `${baseRestPath}/dashboard_health` })
+      .then((health) => setChecks(health?.checks || []))
+      .catch(() => setError(true));
+  }, []);
+
+  return (
+    <div className="dashboard-section">
+      <h2>Health</h2>
+      {error ? (
+        <p className="empty-message">Unable to run health checks.</p>
+      ) : checks === null ? (
+        <div className="loading-container">
+          <Spinner />
+        </div>
+      ) : checks.length === 0 ? (
+        <div className="health-all-clear">All checks passed</div>
+      ) : (
+        <div className="health-list">
+          {checks.map((check) => (
+            <div key={check.id} className={`health-item health-${check.severity}`}>
+              <p className="health-message">{check.message}</p>
+              {check.link && (
+                <a href={check.link} className="health-link">
+                  Review
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -558,15 +627,9 @@ const Dashboard = (props) => {
         </div>
 
         <div className="dashboard-side-column">
-          <PlaceholderSection
-            title="Quick Actions"
-            description="Quick links to common tasks will appear here."
-          />
+          <QuickActions />
+          <HealthPanel />
           <SystemStatus />
-          <PlaceholderSection
-            title="Warnings & Notifications"
-            description="System checks and validation warnings will appear here."
-          />
         </div>
       </div>
     </div>

@@ -127,6 +127,7 @@ require_once $require_prefix . 'includes/object-ajax.php';
 require_once $require_prefix . 'includes/collection-post-type.php';
 require_once $require_prefix . 'admin/quick-browse.php';
 require_once $require_prefix . 'admin/import-export.php';
+require_once $require_prefix . 'admin/health-list-filters.php';
 require_once $require_prefix . 'includes/database-upgrade.php';
 require_once $require_prefix . 'admin-react/admin-react.php';
 
@@ -150,6 +151,7 @@ require_once $require_prefix . 'rest/class-object-fields-controller.php';
 require_once $require_prefix . 'rest/class-object-image-controller.php';
 require_once $require_prefix . 'rest/class-remote-client-controller.php';
 require_once $require_prefix . 'rest/class-site-data-controller.php';
+require_once $require_prefix . 'rest/class-dashboard-health-controller.php';
 
 /**
  * OAI-PMH

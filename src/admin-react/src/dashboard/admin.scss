@@ -353,31 +353,90 @@
 }
 
 // =============================================================================
-// Placeholder Sections
+// Quick Actions
 // =============================================================================
 
-.placeholder-section {
-  .placeholder-content {
-    text-align: center;
-    padding: 32px 16px;
-    background: #f9fafb;
-    border-radius: 6px;
-    border: 2px dashed #d0d5dd;
+.quick-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-action-link {
+  display: block;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d2327;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #0073aa;
+    background: #fff;
+    color: #0073aa;
+  }
+}
+
+// =============================================================================
+// Health Panel
+// =============================================================================
+
+.health-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.health-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  border-left-width: 4px;
+
+  &.health-warning {
+    background: #fffbf0;
+    border-color: #f0c849;
   }
 
-  .placeholder-message {
-    font-size: 16px;
-    font-weight: 600;
-    color: #646970;
-    margin: 0 0 8px 0;
+  &.health-error {
+    background: #fcf0f1;
+    border-color: #d63638;
   }
+}
 
-  .placeholder-description {
-    font-size: 13px;
-    color: #9ca3af;
-    margin: 0;
-    line-height: 1.5;
+.health-message {
+  margin: 0;
+  font-size: 13px;
+  color: #1d2327;
+  line-height: 1.4;
+}
+
+.health-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0073aa;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
   }
+}
+
+.health-all-clear {
+  padding: 12px;
+  background: #edfaef;
+  border: 1px solid #00a32a;
+  border-radius: 6px;
+  color: #00a32a;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
 }
 
 // =============================================================================
