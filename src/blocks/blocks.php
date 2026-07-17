@@ -29,42 +29,50 @@ function register_blocks() {
 add_action( 'init', __NAMESPACE__ . '\register_blocks' );
 
 /**
- * Registers Gutenberg block to edit museusm objects.
+ * Registers Gutenberg block to edit museum objects.
  *
- * This block has attributes dynamically generated from the object's fields. So
- * they are not set in block.json.
+ * This block has attributes dynamically generated from the object's fields, so
+ * they are not set in block.json. The attributes are meta-sourced and only
+ * matter in the block editor — render.php reads post meta directly — so the
+ * block is always registered, with the field attributes added only when
+ * editing a museum object. Registration must not depend on resolving the
+ * post type on the frontend: that fails with plain permalinks and would leave
+ * object posts rendering without fields or images.
  */
 function register_object_meta_block() {
-	$post_type = calculate_post_type_in_editor();
-	if ( ! $post_type || ! in_array( $post_type, get_object_type_names(), true ) ) {
-		return;
-	}
-	$kind   = get_kind_from_typename( $post_type );
-	$fields = get_mobject_fields( $kind->kind_id );
-
 	$attributes = [];
-	foreach ( $fields as $field ) {
-		$field_name = $field->slug;
-		if ( 'flag' === $field->type ) {
-			$type = 'boolean';
-		} elseif ( 'multiple' === $field->type ) {
-			$type = 'array';
-		} elseif ( 'measure' === $field->type ) {
-			$type = 'array';
-		} elseif ( 'links' === $field->type ) {
-			$type = 'array';
-		} else {
-			$type = 'string';
-		}
-		$attributes[ $field_name ] = [
-			'type'   => $type,
-			'source' => 'meta',
-			'meta'   => $field->slug,
-		];
-		if ( 'measure' === $field->type ) {
-			$attributes[ $field_name ]['items'] = 'number';
+
+	if ( is_admin() ) {
+		$post_type = calculate_post_type_in_editor();
+		if ( $post_type && in_array( $post_type, get_object_type_names(), true ) ) {
+			$kind   = get_kind_from_typename( $post_type );
+			$fields = get_mobject_fields( $kind->kind_id );
+
+			foreach ( $fields as $field ) {
+				$field_name = $field->slug;
+				if ( 'flag' === $field->type ) {
+					$type = 'boolean';
+				} elseif ( 'multiple' === $field->type ) {
+					$type = 'array';
+				} elseif ( 'measure' === $field->type ) {
+					$type = 'array';
+				} elseif ( 'links' === $field->type ) {
+					$type = 'array';
+				} else {
+					$type = 'string';
+				}
+				$attributes[ $field_name ] = [
+					'type'   => $type,
+					'source' => 'meta',
+					'meta'   => $field->slug,
+				];
+				if ( 'measure' === $field->type ) {
+					$attributes[ $field_name ]['items'] = 'number';
+				}
+			}
 		}
 	}
+
 	register_block_type(
 		WPM_BUILD_DIR . '/blocks/object-meta',
 		[
@@ -72,10 +80,6 @@ function register_object_meta_block() {
 		]
 	);
 }
-
-/**
- * 'wp' seems to be the earliest hook where post type is available on front end.
- */
 add_action( 'init', __NAMESPACE__ . '\register_object_meta_block', 50 );
 
 /**
@@ -91,27 +95,13 @@ function calculate_post_type_in_editor(): string|false {
 
 	if ( isset( $_GET['post'] ) ) {
 		$post_id = intval( wp_unslash( $_GET['post'] ) );
-	} else {
-		// See: https://wordpress.stackexchange.com/a/307601
-		$https   = isset( $_SERVER['HTTPS'] ) && 'on' === sanitize_text_field( wp_unslash( $_SERVER['HTTPS'] ) );
-		$host    = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
-		$uri     = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-		$post_id = url_to_postid(
-			( $https ? 'https' : 'http' ) . '://' . $host . $uri
-		);
+		if ( $post_id ) {
+			return get_post_type( $post_id );
+		}
 	}
 
-	if ( ! $post_id ) {
-		return false;
-	}
-
-	return get_post_type( $post_id );
+	return false;
 }
-
-/**
- * Register on admin side.
- */
-//add_action( 'plugins_loaded', __NAMESPACE__ . '\register_object_meta_block' );
 
 /**
  * Enqueues component scripts and styles.

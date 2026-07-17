@@ -13,7 +13,6 @@
     "textdomain": "wp-museum",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./index.css",
-    "render": "file:./render.php",
     "attributes": {
         "childObjects": {
             "type": "object",
