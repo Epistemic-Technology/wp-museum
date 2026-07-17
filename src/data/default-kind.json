@@ -28,7 +28,7 @@
       "public_description": "Location."
     },
     {
-      "name": "Date",
+      "name": "Date Manufactured",
       "type": "date",
       "required": false,
       "quick_browse": true,
