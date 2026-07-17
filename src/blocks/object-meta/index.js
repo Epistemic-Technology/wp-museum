@@ -15,6 +15,8 @@ import { __ } from '@wordpress/i18n';
  */
 import edit from './edit';
 import { museum } from '../../icons';
+import './editor.scss';
+import './style.scss';
 
 registerBlockType( 'wp-museum/object-meta-block', {
 	title : __( 'Object Fields' ),

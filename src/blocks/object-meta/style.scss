@@ -8,6 +8,13 @@
   line-height: 1.45;
 }
 
+// The field value runs through the_content, so themes add their usual
+// paragraph margin between the value and its description. Cancel it so
+// the description hugs the value it explains (4px via margin-top above).
+.wpm_field-text > :has(+ .wpm_field-description) {
+  margin-bottom: 0;
+}
+
 details.wpm_field-description {
   margin-top: 4px;
 
