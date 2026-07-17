@@ -227,22 +227,26 @@ function add_controls( $wp_customize ) {
 		]
 	);
 	$wp_customize->add_control(
-		WPM_PREFIX . 'mobject_style[field_label_color]',
-		[
-			'label'   => __( 'Field label color', 'wp-museum' ),
-			'setting' => WPM_PREFIX . 'mobject_style[field_label_color]',
-			'section' => WPM_PREFIX . 'mobject_style_section',
-			'type'    => 'color',
-		]
+		new \WP_Customize_Color_Control(
+			$wp_customize,
+			WPM_PREFIX . 'mobject_style[field_label_color]',
+			[
+				'label'   => __( 'Field label color', 'wp-museum' ),
+				'setting' => WPM_PREFIX . 'mobject_style[field_label_color]',
+				'section' => WPM_PREFIX . 'mobject_style_section',
+			]
+		)
 	);
 	$wp_customize->add_control(
-		WPM_PREFIX . 'mobject_style[field_text_color]',
-		[
-			'label'   => __( 'Field text color', 'wp-museum' ),
-			'setting' => WPM_PREFIX . 'mobject_style[field_text_color]',
-			'section' => WPM_PREFIX . 'mobject_style_section',
-			'type'    => 'color',
-		]
+		new \WP_Customize_Color_Control(
+			$wp_customize,
+			WPM_PREFIX . 'mobject_style[field_text_color]',
+			[
+				'label'   => __( 'Field text color', 'wp-museum' ),
+				'setting' => WPM_PREFIX . 'mobject_style[field_text_color]',
+				'section' => WPM_PREFIX . 'mobject_style_section',
+			]
+		)
 	);
 	$wp_customize->add_control(
 		WPM_PREFIX . 'mobject_style[short_description_max_length]',
@@ -337,13 +341,15 @@ function add_controls( $wp_customize ) {
 		]
 	);
 	$wp_customize->add_control(
-		WPM_PREFIX . 'mobject_style[image_border_color]',
-		[
-			'label'   => __( 'Image border color', 'wp-museum' ),
-			'setting' => WPM_PREFIX . 'mobject_style[image_border_color]',
-			'section' => WPM_PREFIX . 'mobject_style_section',
-			'type'    => 'color',
-		]
+		new \WP_Customize_Color_Control(
+			$wp_customize,
+			WPM_PREFIX . 'mobject_style[image_border_color]',
+			[
+				'label'   => __( 'Image border color', 'wp-museum' ),
+				'setting' => WPM_PREFIX . 'mobject_style[image_border_color]',
+				'section' => WPM_PREFIX . 'mobject_style_section',
+			]
+		)
 	);
 	$wp_customize->add_control(
 		WPM_PREFIX . 'mobject_style[image_max_width]',
@@ -391,22 +397,26 @@ function add_controls( $wp_customize ) {
 		]
 	);
 	$wp_customize->add_control(
-		WPM_PREFIX . 'collection_style[list_color_1]',
-		[
-			'label'   => __( 'List background color #1', 'wp-museum' ),
-			'setting' => WPM_PREFIX . 'collection_style[list_color_1]',
-			'section' => WPM_PREFIX . 'collection_style_section',
-			'type'    => 'color',
-		]
+		new \WP_Customize_Color_Control(
+			$wp_customize,
+			WPM_PREFIX . 'collection_style[list_color_1]',
+			[
+				'label'   => __( 'List background color #1', 'wp-museum' ),
+				'setting' => WPM_PREFIX . 'collection_style[list_color_1]',
+				'section' => WPM_PREFIX . 'collection_style_section',
+			]
+		)
 	);
 	$wp_customize->add_control(
-		WPM_PREFIX . 'collection_style[list_color_2]',
-		[
-			'label'   => __( 'List background color #2', 'wp-museum' ),
-			'setting' => WPM_PREFIX . 'collection_style[list_color_2]',
-			'section' => WPM_PREFIX . 'collection_style_section',
-			'type'    => 'color',
-		]
+		new \WP_Customize_Color_Control(
+			$wp_customize,
+			WPM_PREFIX . 'collection_style[list_color_2]',
+			[
+				'label'   => __( 'List background color #2', 'wp-museum' ),
+				'setting' => WPM_PREFIX . 'collection_style[list_color_2]',
+				'section' => WPM_PREFIX . 'collection_style_section',
+			]
+		)
 	);
 	$wp_customize->add_control(
 		WPM_PREFIX . 'collection_style[list_thumbnail_position]',
