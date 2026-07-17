@@ -15,13 +15,16 @@
   margin-bottom: 0;
 }
 
+// The expander renders above its field, so keep it small and snug
+// against the field it describes.
 details.wpm_field-description {
-  margin-top: 4px;
+  margin: 0 0 2px;
 
   > summary {
     cursor: pointer;
     color: #6b7280;
-    font-size: 0.875em;
+    font-size: 0.75em;
+    line-height: 1.2;
     list-style: none;
     user-select: none;
 
@@ -35,6 +38,10 @@ details.wpm_field-description {
   }
 
   &[open] > summary {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+  }
+
+  + * {
+    margin-top: 0;
   }
 }

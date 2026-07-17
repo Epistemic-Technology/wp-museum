@@ -80,6 +80,13 @@ foreach ( $fields as $field ) {
 		} else {
 			$field_text .= $meta_value;
 		}
+		if ( $has_description && 'expander' === $description_mode ) {
+			$custom_fields_html .=
+				'<details class="' . WPM_PREFIX . 'field-description">' .
+				'<summary>' . esc_html__( "What's this?", 'wp-museum' ) . '</summary>' .
+				esc_html( $field->public_description ) .
+				'</details>';
+		}
 		// Don't html_entity_decode here: rich-text values may contain
 		// HTML attributes (most notably anchor hrefs) that were correctly
 		// entity-escaped by the editor. Decoding turns "&lt;" inside a
@@ -92,12 +99,6 @@ foreach ( $fields as $field ) {
 				'<div class="' . WPM_PREFIX . 'field-description">' .
 				esc_html( $field->public_description ) .
 				'</div>';
-		} elseif ( $has_description && 'expander' === $description_mode ) {
-			$custom_fields_html .=
-				'<details class="' . WPM_PREFIX . 'field-description">' .
-				'<summary>' . esc_html__( "What's this?", 'wp-museum' ) . '</summary>' .
-				esc_html( $field->public_description ) .
-				'</details>';
 		}
 	}
 	$custom_fields_html .= '</div>';
