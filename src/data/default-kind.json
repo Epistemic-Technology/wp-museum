@@ -19,14 +19,6 @@
       "public_description": "Catalogue number."
     },
     {
-      "name": "Description",
-      "type": "rich",
-      "required": false,
-      "quick_browse": false,
-      "public": true,
-      "help_text": "A short description of the object."
-    },
-    {
       "name": "Location",
       "type": "plain",
       "required": false,
