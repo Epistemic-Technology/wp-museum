@@ -16,7 +16,7 @@
       "quick_browse": true,
       "public": true,
       "help_text": "The unique catalogue ID assigned by your museum.",
-      "public_description": "Catalogue number."
+      "public_description": "A unique identifier for the object in the museum's catalogue."
     },
     {
       "name": "Location",
@@ -25,7 +25,7 @@
       "quick_browse": true,
       "public": true,
       "help_text": "Where the object is stored or displayed.",
-      "public_description": "Location."
+      "public_description": "Where the object is located in the museum's collection."
     },
     {
       "name": "Date Manufactured",
@@ -33,8 +33,7 @@
       "required": false,
       "quick_browse": true,
       "public": true,
-      "help_text": "When the object was made or used.",
-      "public_description": "Date."
+      "help_text": "When the object was made."
     },
     {
       "name": "Date Examined",
@@ -51,7 +50,7 @@
       "quick_browse": false,
       "public": true,
       "help_text": "Related objects, pages, or external resources.",
-      "public_description": "Related."
+      "public_description": "Related objects, pages, or external resources."
     }
   ]
 }
