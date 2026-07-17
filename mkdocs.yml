@@ -59,6 +59,7 @@ plugins:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - Dashboard: dashboard.md
   - Object Kinds & Fields: object-kinds.md
   - Collections: collections.md
   - Blocks: blocks.md
