@@ -22,7 +22,7 @@ module.exports = {
       filename: "museum-remote-front.js",
     },
     components: {
-      import: ["./src/components/index.js", "./src/components/style.scss"],
+      import: ["./src/components/index.ts", "./src/components/style.scss"],
       filename: "components.js",
     },
     "museum-block-front": {
@@ -33,6 +33,9 @@ module.exports = {
     },
     "museum-oai-pmh-toggle": {
       import: "./src/javascript/oai-pmh-toggle.tsx",
+    },
+    "museum-unregister-object-blocks": {
+      import: "./src/javascript/unregister-object-blocks.ts",
     },
   },
   plugins: [...defaultConfig.plugins, new RemoveEmptyScriptsPlugin()],

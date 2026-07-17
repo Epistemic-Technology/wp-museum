@@ -19,7 +19,53 @@ import {
 
 import { getBestImage } from '../../javascript/util';
 
+// TODO(ts-migration): @wordpress/components' deprecated IconButton type
+// resolves its acceptable props to `never`, rejecting the currently-working
+// className/icon/onClick props. Cast to keep behavior unchanged.
+const IconButtonCompat = IconButton as any;
 
+import type { CSSProperties, ReactElement } from 'react';
+
+import type { ObjectImage, ObjectImagesResponse } from '../../types';
+
+/**
+ * The *displayed* size of the image.
+ */
+interface ImgDimensions {
+	height: number;
+	width: number;
+}
+
+/**
+ * Shape of the data passed to the setImgData callback.
+ */
+interface ImgDataUpdate {
+	imgIndex?: number;
+	imgURL?: string | null;
+	imgHeight?: number;
+	imgWidth?: number;
+	totalImages?: number;
+}
+
+interface ImageSelectorProps {
+	/** The object's WordPress post_id. */
+	objectID: number | null;
+	/** The array index of the image in the object's gallery. */
+	imgIndex: number;
+	/** The total number of images in the object's gallery. */
+	totalImages: number;
+	/** The *displayed* size of the image {width, height}. */
+	imgDimensions: ImgDimensions;
+	/** Callback function for setting image data. */
+	setImgData: ( imgData: ImgDataUpdate ) => void;
+	/** The URL of the currently selected image. */
+	imgURL: string | null;
+	/**
+	 * Whether component should specify height and width of image when
+	 * displaying it.
+	 */
+	setImageSize?: boolean;
+}
 
 /**
  * A component used by various blocks that allows the user to select a
@@ -30,9 +76,9 @@ import { getBestImage } from '../../javascript/util';
  * WordPress stores multiple image files of different sizes. This component
  * uses the smallest image equal to or larger than the desired image
  * dimensions.
- * 
+ *
  * @see <ObjectGrid> and <ObjectImage> for examples of use.
- * 
+ *
  * @param {object}   props               The component's properties.
  * @param {number}   props.objectID      The object's WordPress post_id.
  * @param {number}   props.imgIndex      The array index of the image in the object's gallery.
@@ -43,7 +89,10 @@ import { getBestImage } from '../../javascript/util';
  * @param {boolean}  props.setImageSize  Whether component should specify height and width of image
  *                                       when displaying it.
  */
-const ImageSelector = ( props ) => {
+const ImageSelector: {
+	( props: ImageSelectorProps ): ReactElement;
+	defaultProps?: Partial<ImageSelectorProps>;
+} = ( props: ImageSelectorProps ) => {
 	const {
 		objectID,
 		imgIndex,
@@ -54,9 +103,9 @@ const ImageSelector = ( props ) => {
 		setImageSize,
 	} = props;
 
-	const [ imageData,       updateImageData       ] = useState( null );
-	const [ fetchedObjectID, updateFetchedObjectID ] = useState( null );
-	const [ currentImgD,     updateCurrentImgD     ] = useState( null );
+	const [ imageData,       updateImageData       ] = useState<ObjectImage[] | null>( null );
+	const [ fetchedObjectID, updateFetchedObjectID ] = useState<number | null>( null );
+	const [ currentImgD,     updateCurrentImgD     ] = useState<ImgDimensions | null>( null );
 	const [ imageChanged,    updateImageChanged    ] = useState( false );
 
 	const rest_path = `/wp-museum/v1/all/${objectID}/images`;
@@ -64,10 +113,10 @@ const ImageSelector = ( props ) => {
 	/**
 	 * Changes the array index of the image to be displayed by +1 or -1 and
 	 * wraps around appropriately.
-	 * 
-	 * @param {number} increment Change to the image index ( +1 | -1 ). 
+	 *
+	 * @param {number} increment Change to the image index ( +1 | -1 ).
 	 */
-	const updateImageIndex = ( increment ) => {
+	const updateImageIndex = ( increment: number ) => {
 		let newImgIndex = imgIndex + increment;
 		if ( totalImages === 0 ) {
 			newImgIndex = 0
@@ -100,7 +149,7 @@ const ImageSelector = ( props ) => {
 					width:  imgDimensions.width
 				} );
 			} else if ( imageData === null ) {
-				apiFetch( { path: rest_path } ).then( result => updateImageData( Object.values( result ) ) );
+				apiFetch<ObjectImagesResponse>( { path: rest_path } ).then( result => updateImageData( Object.values( result ) ) );
 				updateImageChanged( true );
 			} else if ( imageData.length > 0 && ( imageChanged || imgURL === null || totalImages === 0 ) ) {
 				updateCurrentImgD( {
@@ -124,11 +173,11 @@ const ImageSelector = ( props ) => {
 	// best way of achieving a flexible square grid without resorting to
 	// javascript or something. Ultimately the save function of the block might
 	// do something different.
-	const selectorStyle = {
+	const selectorStyle: CSSProperties = {
 		backgroundImage: `url('${imgURL}')`
 	}
 
-	const placeHolderStyle = {}
+	const placeHolderStyle: CSSProperties = {}
 
 	if ( setImageSize && imgDimensions ) {
 		selectorStyle.height    = imgDimensions.height;
@@ -143,25 +192,25 @@ const ImageSelector = ( props ) => {
 				className = 'image-selector-container'
 				style     = { selectorStyle }
 			>
-				<IconButton
+				<IconButtonCompat
 					className = 'left-arrow selector-button'
 					icon      = 'arrow-left-alt2'
 					onClick   = { () => updateImageIndex( -1 ) }
 				/>
-				<IconButton
+				<IconButtonCompat
 					className = 'right-arrow selector-button'
 					icon      = 'arrow-right-alt2'
 					onClick   = { () => updateImageIndex( 1 ) }
 				/>
 			</div>
 		:
-			<div 
+			<div
 				className = 'img-placeholder'
 				style     = { placeHolderStyle }
-			></div>	
+			></div>
 	);
 
-	
+
 }
 
 // setImage size really only needs to be set by components that want to do

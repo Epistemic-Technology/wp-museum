@@ -1,4 +1,5 @@
 import { useEffect, useState } from "@wordpress/element";
+import type { CSSProperties } from "react";
 
 import {
   getBestImage,
@@ -8,10 +9,30 @@ import {
 
 import { fetchObjectImages } from "../../javascript/util";
 
-const ObjectImageBox = (props) => {
+import type { ObjectImagesResponse } from "../../types";
+
+/**
+ * Minimal object shape passed by callers (see src/blocks/collection/edit.js),
+ * mapped locally from MuseumObject wire data — not the full MuseumObject type.
+ */
+interface GridObject {
+  ID: number;
+  title: string;
+  URL: string;
+  imgURL: string | null;
+}
+
+interface ObjectImageBoxProps {
+  object: GridObject;
+  onClickCallback?: (objectID: number) => unknown;
+  imgStyle: CSSProperties;
+  linkToObjects: boolean;
+}
+
+const ObjectImageBox = (props: ObjectImageBoxProps) => {
   const { object, onClickCallback, imgStyle, linkToObjects } = props;
 
-  const [imgData, setImgData] = useState(null);
+  const [imgData, setImgData] = useState<ObjectImagesResponse | null>(null);
 
   useEffect(() => {
     fetchObjectImages(object.ID).then((result) => {
@@ -36,10 +57,13 @@ const ObjectImageBox = (props) => {
 
   const bestImage = getBestImage(getFirstObjectImage(imgData), imgDimensions);
 
+  // TODO(ts-migration): title/alt are read on the whole images map (keyed by
+  // attachment ID), not on an individual image record — always undefined, so
+  // these fall through to "". Preserving existing (buggy) behavior.
   const imgAttrs = {
     src: bestImage.URL,
-    title: imgData.title || "",
-    alt: imgData.alt || "",
+    title: (imgData as any).title || "",
+    alt: (imgData as any).alt || "",
   };
 
   return (
@@ -51,12 +75,20 @@ const ObjectImageBox = (props) => {
   );
 };
 
-const ObjectImageGrid = (props) => {
+interface ObjectImageGridProps {
+  objects: GridObject[];
+  numObjects: number;
+  columns: number;
+  linkToObjects: boolean;
+  onClickCallback?: (objectID: number) => unknown;
+}
+
+const ObjectImageGrid = (props: ObjectImageGridProps) => {
   const { objects, numObjects, columns, linkToObjects, onClickCallback } =
     props;
 
   const percentWidth = Math.round((1 / columns) * 100) + "%";
-  const imgStyle = {
+  const imgStyle: CSSProperties = {
     flexBasis: percentWidth,
   };
 

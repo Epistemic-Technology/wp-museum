@@ -1,6 +1,17 @@
+import type { ComponentType, JSX } from 'react';
 
+import type { MuseumObjectSearchParams } from '../../types';
 
-const withPagination = BaseComponent => props => {
+export interface WithPaginationProps {
+	currentPage: number;
+	totalPages: number;
+	pagesToShow?: number;
+	searchCallback: ( searchParams: MuseumObjectSearchParams ) => void;
+	searchParams: MuseumObjectSearchParams;
+}
+
+const withPagination = < P extends object >( BaseComponent: ComponentType<P> ) =>
+	( props: P & WithPaginationProps ): JSX.Element => {
 	const {
 		currentPage,
 		totalPages,
@@ -9,16 +20,16 @@ const withPagination = BaseComponent => props => {
 		searchParams,
 		...otherProps
 	} = props;
-	
-	const doSearch = ( newPage ) => {
+
+	const doSearch = ( newPage: number ) => {
 		searchParams.page = newPage;
 		searchCallback( searchParams );
 	}
 
 	const PageList = () => {
-		const pageItems = [];
-		let startPage;
-		let endPage;
+		const pageItems: JSX.Element[] = [];
+		let startPage: number;
+		let endPage: number;
 		if ( totalPages > pagesToShow ) {
 			if ( currentPage <= pagesToShow - 1 ) {
 				startPage = 1;
@@ -49,7 +60,7 @@ const withPagination = BaseComponent => props => {
 			);
 		}
 		if ( startPage > 2 && totalPages > pagesToShow ) {
-			pageItems.push( 
+			pageItems.push(
 				<li key = { 0 } aria-hidden="true">
 					...
 				</li>
@@ -59,7 +70,7 @@ const withPagination = BaseComponent => props => {
 			pageItems.push (
 				<li
 					key = { pageCounter }
-					className = { pageCounter == currentPage ? 
+					className = { pageCounter == currentPage ?
 						'page-list-selected' : 'page-list-unselected'
 					}
 				>
@@ -75,7 +86,7 @@ const withPagination = BaseComponent => props => {
 			);
 		}
 		if ( endPage < totalPages && totalPages > pagesToShow ) {
-			pageItems.push( 
+			pageItems.push(
 				<li key = { endPage + 1 } aria-hidden="true">
 					...
 				</li>
@@ -144,7 +155,7 @@ const withPagination = BaseComponent => props => {
 				}
 			</ol>
 		);
-	} 
+	}
 
 	return (
 		<div className = 'paginated-component'>
@@ -153,7 +164,10 @@ const withPagination = BaseComponent => props => {
 					<PageList />
 				</div>
 			}
-			<BaseComponent { ...otherProps } />
+			{ /* TODO(ts-migration): cast because TS cannot prove
+			   Omit<P & WithPaginationProps, keyof WithPaginationProps>
+			   is assignable to generic P; runtime spread is unchanged. */ }
+			<BaseComponent { ...( otherProps as unknown as P ) } />
 			{ totalPages > 1 &&
 				<div className = 'pagination'>
 					<PageList />

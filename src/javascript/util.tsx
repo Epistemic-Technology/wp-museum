@@ -1,5 +1,14 @@
 import apiFetch from "@wordpress/api-fetch";
 
+import type { ReactNode, MouseEventHandler } from "react";
+
+import type {
+	Collection,
+	ImageSizeTuple,
+	ObjectImage,
+	ObjectImagesResponse,
+} from "../types";
+
 /**
  * Base path for Museum REST API.
  */
@@ -10,14 +19,23 @@ export const baseRestPath = '/wp-museum/v1';
  */
 export const wordPressRestBase = '/wp/v2'
 
+/**
+ * RGB triple returned by hexToRgb.
+ */
+export interface RgbColor {
+	r: number;
+	g: number;
+	b: number;
+}
+
 // https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-export function hexToRgb(hex) {
+export function hexToRgb(hex: string): RgbColor | null {
 	// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
 	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
 	hex = hex.replace(shorthandRegex, function(m, r, g, b) {
 	  return r + r + g + g + b + b;
 	});
-  
+
 	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result ? {
 	  r: parseInt(result[1], 16),
@@ -26,28 +44,40 @@ export function hexToRgb(hex) {
 	} : null;
   }
 
-export function getBestImage( imgData, imgDimensions ) {
-	const bestFitImage = {
+/**
+ * Best-fit image data returned by getBestImage.
+ */
+export interface BestFitImage {
+	URL: string | null;
+	height: number;
+	width: number;
+}
+
+export function getBestImage( imgData: ObjectImage, imgDimensions: { height: number; width: number } ): BestFitImage {
+	const bestFitImage: BestFitImage = {
 		'URL'    : null,
 		'height' : 99999999,
 		'width'  : 99999999
 	};
-	
+
 	for ( let [ sizeSlug, dataArray ] of Object.entries( imgData ) ) {
 		if ( ! Array.isArray( dataArray ) || dataArray.length < 4 ) {
 			continue;
 		}
 
+		// TODO(ts-migration): the wire tuple order is [url, width, height,
+		// isResized] (see ImageSizeTuple), but this destructuring transposes
+		// width/height. Pre-existing bug preserved for zero behavior change.
 		let [
 			URL,
 			height,
 			width,
 			isIntermediate
-		] = dataArray;
+		] = dataArray as ImageSizeTuple;
 
-		if ( height >= imgDimensions.height && 
-			 height <  bestFitImage.height && 
-			 width  >= imgDimensions.width && 
+		if ( height >= imgDimensions.height &&
+			 height <  bestFitImage.height &&
+			 width  >= imgDimensions.width &&
 			 width  <  bestFitImage.width
 		   ) {
 				bestFitImage.URL    = URL;
@@ -57,12 +87,15 @@ export function getBestImage( imgData, imgDimensions ) {
 	}
 
 	if ( bestFitImage.URL === null ) {
+		// TODO(ts-migration): same width/height transposition as above; also
+		// imgData['full'] can be null on the wire, so the cast preserves the
+		// existing (crash-prone) runtime behavior.
 		const [
 			URL,
 			height,
 			width,
 			isIntermediate
-		] = imgData['full'];
+		] = imgData['full'] as ImageSizeTuple;
 		bestFitImage.URL    = URL;
 		bestFitImage.height = height;
 		bestFitImage.width  = width
@@ -71,11 +104,11 @@ export function getBestImage( imgData, imgDimensions ) {
 	return bestFitImage;
 }
 
-export function getFirstObjectImage( imgData ) {
+export function getFirstObjectImage( imgData: ObjectImagesResponse ): ObjectImage | null {
 	if ( isEmpty( imgData ) ) {
 		return null;
 	}
-	const imgDataArray = Object.values( imgData );
+	const imgDataArray: ObjectImage[] = Object.values( imgData );
 	imgDataArray.sort( (a, b ) => a['sort_order'] - b['sort_order'] );
 	return imgDataArray[0];
 }
@@ -86,7 +119,7 @@ export function getFirstObjectImage( imgData ) {
  * @link https://github.com/kvz/locutus/blob/master/src/php/strings/stripslashes.js
  * @param {string} str String to be unslashed.
  */
-export function stripslashes (str) {
+export function stripslashes (str: string): string {
 	//       discuss at: https://locutus.io/php/stripslashes/
 	//      original by: Kevin van Zonneveld (https://kvz.io)
 	//      improved by: Ates Goral (https://magnetiq.com)
@@ -122,7 +155,7 @@ export function stripslashes (str) {
  *
  * @see https://stackoverflow.com/questions/105034/how-to-create-guid-uuid/2117523#2117523
  */
-export function generateUUID() {
+export function generateUUID(): string {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 	  var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 	  return v.toString(16);
@@ -131,11 +164,11 @@ export function generateUUID() {
 
 /**
  * Efficient test if an object is empty (ie. {} ).
- * 
+ *
  * @see https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
  * @param {Object} obj Object to test for being empty
  */
-export function isEmpty(obj) {
+export function isEmpty(obj: object | null): boolean {
 	if ( obj === null ) {
 		return true;
 	}
@@ -154,14 +187,14 @@ export function isEmpty(obj) {
  * @param {Object} attributes Attributes of a block, passed from
  *                            wp_localize_script.
  */
-export function cleanAttributes( attributes ) {
+export function cleanAttributes( attributes: Record<string, unknown> ): null {
 	for ( const [ key, value ] of Object.entries( attributes) ) {
-		if ( ! isNaN( value ) ) {
-			let newValue = value;
+		if ( ! isNaN( value as number ) ) {
+			let newValue: unknown = value;
 			if ( newValue === '' ) {
 				newValue = null;
 			} else {
-				newValue = parseInt( value );
+				newValue = parseInt( value as string );
 				if ( newValue === 0 ) {
 					newValue = false;
 				}
@@ -183,8 +216,8 @@ export function cleanAttributes( attributes ) {
  * @return {Object} Attributes object in same format as WordPress attributes
  * objects.
  */
-export function attributesFromJSON( attributeJSON ) {
-	const attributes = JSON.parse( attributeJSON );
+export function attributesFromJSON( attributeJSON: string ): Record<string, unknown> {
+	const attributes = JSON.parse( attributeJSON ) as Record<string, unknown>;
 	for ( const [ key, value ] of Object.entries( attributes ) ) {
 		if ( value === 'false' ) {
 			attributes[key] = false;
@@ -197,18 +230,28 @@ export function attributesFromJSON( attributeJSON ) {
 }
 
 /**
+ * Props for the MaybeLink component.
+ */
+export interface MaybeLinkProps {
+	href?: string;
+	onClickCallback?: MouseEventHandler<HTMLAnchorElement>;
+	children?: ReactNode;
+	doLink?: boolean;
+}
+
+/**
  * Optionally links to or calls onClick callback when clicked on.
- * 
+ *
  * @param {*} props The component's properties
  */
-export const MaybeLink = props => {
+export const MaybeLink = (props: MaybeLinkProps) => {
 	const {
 		href,
 		onClickCallback,
 		children,
 		doLink
 	} = props
-	
+
 	if ( doLink ) {
 		return (
 			<a href = { href }>{ children }</a>
@@ -225,13 +268,22 @@ export const MaybeLink = props => {
 /**
  * Returns a promise that returns image data for a museum object.
  */
-export const fetchObjectImages = objectID => {
-	return apiFetch( { path: `${baseRestPath}/all/${objectID}/images` } );
+export const fetchObjectImages = ( objectID: number | string ): Promise<ObjectImagesResponse> => {
+	return apiFetch<ObjectImagesResponse>( { path: `${baseRestPath}/all/${objectID}/images` } );
 }
 
-const sortCollectionsHelper = ( collectionData, sortBy, sortOrder) => {
-	const sortedCollections = [ ...collectionData ];
-	
+/**
+ * Collection augmented with the tree-layout bookkeeping properties that
+ * sortCollections adds in place.
+ */
+export interface SortableCollection extends Collection {
+	indentLevel?: number;
+	foundParent?: boolean;
+}
+
+const sortCollectionsHelper = ( collectionData: Collection[], sortBy: string, sortOrder: string ): SortableCollection[] => {
+	const sortedCollections: SortableCollection[] = [ ...collectionData ];
+
 	const sortMultiplier = sortOrder == 'Descending' ? -1 : 1;
 
 	sortedCollections.sort( ( a, b ) => {
@@ -242,22 +294,33 @@ const sortCollectionsHelper = ( collectionData, sortBy, sortOrder) => {
 			case 'Alphabetical' :
 				return sortMultiplier * ( a.post_title < b.post_title ? -1 : 1 );
 			case 'Date Created' :
+				// TODO(ts-migration): aDate/bDate are assigned without ever
+				// being declared — a pre-existing bug that throws a
+				// ReferenceError in strict-mode modules when this branch runs.
+				// Preserved as-is (with @ts-ignore) for zero behavior change.
+				// @ts-ignore
 				aDate = new Date( a.post_date_gmt );
+				// @ts-ignore
 				bDate = new Date( b.post_date_gmt );
+				// @ts-ignore
 				return sortMultiplier * ( aDate < bDate ? -1 : 1 );
 			case 'Date Updated' :
+				// TODO(ts-migration): see above — same undeclared aDate/bDate bug.
+				// @ts-ignore
 				aDate = new Date( a.post_modified_gmt );
+				// @ts-ignore
 				bDate = new Date( b.post_modified_gmt );
+				// @ts-ignore
 				return sortMultiplier * ( aDate < bDate ? -1 : 1 );
 			default :
 				return 0;
 		}
 	} );
-	
+
 	return sortedCollections;
 }
 
-export const sortCollections = ( collectionData, sortBy, sortOrder ) => {
+export const sortCollections = ( collectionData: Collection[], sortBy: string, sortOrder: string ): SortableCollection[] => {
 	const allCollections = sortCollectionsHelper( collectionData, sortBy, sortOrder );
 	const topCollections = allCollections.filter( a => a.post_parent == 0 );
 	let subCollections = allCollections.filter( a => a.post_parent != 0 );
@@ -267,16 +330,16 @@ export const sortCollections = ( collectionData, sortBy, sortOrder ) => {
 	//
 	// TODO: There is probably a more efficient way to do this as it is redundant with
 	// the forEach loop below.
-	
+
 	subCollections.forEach( subCollection => {
-		const parentIndex = allCollections.findIndex( 
+		const parentIndex = allCollections.findIndex(
 			parentCollection => parentCollection.ID == subCollection.post_parent
 		);
 		if ( parentIndex == -1 ) {
 			subCollection.post_parent = 0;
 		}
 	});
-	
+
 
 	topCollections.forEach( a => a.indentLevel = 0 );
 
@@ -285,7 +348,7 @@ export const sortCollections = ( collectionData, sortBy, sortOrder ) => {
 		foundParent = false;
 		subCollections.forEach( subCollection => {
 			subCollection.foundParent = false;
-			const parentIndex = topCollections.findIndex( 
+			const parentIndex = topCollections.findIndex(
 				parentCollection => parentCollection.ID == subCollection.post_parent
 			);
 			if ( parentIndex > -1 ) {

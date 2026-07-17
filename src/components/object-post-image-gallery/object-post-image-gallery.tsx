@@ -13,12 +13,26 @@ import {
 	getBestImage
 } from '../../javascript/util';
 
-import { 
+import {
 	chevronLeft,
 	chevronRight
 } from '../../icons';
 
-const ObjectPostImageSideBox = props => {
+import type { ObjectImage, ObjectImagesResponse } from '../../types';
+
+interface ImgDimensions {
+	width: number;
+	height: number;
+}
+
+interface ObjectPostImageSideBoxProps {
+	imgData?: ObjectImage | null;
+	imgIndex?: number;
+	openModal: ( imgIndex: number ) => void;
+	imgDimensions?: ImgDimensions;
+}
+
+const ObjectPostImageSideBox = ( props: ObjectPostImageSideBoxProps ) => {
 	const {
 		imgData       = null,
 		imgIndex      = 0,
@@ -44,7 +58,16 @@ const ObjectPostImageSideBox = props => {
 	);
 }
 
-const ObjectPostImageModal = props => {
+interface ObjectPostImageModalProps {
+	imgData?: Record<string, ObjectImage>;
+	imgIndex?: number;
+	displayCaption?: boolean;
+	displayDescription?: boolean;
+	updateImgIndex: ( increment: number ) => void;
+	close: () => void;
+}
+
+const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 	const {
 		imgData            = {},
 		imgIndex           = 0,
@@ -69,8 +92,11 @@ const ObjectPostImageModal = props => {
 		width: 1024
 	}
 
-	const bestImage = !! imgArray.length > 0 ? 
-		getBestImage( imgArray[ imgIndex ], imgDimensions ) : 
+	// TODO(ts-migration): pre-existing `!! imgArray.length > 0` compares a
+	// boolean to a number (true > 0 — same result as length > 0); cast keeps
+	// the expression as-is without changing behavior.
+	const bestImage = ( ( !! imgArray.length as unknown as number ) > 0 ) ?
+		getBestImage( imgArray[ imgIndex ], imgDimensions ) :
 		null;
 
 	return (
@@ -101,7 +127,7 @@ const ObjectPostImageModal = props => {
 						}
 					</div>
 					<div className = 'image-modal-image-link'>
-						<a 
+						<a
 							href = { imgArray[ imgIndex ]['full'][0] }
 							target = '_blank'
 						>
@@ -124,25 +150,32 @@ const ObjectPostImageModal = props => {
 	);
 }
 
-const ObjectPostImageGallery = props => {
+interface ObjectPostImageGalleryProps {
+	postId: number;
+}
+
+const ObjectPostImageGallery = ( props: ObjectPostImageGalleryProps ) => {
 	const {
 		postId
 	} = props;
 
-	const [ imgData, setImgData ] = useState( {} );
+	const [ imgData, setImgData ] = useState<ObjectImagesResponse>( {} );
 	const [ modalOpen, setModalOpen ] = useState( false );
 	const [ imgIndex, setImgIndex ] = useState( 0 );
 
-	const updateImgData = () => {
-		fetchObjectImages( postId ).then( images => setImgData( images ) );
+	// TODO(ts-migration): pre-existing quirk — updateImgData is invoked with
+	// postId below but never took a parameter (it closes over postId);
+	// optional unused param keeps the call site unchanged.
+	const updateImgData = ( _postId?: number ) => {
+		fetchObjectImages( postId ).then( images => setImgData( images as ObjectImagesResponse ) );
 	}
 
-	const openModal = newImgIndex => {
+	const openModal = ( newImgIndex: number ) => {
 		setImgIndex( newImgIndex );
 		setModalOpen( true );
 	}
 
-	const updateImgIndex = increment => {
+	const updateImgIndex = ( increment: number ) => {
 		const imgArray = Object.values( imgData );
 		let targetIndex = imgIndex + increment;
 		if ( imgArray.length === 0 ) {
@@ -162,7 +195,7 @@ const ObjectPostImageGallery = props => {
 		}
 	}, [ postId ] );
 
-	const imageSideboxes = Object.values( imgData )
+	const imageSideboxes = ( Object.values( imgData ) as ObjectImage[] )
 		.sort( (a, b ) => a['sort_order'] - b['sort_order'] )
 		.map( ( singleImgData, index ) => (
 			<ObjectPostImageSideBox
@@ -176,7 +209,7 @@ const ObjectPostImageGallery = props => {
 		<>
 		{ modalOpen &&
 			<ObjectPostImageModal
-				imgData        = { imgData }
+				imgData        = { imgData as Record<string, ObjectImage> }
 				imgIndex       = { imgIndex }
 				updateImgIndex = { updateImgIndex }
 				close          = { () => setModalOpen( false ) }

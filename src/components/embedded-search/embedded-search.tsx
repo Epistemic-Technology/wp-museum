@@ -11,11 +11,28 @@ import {
 	useState,
 	useEffect,
 } from '@wordpress/element';
+import type { ChangeEvent, KeyboardEvent } from 'react';
 import { isEmpty } from '../../javascript/util';
+import type { MuseumObjectSearchParams } from '../../types';
 
 
 
-const EmbeddedSearch = props => {
+interface EmbeddedSearchProps {
+	searchDefaults?: MuseumObjectSearchParams;
+	runSearch?: ( ( searchValues: MuseumObjectSearchParams ) => void ) | null;
+	updateSearchText?: ( ( newSearchText: string ) => void ) | null;
+	searchButtonText?: string;
+	showTitleToggle?: boolean;
+	onlyTitleDefault?: boolean;
+	showReset?: boolean;
+	autoFocus?: boolean;
+	resetButtonText?: string;
+	placeholderText?: string;
+	searchPageURL?: string;
+	advancedSearchURL?: string;
+}
+
+const EmbeddedSearch = ( props: EmbeddedSearchProps ) => {
 	const {
 		searchDefaults    = {},
 		runSearch         = null,
@@ -40,16 +57,16 @@ const EmbeddedSearch = props => {
 		}
 	}, [ searchDefaults ] );
 
-	const setSearchText = newSearchText => {
+	const setSearchText = ( newSearchText: string ) => {
 		_setSearchText( newSearchText );
 		if ( !!  updateSearchText ) {
 			updateSearchText( newSearchText );
 		}
 	}
 
-	const doSearch = ( newSearchValues = {} ) => {
-		const searchValues = 
-			! isEmpty( newSearchValues ) ? newSearchValues : 
+	const doSearch = ( newSearchValues: MuseumObjectSearchParams = {} ) => {
+		const searchValues =
+			! isEmpty( newSearchValues ) ? newSearchValues :
 			{
 				...searchDefaults,
 				onlyTitle,
@@ -58,7 +75,10 @@ const EmbeddedSearch = props => {
 		if ( runSearch ) {
 			runSearch( searchValues );
 		} else if ( searchPageURL ) {
-			const queryString = new URLSearchParams( searchValues ).toString();
+			// TODO(ts-migration): URLSearchParams typing expects string values,
+			// but search params can include numbers/booleans/arrays; they were
+			// already coerced to strings at runtime, so cast to keep behavior.
+			const queryString = new URLSearchParams( searchValues as Record<string, string> ).toString();
 			window.open( `${searchPageURL}?${queryString}`, '_self' );
 		}
 	}
@@ -73,7 +93,7 @@ const EmbeddedSearch = props => {
 		doSearch( searchValues );
 	}
 
-	const handleKeyPress = ( event ) => {
+	const handleKeyPress = ( event: KeyboardEvent<HTMLInputElement> ) => {
 		if ( event.key === 'Enter' ) {
 			event.stopPropagation();
 			doSearch();
@@ -92,7 +112,7 @@ const EmbeddedSearch = props => {
 						aria-label  = { placeholderText || 'Search' }
 						onKeyPress  = { handleKeyPress }
 						value       = { searchText }
-						onChange    = { event => setSearchText( event.target.value ) }
+						onChange    = { ( event: ChangeEvent<HTMLInputElement> ) => setSearchText( event.target.value ) }
 						autoFocus   = { autoFocus } // eslint-disable-line jsx-a11y/no-autofocus
 						// Autofocus can be confusing for users with screen readers, and accessibility
 						// guidelines generally recommend against using it in most circumstances. However,

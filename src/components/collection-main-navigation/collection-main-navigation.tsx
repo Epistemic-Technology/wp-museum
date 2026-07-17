@@ -6,14 +6,55 @@ import { useState } from "@wordpress/element";
 
 import { Button } from "@wordpress/components";
 
+import type { CSSProperties } from "react";
+
 import { info } from "../../icons";
 
 import { isEmpty, sortCollections } from "../../javascript/util";
 
+import type { Collection } from "../../types";
+
+/**
+ * A Collection after processing by sortCollections(), which mutates each
+ * collection in place to add an `indentLevel` (and a transient `foundParent`
+ * used during sorting).
+ */
+interface NavigationCollection extends Collection {
+  indentLevel: number;
+  foundParent?: boolean;
+}
+
+/**
+ * Attributes of the collection-main-navigation block (see
+ * src/blocks/collection-main-navigation/block.json).
+ */
+interface CollectionMainNavigationAttributes {
+  fontSize: number;
+  fontColor: string;
+  backgroundColor: string;
+  borderColor: string;
+  borderWidth: number;
+  verticalSpacing: number;
+  useDefaultFontSize: boolean;
+  useDefaultFontColor: boolean;
+  useDefaultBackgroundColor: boolean;
+  useDefaultBorderColor: boolean;
+  useDefaultBorderWidth: boolean;
+  useDefaultVerticalSpacing: boolean;
+  subCollectionIndent: number;
+  sortBy: string;
+  sortOrder: string;
+  tags: string[];
+}
+
+interface CollectionBoxProps extends CollectionMainNavigationAttributes {
+  theCollection: NavigationCollection;
+}
+
 /**
  * A single box in the collection tree.
  */
-const CollectionBox = (props) => {
+const CollectionBox = (props: CollectionBoxProps) => {
   const {
     theCollection,
     fontSize,
@@ -37,10 +78,10 @@ const CollectionBox = (props) => {
     setShowExcerpt(!showExcerpt);
   };
 
-  const boxStyle = {
+  const boxStyle: CSSProperties = {
     marginLeft: theCollection.indentLevel * subCollectionIndent + "em",
   };
-  const titleStyle = {};
+  const titleStyle: CSSProperties = {};
 
   if (!useDefaultFontSize) {
     boxStyle.fontSize = `${fontSize}em`;
@@ -109,18 +150,26 @@ const CollectionBox = (props) => {
   );
 };
 
-const CollectionMainNavigation = (props) => {
+interface CollectionMainNavigationProps {
+  collectionData: Collection[];
+  attributes: CollectionMainNavigationAttributes;
+}
+
+const CollectionMainNavigation = (props: CollectionMainNavigationProps) => {
   const { collectionData, attributes } = props;
 
   const { sortBy, sortOrder } = attributes;
 
   let collectionBoxes = null;
   if (!isEmpty(collectionData)) {
+    // sortCollections is typed as returning SortableCollection[] (optional
+    // indentLevel), but it assigns indentLevel to every collection it
+    // returns, so the narrower NavigationCollection[] assertion is safe.
     const sortedCollections = sortCollections(
       collectionData,
       sortBy,
       sortOrder,
-    );
+    ) as NavigationCollection[];
     collectionBoxes = sortedCollections.map((collection) => {
       return (
         <CollectionBox

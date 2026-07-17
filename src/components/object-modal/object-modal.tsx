@@ -1,11 +1,13 @@
 import {
 	useState
-} from '@wordpress/element'; 
+} from '@wordpress/element';
 
 import {
 	Modal,
 	Button
 } from '@wordpress/components';
+
+import type { ReactNode } from 'react';
 
 import {
 	chevronLeft,
@@ -13,16 +15,22 @@ import {
 } from '../../icons';
 import { getBestImage } from '../../javascript/util';
 
+import type { ObjectImage, ObjectImagesResponse } from '../../types';
 
 
-const ImageScroll = props => {
+
+interface ImageScrollProps {
+	images: ObjectImagesResponse;
+}
+
+const ImageScroll = ( props: ImageScrollProps ) => {
 	const {
 		images
 	} = props;
 
-	const imgArray = Object.values( images );
+	const imgArray: ObjectImage[] = Object.values( images );
 	imgArray.sort( (a, b) => a['sort_order'] - b['sort_order'] );
-	
+
 	const [ imgIndex, setImgIndex ] = useState( 0 );
 
 	const imgDimensions = {
@@ -30,7 +38,7 @@ const ImageScroll = props => {
 		width: 1024
 	}
 
-	const updateImgIndex = ( increment ) => {
+	const updateImgIndex = ( increment: number ) => {
 		let targetIndex = imgIndex + increment;
 		if ( imgArray.length === 0 ) {
 			return;
@@ -72,7 +80,16 @@ const ImageScroll = props => {
 	);
 }
 
-const ObjectModal = props => {
+interface ObjectModalProps {
+	title: string;
+	content: ReactNode;
+	url: string;
+	linkText: ReactNode;
+	images: ObjectImagesResponse;
+	close: () => void;
+}
+
+const ObjectModal = ( props: ObjectModalProps ) => {
 	const {
 		title,
 		content,
@@ -99,7 +116,7 @@ const ObjectModal = props => {
 						<div className = 'read-more-link'>
 								<a href = { url } aria-label={`View full details for ${title}`}>{ linkText }</a>
 						</div>
-						<div className = 'modal-content'>{ content }</div>	
+						<div className = 'modal-content'>{ content }</div>
 					</div>
 				</div>
 			</div>

@@ -308,14 +308,17 @@ function unregister_object_blocks_for_non_objects() {
 		return;
 	}
 	if ( ! in_array( $post->post_type, get_object_type_names(), true ) ) {
+		$asset_file = include WPM_BUILD_DIR . 'museum-unregister-object-blocks.asset.php';
 		wp_enqueue_script(
 			WPM_PREFIX . 'unregister-object-blocks',
-			WPM_BASE_URL . 'javascript/unregister-object-blocks.js',
-			[ 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ],
-			filemtime(
-				plugin_dir_path( __FILE__ ) .
-					'../javascript/unregister-object-blocks.js'
+			WPM_BUILD_URL . 'museum-unregister-object-blocks.js',
+			array_unique(
+				array_merge(
+					$asset_file['dependencies'],
+					[ 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ]
+				)
 			),
+			$asset_file['version'],
 			true
 		);
 	}

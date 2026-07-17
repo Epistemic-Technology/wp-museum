@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect } from "@wordpress/element";
+import type { CSSProperties } from "react";
 
 import {
   MaybeLink,
@@ -13,7 +14,22 @@ import {
 
 import ObjectModal from "../object-modal/object-modal";
 
-const ObjectGridBox = (props) => {
+import type { MuseumObject, ObjectImagesResponse } from "../../types";
+
+interface ObjectGridBoxProps {
+  mObject: MuseumObject;
+  // TODO(ts-migration): defaults to "" (a string), while ObjectGrid passes a
+  // CSSProperties object; kept as-is and cast on the style attribute below.
+  imgStyle?: CSSProperties | string;
+  displayTitle?: boolean;
+  displayDate?: boolean;
+  displayExcerpt?: boolean;
+  linkToObject?: boolean;
+  onClickCallback?: (() => void) | null;
+  imgURL?: string | null;
+}
+
+const ObjectGridBox = (props: ObjectGridBoxProps) => {
   const {
     mObject,
     imgStyle = "",
@@ -38,7 +54,7 @@ const ObjectGridBox = (props) => {
         .textContent
     : postTitle;
 
-  let useImgURL;
+  let useImgURL: string | null;
   if (imgURL) {
     useImgURL = imgURL;
   } else {
@@ -46,7 +62,7 @@ const ObjectGridBox = (props) => {
   }
 
   return (
-    <div className="object-grid-box-wrapper" style={imgStyle}>
+    <div className="object-grid-box-wrapper" style={imgStyle as CSSProperties}>
       <MaybeLink
         href={link}
         doLink={linkToObject}
@@ -78,7 +94,18 @@ const ObjectGridBox = (props) => {
   );
 };
 
-const ObjectGridBoxDynamicImage = (props) => {
+interface ObjectGridBoxDynamicImageProps {
+  mObject: MuseumObject;
+  displayTitle?: boolean;
+  displayDate?: boolean;
+  displayExcerpt?: boolean;
+  linkToObject?: boolean;
+  imgStyle?: CSSProperties | string;
+  targetWidthHeight?: number;
+  doObjectModal?: boolean;
+}
+
+const ObjectGridBoxDynamicImage = (props: ObjectGridBoxDynamicImageProps) => {
   const {
     mObject,
     displayTitle,
@@ -103,14 +130,16 @@ const ObjectGridBoxDynamicImage = (props) => {
         .textContent
     : postTitle;
 
-  const [imgData, setImgData] = useState(null);
+  const [imgData, setImgData] = useState<ObjectImagesResponse | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     setImgData(null);
     fetchObjectImages(mObject.ID).then((result) => {
       if (result !== null) {
-        setImgData(result);
+        // TODO(ts-migration): fetchObjectImages (src/javascript/util) returns
+        // Promise<unknown> from untyped apiFetch; cast to the known response shape.
+        setImgData(result as ObjectImagesResponse);
       }
     });
   }, [mObject]);
@@ -169,7 +198,17 @@ const ObjectGridBoxDynamicImage = (props) => {
   );
 };
 
-const ObjectGrid = (props) => {
+interface ObjectGridProps {
+  mObjects: MuseumObject[];
+  columns?: number;
+  displayTitle?: boolean;
+  displayDate?: boolean;
+  displayExcerpt?: boolean;
+  linkToObjects?: boolean;
+  doObjectModal?: boolean;
+}
+
+const ObjectGrid = (props: ObjectGridProps) => {
   const {
     mObjects,
     columns = 3,
@@ -185,7 +224,7 @@ const ObjectGrid = (props) => {
   }
 
   const percentWidth = Math.round((1 / columns) * 100) + "%";
-  const imgStyle = {
+  const imgStyle: CSSProperties = {
     flexBasis: `calc(${percentWidth} - 10px)`,
   };
 

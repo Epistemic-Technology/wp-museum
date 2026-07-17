@@ -6,7 +6,56 @@ import apiFetch from "@wordpress/api-fetch";
 
 import { isEmpty, wordPressRestBase } from "../../javascript/util";
 
-const FieldSearchElement = (props) => {
+import type {
+  Collection,
+  MObjectField,
+  ObjectFieldsResponse,
+  ObjectKind,
+} from "../../types";
+
+/** One entry of the `searchFields` array of the advanced-search values. */
+interface SearchFieldEntry {
+  field?: string | null;
+  search?: string | null;
+}
+
+/**
+ * Search values managed by AdvancedSearchUI.
+ *
+ * `selectedKind` is a number when seeded from kindsData or parsed from the
+ * URL, but a string once the user picks a kind in the SelectControl (see the
+ * TODO(ts-migration) note on the kind lookup below).
+ */
+interface AdvancedSearchValues {
+  searchText?: string;
+  onlyTitle?: boolean;
+  selectedFlags?: string[];
+  selectedCollections?: string[];
+  selectedTags?: string[];
+  selectedKind?: number | string;
+  searchFields?: SearchFieldEntry[];
+}
+
+/**
+ * Minimal shape of a WP core tag term from `/wp/v2/tags` (not part of the
+ * wp-museum/v1 types in src/types).
+ */
+interface WPRestTag {
+  count: number;
+  name: string;
+  slug: string;
+}
+
+interface FieldSearchElementProps {
+  fieldData?: ObjectFieldsResponse;
+  searchFieldData: SearchFieldEntry;
+  updateSearch: (
+    field: string | null | undefined,
+    search: string | null | undefined,
+  ) => void;
+}
+
+const FieldSearchElement = (props: FieldSearchElementProps) => {
   const { fieldData, searchFieldData, updateSearch } = props;
 
   const { field, search } = searchFieldData;
@@ -14,7 +63,7 @@ const FieldSearchElement = (props) => {
   const fieldDataArray =
     typeof fieldData === "undefined" ? [] : Object.values(fieldData);
 
-  let selectedFieldData =
+  let selectedFieldData: Partial<MObjectField> =
     fieldDataArray.length > 0 && typeof field !== "undefined"
       ? fieldDataArray.find((fieldItem) => fieldItem.slug === field) || {}
       : {};
@@ -49,7 +98,7 @@ const FieldSearchElement = (props) => {
 
     const { fromDate, toDate } = searchVals;
 
-    const updateDateSearch = (updateObj) => {
+    const updateDateSearch = (updateObj: { from?: string; to?: string }) => {
       const newDateSearch = { ...searchVals, ...updateObj };
 
       updateSearch(field, JSON.stringify(newDateSearch));
@@ -98,7 +147,24 @@ const FieldSearchElement = (props) => {
   );
 };
 
-const AdvancedSearchUI = (props) => {
+interface AdvancedSearchUIProps {
+  defaultSearch?: string;
+  showFlags?: boolean;
+  showCollections?: boolean;
+  showTags?: boolean;
+  showFields?: boolean;
+  showObjectType?: boolean;
+  showTitleToggle?: boolean;
+  getFieldData: (typeName: string) => Promise<ObjectFieldsResponse>;
+  kindsData: ObjectKind[];
+  collectionData: Collection[];
+  onSearch: (values: AdvancedSearchValues) => void;
+  inEditor?: boolean;
+  setAttributes?: (attributes: { defaultSearch: string }) => void;
+  fixSearch?: boolean;
+}
+
+const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
   const {
     defaultSearch,
     showFlags,
@@ -116,11 +182,11 @@ const AdvancedSearchUI = (props) => {
     fixSearch,
   } = props;
 
-  const searchInputRef = useRef(null);
-  const [searchValues, setSearchValues] = useState({});
-  const [fieldData, setFieldData] = useState({});
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchValues, setSearchValues] = useState<AdvancedSearchValues>({});
+  const [fieldData, setFieldData] = useState<ObjectFieldsResponse>({});
   const [numberFieldSearches, setNumberFieldSearches] = useState(3);
-  const [tagsData, setTagsData] = useState([]);
+  const [tagsData, setTagsData] = useState<WPRestTag[]>([]);
 
   const {
     searchText,
@@ -133,12 +199,12 @@ const AdvancedSearchUI = (props) => {
   } = searchValues;
 
   // Function to serialize search values to URL parameters
-  const serializeSearchToUrl = (values) => {
+  const serializeSearchToUrl = (values: AdvancedSearchValues) => {
     const params = new URLSearchParams();
 
     if (values.searchText) params.set("search", values.searchText);
     if (values.onlyTitle) params.set("titleOnly", "true");
-    if (values.selectedKind) params.set("kind", values.selectedKind);
+    if (values.selectedKind) params.set("kind", values.selectedKind as string);
     if (values.selectedFlags?.length)
       params.set("flags", values.selectedFlags.join(","));
     if (values.selectedCollections?.length)
@@ -157,7 +223,7 @@ const AdvancedSearchUI = (props) => {
   // Function to deserialize URL parameters to search values
   const deserializeUrlToSearch = () => {
     const params = new URLSearchParams(window.location.search);
-    const values = {};
+    const values: AdvancedSearchValues = {};
 
     if (params.has("search")) values.searchText = params.get("search");
     if (params.has("titleOnly"))
@@ -183,7 +249,7 @@ const AdvancedSearchUI = (props) => {
     // Fetch tags data ordered by count (frequency)
     const fetchTags = async () => {
       try {
-        const tags = await apiFetch({
+        const tags = await apiFetch<WPRestTag[]>({
           path: `${wordPressRestBase}/tags?orderby=count&order=desc&per_page=100`,
         });
         // Filter out tags with zero count
@@ -221,6 +287,10 @@ const AdvancedSearchUI = (props) => {
       !!kindsData &&
       kindsData.length > 0
     ) {
+      // TODO(ts-migration): pre-existing bug — selectedKind is a string once
+      // the user picks a kind in the SelectControl, while kind_id is a number,
+      // so this strict comparison never matches after user selection.
+      // Preserved as-is.
       const selectedKindData = kindsData.find(
         (kindItem) => kindItem.kind_id === selectedKind,
       );
@@ -236,11 +306,15 @@ const AdvancedSearchUI = (props) => {
     }
   }, [kindsData]);
 
-  const updateSearchValues = (updatedValues) => {
+  const updateSearchValues = (updatedValues: Partial<AdvancedSearchValues>) => {
     setSearchValues({ ...searchValues, ...updatedValues });
   };
 
-  const updateFieldSearch = (index, field = null, search = null) => {
+  const updateFieldSearch = (
+    index: number,
+    field: string | null = null,
+    search: string | null = null,
+  ) => {
     const newSearchFields = !!searchFields ? [...searchFields] : [];
     let fieldValue = field;
     let searchValue = search;
@@ -262,7 +336,7 @@ const AdvancedSearchUI = (props) => {
   };
 
   const flagOptions = () => {
-    const opts = [];
+    const opts: { value: string; label: string }[] = [];
     let optionIndex = 0;
     Object.entries(fieldData).forEach(([index, field]) => {
       if (field.type === "flag") {
@@ -274,7 +348,7 @@ const AdvancedSearchUI = (props) => {
   };
 
   const collectionOptions = () => {
-    const opts = [];
+    const opts: { value: number; label: string }[] = [];
     Object.entries(collectionData).forEach(([index, collection]) => {
       opts[index] = { value: collection.ID, label: collection.post_title };
     });
@@ -289,7 +363,7 @@ const AdvancedSearchUI = (props) => {
   };
 
   const kindOptions = () => {
-    const opts = [];
+    const opts: { value: number | null; label: string | null }[] = [];
     kindsData.forEach((kindItem, index) => {
       opts[index] = { value: kindItem.kind_id, label: kindItem.label };
     });
@@ -312,7 +386,7 @@ const AdvancedSearchUI = (props) => {
     );
   }
 
-  const handleSearch = (values) => {
+  const handleSearch = (values: AdvancedSearchValues) => {
     // Serialize search values to URL
     serializeSearchToUrl(values);
     // Call the original onSearch handler
@@ -356,12 +430,17 @@ const AdvancedSearchUI = (props) => {
               (showObjectType ? " search-visible" : " search-hidden")
             }
           >
+            {/* TODO(ts-migration): SelectControl's types want string
+              value/option values, but kind_id values are numbers at runtime;
+              cast to keep the existing behavior. */}
             <SelectControl
               className="advanced-search-object-type-select"
               label="Object Type"
-              value={selectedKind}
+              value={selectedKind as string}
               onChange={(val) => updateSearchValues({ selectedKind: val })}
-              options={kindOptions()}
+              options={
+                kindOptions() as unknown as { value: string; label: string }[]
+              }
             />
           </div>
         )}
@@ -415,6 +494,9 @@ const AdvancedSearchUI = (props) => {
             />
           )}
           {(inEditor || showCollections) && (
+            // TODO(ts-migration): SelectControl's types want string option
+            // values, but collection IDs are numbers at runtime; cast to keep
+            // the existing behavior.
             <SelectControl
               className={
                 "advanced-search-collections-select" +
@@ -426,7 +508,12 @@ const AdvancedSearchUI = (props) => {
               onChange={(val) =>
                 updateSearchValues({ selectedCollections: val })
               }
-              options={collectionOptions()}
+              options={
+                collectionOptions() as unknown as {
+                  value: string;
+                  label: string;
+                }[]
+              }
             />
           )}
           {(inEditor || showTags) && (

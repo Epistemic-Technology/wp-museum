@@ -18,27 +18,68 @@ import {
 	ObjectSearchBox,
 } from '../search-modal/search-modal';
 
-
+/**
+ * Displayed dimensions of an image.
+ */
+interface ImgDimensions {
+	width: number;
+	height: number;
+}
 
 /**
- * A single museum object image in an <ObjectGrid> component. This component only 
+ * Attributes passed to the setImgData callback by <ImageSelector>.
+ */
+interface ImgDataAttrs {
+	imgURL?: string;
+	imgHeight?: number;
+	imgWidth?: number;
+	imgIndex?: number;
+	totalImages?: number;
+}
+
+/**
+ * Internal image state tracked by this component.
+ */
+interface GridImageState {
+	imgHeight: number | null;
+	imgWidth: number | null;
+	totalImages: number;
+}
+
+interface GridImageProps {
+	/** The WordPress post_id of the object. */
+	objectID: number | null;
+	/** The *displayed* dimensions of the image (width & height). */
+	imgDimensions: ImgDimensions;
+	/** The URL of the image. */
+	imgURL: string;
+	/** The index of the image in the array of the object's image gallery. */
+	imgIndex: number;
+	/** A callback function accepting an object { imgURL, imgIndex }. */
+	updateImgCallback: ( imgData: { imgURL?: string; imgIndex?: number } ) => void;
+	/** A callback function accepting a WordPress post_id (number or null). */
+	updateObjectIDCallback: ( objectID: number | null ) => void;
+}
+
+/**
+ * A single museum object image in an <ObjectGrid> component. This component only
  * knows about itself, not about its context in the grid. It uses the
  * <ImageSelector> component to allow the user to select a particlular image from
  * an object's image gallery.
- * 
+ *
  * @param {object}   props                        The component's properties.
  * @param {number}   props.objectID               The WordPress post_id of the object.
- * @param {object}   props.imgDimensions          The *displayed* dimensions of the image 
+ * @param {object}   props.imgDimensions          The *displayed* dimensions of the image
  *                                                (width & height).
  * @param {string}   props.imgURL                 The URL of the image.
- * @param {number}   props.imgIndex               The index of the image in the array of the 
+ * @param {number}   props.imgIndex               The index of the image in the array of the
  *                                                object's image gallery.
- * @param {function} props.updateImgCallback      A callback function accepting an object { imgURL, 
+ * @param {function} props.updateImgCallback      A callback function accepting an object { imgURL,
  *                                                imgIndex}.
- * @param {function} props.updateObjectIDCallback A callback function accepting a WordPress post_id 
+ * @param {function} props.updateObjectIDCallback A callback function accepting a WordPress post_id
  *                                                (number or null).
  */
-const GridImage = ( props ) => {
+const GridImage = ( props: GridImageProps ) => {
 	const {
 		objectID,
 		imgDimensions,
@@ -48,7 +89,7 @@ const GridImage = ( props ) => {
 		updateObjectIDCallback,
 	} = props;
 
-	const [ imgData, updateImgData ] = useState( {
+	const [ imgData, updateImgData ] = useState< GridImageState >( {
 		imgHeight   : null,
 		imgWidth    : null,
 		totalImages : 0
@@ -60,10 +101,10 @@ const GridImage = ( props ) => {
 	 * Callback function passed to <ImageSelector> component. Properties that
 	 * don't matter to ObjectGrid are tracked using internal state. Properties
 	 * that do matter are passed along to parent.
-	 * 
-	 * @param {object} attrs The callback's attributes. 
+	 *
+	 * @param {object} attrs The callback's attributes.
 	 */
-	const setImgData = ( attrs ) => {
+	const setImgData = ( attrs: ImgDataAttrs ) => {
 		const {
 			imgURL,
 			imgHeight,
@@ -91,8 +132,8 @@ const GridImage = ( props ) => {
 		}
 
 		if (
-			( typeof imgURL != 'undefined'   && imgURL != props.imgURL ) || 
-			( typeof imgIndex != 'undefined' && imgIndex != props.imgIndex ) 
+			( typeof imgURL != 'undefined'   && imgURL != props.imgURL ) ||
+			( typeof imgIndex != 'undefined' && imgIndex != props.imgIndex )
 		) {
 			updateImgCallback( {
 				imgURL   : imgURL,
@@ -105,7 +146,7 @@ const GridImage = ( props ) => {
 		<div
 			className = 'grid-image-container'
 		>
-			{ objectID ? 
+			{ objectID ?
 				<div
 					className = 'grid-image-image'
 				>
@@ -133,7 +174,7 @@ const GridImage = ( props ) => {
 					type      = 'button'
 					className = 'grid-image-placeholder'
 					aria-label = 'Add image to grid'
-					onClick   = { () => setModalOpen( true ) } 
+					onClick   = { () => setModalOpen( true ) }
 				>
 					<div
 						className = 'grid-image-placeholder-plus'
@@ -144,7 +185,7 @@ const GridImage = ( props ) => {
 				{ modalOpen &&
 					<ObjectSearchBox
 						close          = { () => setModalOpen( false ) }
-						returnCallback = { newObjectID => updateObjectIDCallback( newObjectID ) }
+						returnCallback = { ( newObjectID: number | null ) => updateObjectIDCallback( newObjectID ) }
 					/>
 				}
 				</>

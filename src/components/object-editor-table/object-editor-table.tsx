@@ -1,14 +1,23 @@
-const ObjectEditorTableRow = props => {
+import type { MuseumObject } from '../../types';
+
+interface ObjectEditorTableRowProps {
+	mObject: MuseumObject;
+}
+
+const ObjectEditorTableRow = ( props: ObjectEditorTableRowProps ) => {
 	const {
 		mObject
 	} = props;
-	
+
 	const {
 		link,
 		edit_link         : editLink,
 		post_title        : postTitle,
+		// TODO(ts-migration): post_status_label is stripped by the REST
+		// schema and never exists on the wire — always undefined. Preserving
+		// existing (buggy) behavior.
 		post_status_label : postStatus
-	} = mObject;
+	} = mObject as MuseumObject & { post_status_label?: string };
 
 	return (
 		<tr>
@@ -20,7 +29,11 @@ const ObjectEditorTableRow = props => {
 	);
 }
 
-const ObjectEditorTable = props => {
+interface ObjectEditorTableProps {
+	mObjects: MuseumObject[];
+}
+
+const ObjectEditorTable = ( props: ObjectEditorTableProps ) => {
 	const {
 		mObjects
 	} = props;
