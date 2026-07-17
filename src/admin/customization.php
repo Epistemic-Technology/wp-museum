@@ -282,7 +282,7 @@ function add_controls( $wp_customize ) {
 			'choices'     =>
 				[
 					'none'     => __( 'Don\'t show', 'wp-museum' ),
-					'inline'   => __( 'Inline below the value', 'wp-museum' ),
+					'inline'   => __( 'Inline above the value', 'wp-museum' ),
 					'expander' => __( 'Collapsible "What\'s this?" expander', 'wp-museum' ),
 					'tooltip'  => __( 'Tooltip on hover of the field label', 'wp-museum' ),
 				],
