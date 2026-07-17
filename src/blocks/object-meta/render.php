@@ -80,7 +80,12 @@ foreach ( $fields as $field ) {
 		} else {
 			$field_text .= $meta_value;
 		}
-		if ( $has_description && 'expander' === $description_mode ) {
+		if ( $has_description && 'inline' === $description_mode ) {
+			$custom_fields_html .=
+				'<div class="' . WPM_PREFIX . 'field-description">' .
+				esc_html( $field->public_description ) .
+				'</div>';
+		} elseif ( $has_description && 'expander' === $description_mode ) {
 			$custom_fields_html .=
 				'<details class="' . WPM_PREFIX . 'field-description">' .
 				'<summary>' . esc_html__( "What's this?", 'wp-museum' ) . '</summary>' .
@@ -93,13 +98,6 @@ foreach ( $fields as $field ) {
 		// URL back into a literal "<", which the browser then parses as
 		// the start of a new tag and the anchor blows up (#116).
 		$custom_fields_html .= apply_filters( 'the_content', $field_text, true );
-
-		if ( $has_description && 'inline' === $description_mode ) {
-			$custom_fields_html .=
-				'<div class="' . WPM_PREFIX . 'field-description">' .
-				esc_html( $field->public_description ) .
-				'</div>';
-		}
 	}
 	$custom_fields_html .= '</div>';
 }

@@ -1,30 +1,22 @@
 // Field descriptions surfaced from the admin's "Public Description" field.
 // Display mode is chosen per-site in the customizer (mobject_style ->
 // field_description_display): none | inline | expander | tooltip.
+// Descriptions (inline text or the expander) render above the field
+// they describe, so keep them small and snug against it.
 .wpm_field-description {
-  font-size: 0.875em;
+  font-size: 0.75em;
   color: #6b7280;
-  margin-top: 4px;
-  line-height: 1.45;
-}
-
-// The field value runs through the_content, so themes add their usual
-// paragraph margin between the value and its description. Cancel it so
-// the description hugs the value it explains (4px via margin-top above).
-.wpm_field-text > :has(+ .wpm_field-description) {
-  margin-bottom: 0;
-}
-
-// The expander renders above its field, so keep it small and snug
-// against the field it describes.
-details.wpm_field-description {
   margin: 0 0 2px;
+  line-height: 1.35;
 
+  + * {
+    margin-top: 0;
+  }
+}
+
+details.wpm_field-description {
   > summary {
     cursor: pointer;
-    color: #6b7280;
-    font-size: 0.75em;
-    line-height: 1.2;
     list-style: none;
     user-select: none;
 
@@ -39,9 +31,5 @@ details.wpm_field-description {
 
   &[open] > summary {
     margin-bottom: 2px;
-  }
-
-  + * {
-    margin-top: 0;
   }
 }
