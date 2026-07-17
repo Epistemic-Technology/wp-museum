@@ -2,6 +2,7 @@ const { test, expect } = require("@playwright/test");
 const {
   setupMuseumTest,
   deleteAllObjectKinds,
+  deleteAllMuseumPosts,
   createObjectKind,
   postTypeFromSlug,
   dismissEditorModals,
@@ -32,6 +33,9 @@ const FIELDS = [
 test.describe("Object meta tab navigation", () => {
   test.beforeEach(async ({ page }) => {
     await setupMuseumTest(page);
+    // Opening post-new.php creates auto-drafts, which block kind deletion
+    // (#52) — remove all museum posts before deleting kinds.
+    await deleteAllMuseumPosts(page);
     await deleteAllObjectKinds(page);
     await createObjectKind(page, {
       label: KIND_LABEL,
@@ -42,6 +46,7 @@ test.describe("Object meta tab navigation", () => {
   });
 
   test.afterEach(async ({ page }) => {
+    await deleteAllMuseumPosts(page);
     await deleteAllObjectKinds(page);
   });
 
@@ -159,5 +164,49 @@ test.describe("Object meta tab navigation", () => {
         `Tab #${i + 1} should have moved from ${before} to ${expectedSequence[i + 1]}, got ${after}`,
       ).toBe(expectedSequence[i + 1]);
     }
+  });
+
+  test("tab moves from title through description to the first field and back", async ({
+    page,
+  }) => {
+    await page.goto(`/wp-admin/post-new.php?post_type=${POST_TYPE}`);
+    await page.waitForLoadState("domcontentloaded");
+
+    await dismissEditorModals(page);
+
+    const fieldsContainer = page.locator(".object-meta-fields-container");
+    await fieldsContainer.waitFor({ state: "visible", timeout: 15000 });
+    await expect(fieldsContainer.locator(".object-meta-row")).toHaveCount(
+      FIELDS.length,
+      { timeout: 15000 },
+    );
+
+    const title = page.locator(".editor-post-title__input");
+    const description = page.locator('[data-type="core/paragraph"]').first();
+    const firstInput = fieldsContainer.locator('input[name="field-a"]');
+
+    await title.click();
+    await page.keyboard.type("Tab Navigation Test");
+    await expect(title).toBeFocused();
+
+    // Tab: title -> description paragraph.
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(150);
+    await expect(description).toBeFocused();
+
+    // Tab: description -> first field input.
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(150);
+    await expect(firstInput).toBeFocused();
+
+    // Shift+Tab: first field -> description.
+    await page.keyboard.press("Shift+Tab");
+    await page.waitForTimeout(150);
+    await expect(description).toBeFocused();
+
+    // Shift+Tab: description -> title.
+    await page.keyboard.press("Shift+Tab");
+    await page.waitForTimeout(150);
+    await expect(title).toBeFocused();
   });
 });

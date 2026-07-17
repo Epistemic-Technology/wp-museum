@@ -12,7 +12,10 @@ module.exports = defineConfig({
   workers: 1,
   reporter: [["html", { outputFolder: "playwright-report", open: "never" }]],
   use: {
-    baseURL: process.env.TEST_BASE_URL || "https://wp-test-server_nginx.wpmuseum.internal",
+    baseURL:
+      process.env.TEST_BASE_URL ||
+      process.env.TEST_SITE_URL ||
+      "http://nginx-test",
     ignoreHTTPSErrors: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

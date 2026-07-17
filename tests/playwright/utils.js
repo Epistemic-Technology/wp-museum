@@ -335,16 +335,25 @@ async function deleteAllObjectKinds(page) {
   // Set up dialog handler to automatically accept deletion confirmations
   page.on("dialog", (dialog) => dialog.accept());
 
-  // Keep deleting until no more delete buttons exist
-  let hasDeleteButtons = true;
-  while (hasDeleteButtons) {
+  // Keep deleting until no more delete buttons exist. Bounded so that a
+  // deletion that silently fails server-side (e.g. the kind still has
+  // associated posts — see issue #52) fails the test instead of hanging.
+  const maxAttempts = 25;
+  for (let attempt = 0; ; attempt++) {
     // Look for any Delete buttons
     const deleteButtons = page.locator('button:has-text("Delete")');
     const deleteButtonCount = await deleteButtons.count();
 
     if (deleteButtonCount === 0) {
-      hasDeleteButtons = false;
       break;
+    }
+
+    if (attempt >= maxAttempts) {
+      throw new Error(
+        `deleteAllObjectKinds: ${deleteButtonCount} kind(s) could not be deleted after ${maxAttempts} attempts. ` +
+          "Kinds with associated posts (including auto-drafts) cannot be deleted — " +
+          "call deleteAllObjectsOfType() for each kind's post type first.",
+      );
     }
 
     // Click the first Delete button
@@ -355,6 +364,70 @@ async function deleteAllObjectKinds(page) {
 
     // Wait for DOM to update
     await page.waitForLoadState("domcontentloaded");
+  }
+}
+
+/**
+ * Permanently delete all museum object posts of every registered kind via
+ * the REST API. Run this before deleteAllObjectKinds(): kinds with
+ * associated posts — including leftovers from other specs' crashed runs —
+ * cannot be deleted (issue #52).
+ *
+ * @param {import('@playwright/test').Page} page - Logged-in Playwright page.
+ */
+async function deleteAllMuseumPosts(page) {
+  await page.goto("/wp-admin/");
+  await page.waitForLoadState("domcontentloaded");
+  const nonce = await page.evaluate(() => window.wpApiSettings?.nonce);
+
+  const resp = await page.request.get("/wp-json/wp-museum/v1/mobject_kinds", {
+    headers: { "X-WP-Nonce": nonce },
+  });
+  if (!resp.ok()) return;
+
+  const kinds = await resp.json();
+  if (!Array.isArray(kinds)) return;
+
+  for (const kind of kinds) {
+    if (kind.type_name) {
+      await deleteAllObjectsOfType(page, kind.type_name);
+    }
+  }
+}
+
+/**
+ * Permanently delete all posts of a post type via the REST API, including
+ * auto-drafts (created just by opening post-new.php), which block kind
+ * deletion (issue #52).
+ *
+ * @param {import('@playwright/test').Page} page - Logged-in Playwright page.
+ * @param {string} postType - Post type name (e.g. from postTypeFromSlug()).
+ */
+async function deleteAllObjectsOfType(page, postType) {
+  await page.goto("/wp-admin/");
+  await page.waitForLoadState("domcontentloaded");
+  const nonce = await page.evaluate(() => window.wpApiSettings?.nonce);
+
+  const statuses =
+    "publish,future,draft,pending,private,trash,auto-draft,inherit";
+
+  for (let round = 0; round < 25; round++) {
+    const resp = await page.request.get(
+      `/wp-json/wp/v2/${postType}?status=${statuses}&per_page=100&context=edit`,
+      { headers: { "X-WP-Nonce": nonce } },
+    );
+    // Route doesn't exist (kind already deleted) or isn't queryable.
+    if (!resp.ok()) return;
+
+    const posts = await resp.json();
+    if (!Array.isArray(posts) || posts.length === 0) return;
+
+    for (const post of posts) {
+      await page.request.delete(
+        `/wp-json/wp/v2/${postType}/${post.id}?force=true`,
+        { headers: { "X-WP-Nonce": nonce } },
+      );
+    }
   }
 }
 
@@ -1243,6 +1316,8 @@ module.exports = {
   activateMuseumPlugin,
   setupMuseumTest,
   deleteAllObjectKinds,
+  deleteAllMuseumPosts,
+  deleteAllObjectsOfType,
   createObjectKind,
   createSimpleObjectKind,
   createMuseumObject,

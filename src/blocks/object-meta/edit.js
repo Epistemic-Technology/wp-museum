@@ -296,13 +296,17 @@ const ObjectMetaEdit = (props) => {
     }
   }, [fieldData]);
 
-  // Override Gutenberg's Tab handling within the field group so keyboard
-  // navigation moves between fields instead of jumping to the block toolbar
-  // or sidebar. Capture phase + stopImmediatePropagation prevents the block
+  // Override Gutenberg's Tab handling so keyboard navigation moves through
+  // the object edit sequence — post title, description paragraph(s), then
+  // each field — instead of jumping to the block toolbar or sidebar. The
+  // listener is attached to the canvas document (which may be an iframe) in
+  // the capture phase, with stopImmediatePropagation to prevent the block
   // editor's writing-flow listener from intercepting the event.
   useEffect(() => {
     const container = fieldsContainerRef.current;
     if (!container) return undefined;
+
+    const doc = container.ownerDocument;
 
     const focusableSelector = [
       'input:not([disabled]):not([type="hidden"])',
@@ -313,32 +317,72 @@ const ObjectMetaEdit = (props) => {
       '[tabindex]:not([tabindex="-1"])',
     ].join(",");
 
+    const isVisible = (el) =>
+      el.offsetParent !== null || el.getClientRects().length;
+
+    const getFocusSequence = () => {
+      const sequence = [];
+
+      const title = doc.querySelector(".editor-post-title__input");
+      if (title && isVisible(title)) sequence.push(title);
+
+      // Paragraph blocks above the fields container (the object description).
+      doc.querySelectorAll('[data-type="core/paragraph"]').forEach((block) => {
+        const editable = block.matches('[contenteditable="true"]')
+          ? block
+          : block.querySelector('[contenteditable="true"]');
+        if (
+          editable &&
+          isVisible(editable) &&
+          container.compareDocumentPosition(editable) &
+            Node.DOCUMENT_POSITION_PRECEDING
+        ) {
+          sequence.push(editable);
+        }
+      });
+
+      sequence.push(
+        ...Array.from(container.querySelectorAll(focusableSelector)).filter(
+          isVisible,
+        ),
+      );
+
+      return sequence;
+    };
+
+    const moveCaretToEnd = (el) => {
+      if (!el.isContentEditable) return;
+      const range = doc.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const selection = doc.defaultView.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    };
+
     const handleKeyDown = (event) => {
       if (event.key !== "Tab") return;
 
-      const focusables = Array.from(
-        container.querySelectorAll(focusableSelector),
-      ).filter((el) => el.offsetParent !== null || el.getClientRects().length);
-
+      const focusables = getFocusSequence();
       if (focusables.length === 0) return;
 
-      const currentIndex = focusables.indexOf(document.activeElement);
+      const currentIndex = focusables.indexOf(doc.activeElement);
       if (currentIndex === -1) return;
 
       const nextIndex = event.shiftKey ? currentIndex - 1 : currentIndex + 1;
 
       // At the boundaries, let the event propagate so focus can leave the
-      // block normally.
+      // sequence normally.
       if (nextIndex < 0 || nextIndex >= focusables.length) return;
 
       event.preventDefault();
       event.stopImmediatePropagation();
       focusables[nextIndex].focus();
+      moveCaretToEnd(focusables[nextIndex]);
     };
 
-    container.addEventListener("keydown", handleKeyDown, true);
-    return () =>
-      container.removeEventListener("keydown", handleKeyDown, true);
+    doc.addEventListener("keydown", handleKeyDown, true);
+    return () => doc.removeEventListener("keydown", handleKeyDown, true);
   }, []);
 
   const onFieldFocus = (helpText, detailedInstructions) => {
