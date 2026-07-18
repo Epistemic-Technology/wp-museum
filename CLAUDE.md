@@ -32,6 +32,7 @@ The default local environment is Docker Compose, driven through `npm run` script
 - `npm run test:e2e:headed` - Run Playwright with visible browser
 
 ### Code Quality
+- `npm run typecheck` - TypeScript type checking (`tsc --noEmit`, strict mode; runs on host). All JS is TypeScript — new frontend files must be .ts/.tsx. Playwright tests typecheck separately: `cd tests/playwright && npx tsc --noEmit -p tsconfig.json`
 - `npm run lint` - Run PHP CodeSniffer with WordPress coding standards (delegates to `composer run-script lint`)
 - `npm run lint:fix` / `npm run format` - Auto-fix via phpcbf
 - PHP 8.2+ compatibility enforced via phpcs.xml.dist
