@@ -354,7 +354,9 @@ export const sortCollections = ( collectionData: Collection[], sortBy: string, s
 			if ( parentIndex > -1 ) {
 				foundParent = true;
 				subCollection.foundParent = true;
-				subCollection.indentLevel = topCollections[parentIndex].indentLevel + 1;
+				// indentLevel is initialized to 0 for all topCollections above and
+				// set before any subCollection is spliced in, so it is always defined.
+				subCollection.indentLevel = topCollections[parentIndex].indentLevel! + 1;
 				topCollections.splice( parentIndex + 1, 0, subCollection );
 			}
 		} );

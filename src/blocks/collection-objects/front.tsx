@@ -96,8 +96,9 @@ const collectionObjectsBlockElements = document.getElementsByClassName('wpm-coll
 if ( !! collectionObjectsBlockElements ) {
 	for ( let i = 0; i < collectionObjectsBlockElements.length; i++ ) {
 		const collectionObjectsBlockElement = collectionObjectsBlockElements[i] as HTMLElement;
-		const postID = parseInt( collectionObjectsBlockElement.dataset.postId );
-		const parsedResultsPerPage = parseInt( collectionObjectsBlockElement.dataset.resultsPerPage );
+		// TODO(strict): dataset values may be undefined at runtime
+		const postID = parseInt( collectionObjectsBlockElement.dataset.postId as string );
+		const parsedResultsPerPage = parseInt( collectionObjectsBlockElement.dataset.resultsPerPage as string );
 		const resultsPerPage = Number.isFinite( parsedResultsPerPage ) ? parsedResultsPerPage : 20;
 		const root = createRoot( collectionObjectsBlockElement );
 		root.render (

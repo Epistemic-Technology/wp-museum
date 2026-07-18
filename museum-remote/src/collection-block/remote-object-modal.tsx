@@ -82,9 +82,11 @@ const RemoteObjectModal = ( props: RemoteObjectModalProps ) => {
 			// Object.values() on it again (a no-op on an array), so runtime
 			// behavior is identical. Cast preserves the existing call.
 			<ObjectModal
-				title    = { post_title }
+				// TODO(strict): post_title / link are typed optional on
+				// Partial<MuseumObject>; casts preserve current behavior.
+				title    = { post_title as string }
 				content  = { excerpt }
-				url      = { link }
+				url      = { link as string }
 				linkText = { `View the full entry at ${remoteData.host_title}` }
 				images   = { Object.values( imageData ) as ObjectImagesResponse }
 				close    = { doClose }

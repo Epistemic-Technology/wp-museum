@@ -71,7 +71,7 @@ const ImageScroll = ( props: ImageScrollProps ) => {
 			/>
 			<div className = 'img-wrapper' aria-live='polite' aria-atomic='true'>
 				<img
-					src   = { bestImage.URL }
+					src   = { bestImage.URL as string }
 					title = { imgArray[imgIndex].title || '' }
 					alt   = { imgArray[imgIndex].alt || imgArray[imgIndex].title || 'Museum object image' }
 				/>

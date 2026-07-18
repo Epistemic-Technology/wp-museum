@@ -174,7 +174,8 @@ const SearchBox = (props: SearchBoxProps) => {
     setSearchText(content);
     setSelectedItem(0);
 
-    clearTimeout(timerId);
+    // clearTimeout(null) is a no-op at runtime; assertion is type-only.
+    clearTimeout(timerId!);
 
     if (content.length > 2) {
       if (
@@ -266,11 +267,13 @@ const SearchBox = (props: SearchBoxProps) => {
    * Callback to set focus to the search input when the modal appears.
    */
   useEffect(() => {
-    searchInputRef.current.focus();
+    // Ref is attached to the input before this mount effect runs.
+    searchInputRef.current!.focus();
   }, []);
 
   const closeModal = () => {
-    clearTimeout(timerId);
+    // clearTimeout(null) is a no-op at runtime; assertion is type-only.
+    clearTimeout(timerId!);
     close();
   };
 
@@ -370,7 +373,7 @@ const SearchResultsList = (props: SearchResultsListProps) => {
                     <button
                         type      = 'button'
                         className = 'search-result-button'
-                        aria-label = { `Select ${result['post_title']}${result['cat_field'] && result[result['cat_field']] ? `, ${result[result['cat_field']]}` : ''}` }
+                        aria-label = { `Select ${result['post_title']}${result['cat_field'] && (result as unknown as Record<string, string>)[result['cat_field']] ? `, ${(result as unknown as Record<string, string>)[result['cat_field']]}` : ''}` }
                         onFocus   = { ( ) => onButtonItemFocus( index ) }
                         onClick   = { ( ) => onButtonItemClick( index ) }
                         onMouseEnter = { () => onButtonItemFocus( index ) }
@@ -386,7 +389,7 @@ const SearchResultsList = (props: SearchResultsListProps) => {
                             <div
                                 className = 'search-result-cat-id'
                             >
-                                { result[ result[ 'cat_field' ] ] }
+                                { (result as unknown as Record<string, ReactNode>)[ result[ 'cat_field' ] ] }
                             </div>
                         }
                     </button>
@@ -491,7 +494,10 @@ const ObjectSearchBox = (props: ObjectSearchBoxProps) => {
     <SearchBox
       close={close}
       title={title}
-      fetchSearchResults={fetchSearchResults}
+      // TODO(strict): see TODO(ts-migration) on FetchSearchResults — the
+      // implementation requires args that SearchBox sometimes omits
+      // (pre-existing runtime bug preserved); cast is type-only.
+      fetchSearchResults={fetchSearchResults as FetchSearchResults}
       returnCallback={returnCallback}
     />
   );
@@ -546,7 +552,10 @@ const CollectionSearchBox = (props: CollectionSearchBoxProps) => {
     <SearchBox
       close={close}
       title={title}
-      fetchSearchResults={fetchSearchResults}
+      // TODO(strict): see TODO(ts-migration) on FetchSearchResults — the
+      // implementation requires args that SearchBox sometimes omits
+      // (pre-existing runtime bug preserved); cast is type-only.
+      fetchSearchResults={fetchSearchResults as FetchSearchResults}
       returnCallback={returnCallback}
     />
   );

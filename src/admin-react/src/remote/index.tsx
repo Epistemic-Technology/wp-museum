@@ -44,7 +44,7 @@ const ClientsTable = (props: ClientsTableProps) => {
         </td>
         <td>{clientItem.title}</td>
         <td>
-          <a href={clientItem.url}>{clientItem.url}</a>
+          <a href={clientItem.url as string}>{clientItem.url}</a>
         </td>
         <td>{clientItem.registration_time}</td>
       </tr>

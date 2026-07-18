@@ -142,7 +142,7 @@ const GalleryGrid = ( props: GalleryGridProps ) => {
 				key       = { `image-${index}` }
 			>
 				<img
-					src = { imgItem.imgURL }
+					src = { imgItem.imgURL as string }
 					alt = { imgItem.alt || imgItem.title || 'Gallery image' }
 				/>
 			</div>
@@ -231,7 +231,7 @@ const ObjectGallery = ( props: ObjectGalleryProps ) => {
 				setAttributes( {
 					title     : result[ 'post_title' ],
 					objectURL : result[ 'link' ],
-					catID     : result[ result[ 'cat_field' ] ] as string | null,
+					catID     : result[ result[ 'cat_field' ] as string ] as string | null,
 				} );
 			} );
 
@@ -256,8 +256,8 @@ const ObjectGallery = ( props: ObjectGalleryProps ) => {
 			<InspectorControls>
 				<ObjectEmbedPanel
 					onSearchModalReturn = { onSearchModalReturn }
-					title               = { title }
-					catID               = { catID }
+					title               = { title as string }
+					catID               = { catID as string }
 					objectID            = { objectID }
 					objectURL           = { objectURL }
 					initialOpen         = { true }

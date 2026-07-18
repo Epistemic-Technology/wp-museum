@@ -134,7 +134,9 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
       />
     );
   } else if (fieldType == "measure") {
-    if (fieldData.dimensions.n == 1) {
+    // TODO(strict): possible null at runtime — dimensions is
+    // FieldDimensions | null on the wire; asserted to preserve behavior.
+    if (fieldData.dimensions!.n == 1) {
       inputElement = (
         <input
           name={fieldSlug}
@@ -144,7 +146,7 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
         />
       );
     } else {
-      const dimensionElements = fieldData.dimensions.labels.map(
+      const dimensionElements = fieldData.dimensions!.labels.map(
         (dimensionLabel, index) => (
           <label key={index}>
             <div className="input-element-dimension-label">
@@ -312,7 +314,12 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
                 updatedFieldErrors[fieldSlug] = (
                   <span>
                     {`${fieldName} must be unique, but is already used by `}
-                    <a href={objectData.edit_link}>{objectData.post_title}</a>.
+                    {/* TODO(strict): edit_link is string | null on the wire;
+                      cast preserves the existing render. */}
+                  <a href={objectData.edit_link as string}>
+                    {objectData.post_title}
+                  </a>
+                  .
                   </span>
                 );
               }
@@ -330,7 +337,9 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
   };
 
   const checkAllFields = () => {
-    Object.entries(fieldData).map((field) => {
+    // Non-null assertion: only called from the effect below after the
+    // `!!fieldData` guard.
+    Object.entries(fieldData!).map((field) => {
       // TODO(ts-migration): pre-existing bug — Object.entries yields
       // [key, value] tuples, but checkField expects the field object itself,
       // so every destructured property (slug, field_schema, name, required)
@@ -409,9 +418,11 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
       const range = doc.createRange();
       range.selectNodeContents(el);
       range.collapse(false);
-      const selection = doc.defaultView.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
+      // TODO(strict): possible null at runtime — defaultView/getSelection
+      // can be null per the DOM types; asserted to preserve behavior.
+      const selection = doc.defaultView!.getSelection();
+      selection!.removeAllRanges();
+      selection!.addRange(range);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -445,8 +456,10 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
     helpText: string | null,
     detailedInstructions: string | null,
   ) => {
-    setCurrentHelpText(stripslashes(helpText));
-    setCurrentDetailedInstructions(stripslashes(detailedInstructions));
+    // TODO(strict): nulls are passed here on blur; stripslashes coerces
+    // via (str + ''), so the casts preserve the existing behavior.
+    setCurrentHelpText(stripslashes(helpText as string));
+    setCurrentDetailedInstructions(stripslashes(detailedInstructions as string));
   };
 
   const onFieldBlur = (fieldData: MObjectField) => {

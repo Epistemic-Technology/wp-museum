@@ -8,7 +8,9 @@ const objectImageGalleryElements = document.getElementsByClassName('wpm-objectpo
 if ( !! objectImageGalleryElements ) {
 	for ( let i = 0; i < objectImageGalleryElements.length; i++ ) {
 		const objectImageGalleryElement = objectImageGalleryElements[i] as HTMLElement;
-		const postId = parseInt( objectImageGalleryElement.dataset.postId );
+		// TODO(strict): dataset.postId may be undefined at runtime if the data
+		// attribute is missing (parseInt would yield NaN); cast preserves behavior.
+		const postId = parseInt( objectImageGalleryElement.dataset.postId as string );
 		const root = createRoot( objectImageGalleryElement );
 		root.render (
 			<ObjectPostImageGallery

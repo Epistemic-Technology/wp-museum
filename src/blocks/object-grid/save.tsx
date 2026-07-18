@@ -53,7 +53,7 @@ export default function save ( { attributes }: SaveProps ) {
 						<div
 							className = 'grid-image-image'
 							role      = 'img'
-							title     = { objectTitle }
+							title     = { objectTitle as string }
 							style     = { { backgroundImage: `url('${imgURL}')` } }
 						>
 						</div>

@@ -91,8 +91,8 @@ const CollectionSettingsPanel = (props: CollectionSettingsPanelProps) => {
   const [tokens, setTokens] = useState<string[]>(objectTags);
 
   // Update tokens and post meta when the value changes
-  const handleTokenChange = (newTokens: string[]) => {
-    setTokens(newTokens);
+  const handleTokenChange = (newTokens: (string | { value: string })[]) => {
+    setTokens(newTokens as string[]);
     updateMeta("object_tags", newTokens);
   };
 

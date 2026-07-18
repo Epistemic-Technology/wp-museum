@@ -64,7 +64,8 @@ const LinksControl = ({ value, onChange }: LinksControlProps) => {
       .filter(
         (l) => l.type === "post" && l.post_id && !(l.post_id in postInfo),
       )
-      .map((l) => l.post_id);
+      // The filter above guarantees post_id is a truthy number.
+      .map((l) => l.post_id as number);
     if (missing.length === 0) return undefined;
 
     let cancelled = false;

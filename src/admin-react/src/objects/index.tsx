@@ -90,7 +90,7 @@ const ObjectAdminControl = () => {
     if (navigateToNewKind && objectKinds) {
       // Find the kind that wasn't in the original set
       const newKind = objectKinds.find(
-        (kind) => kind.kind_id > 0 && !existingKindIds.has(kind.kind_id),
+        (kind) => kind.kind_id! > 0 && !existingKindIds.has(kind.kind_id!),
       );
       if (newKind) {
         editKind(newKind);
@@ -173,7 +173,9 @@ const ObjectAdminControl = () => {
   // Handle initial load
   useEffect(() => {
     if (selectedPage === "edit" && objectKinds) {
-      const kindId = parseInt(getParam("kind_id"));
+      // TODO(strict): getParam may return null; parseInt(null) yields NaN,
+      // which the truthiness check below already handles.
+      const kindId = parseInt(getParam("kind_id") as string);
       if (kindId) {
         const foundKind = objectKinds.find((kind) => kind.kind_id === kindId);
         if (foundKind) {
@@ -184,28 +186,35 @@ const ObjectAdminControl = () => {
   }, [objectKinds]);
 
   const updateKind = (
-    kindId: number,
+    kindId: number | null,
     field: string,
-    event: ChangeEvent<HTMLInputElement>,
+    event: { target: { type: string; value: any; checked: any } },
   ) => {
-    const kindIndex = objectKinds.findIndex(
+    // TODO(strict): possible null at runtime if called before kinds load
+    const kinds = objectKinds!;
+    const kindIndex = kinds.findIndex(
       (kindItem) => kindItem.kind_id == kindId,
     );
     if (kindIndex === -1) return;
 
-    const newKindArray = objectKinds.concat([]);
+    const newKindArray = kinds.concat([]);
+    const currentKind = kinds[kindIndex] as unknown as Record<string, unknown>;
+    const updatedKind = newKindArray[kindIndex] as unknown as Record<
+      string,
+      unknown
+    >;
     if (event.target.type === "checkbox") {
-      if (objectKinds[kindIndex][field] != event.target.checked) {
-        newKindArray[kindIndex][field] = event.target.checked;
+      if (currentKind[field] != event.target.checked) {
+        updatedKind[field] = event.target.checked;
         setObjectKinds(newKindArray);
       }
       return;
     }
 
-    if (objectKinds[kindIndex][field] != event.target.value) {
-      newKindArray[kindIndex][field] = event.target.value;
-      if (newKindArray[kindIndex][field] == "") {
-        newKindArray[kindIndex][field] = null;
+    if (currentKind[field] != event.target.value) {
+      updatedKind[field] = event.target.value;
+      if (updatedKind[field] == "") {
+        updatedKind[field] = null;
       }
       setObjectKinds(newKindArray);
     }
@@ -224,7 +233,8 @@ const ObjectAdminControl = () => {
       kindData.cat_field_id = null;
 
       // Add the new kind to the list
-      const newObjectKinds = objectKinds.concat([kindData]);
+      // TODO(strict): possible null at runtime if called before kinds load
+      const newObjectKinds = objectKinds!.concat([kindData]);
       setObjectKinds(newObjectKinds);
 
       // Save the kind first
@@ -301,15 +311,16 @@ const ObjectAdminControl = () => {
 
   const newKind = () => {
     // Track existing kind IDs before creating new one
+    // TODO(strict): possible null at runtime if called before kinds load
     const currentKindIds = new Set(
-      objectKinds
-        .filter((kind) => kind.kind_id > 0)
-        .map((kind) => kind.kind_id),
+      objectKinds!
+        .filter((kind) => kind.kind_id! > 0)
+        .map((kind) => kind.kind_id!),
     );
     setExistingKindIds(currentKindIds);
 
     const newKind = Object.assign({}, defaultKind);
-    const newObjectKinds = objectKinds.concat([newKind]);
+    const newObjectKinds = objectKinds!.concat([newKind]);
     setObjectKinds(newObjectKinds);
     setNavigateToNewKind(true);
     saveKindData();
@@ -321,11 +332,12 @@ const ObjectAdminControl = () => {
       "Really delete this kind? Kinds with associated objects cannot be deleted — delete those objects first.",
     );
     if (confirmDelete) {
-      const kindIndex = objectKinds.findIndex(
+      // TODO(strict): possible null at runtime if called before kinds load
+      const kindIndex = objectKinds!.findIndex(
         (item) => item.kind_id == kindItem.kind_id,
       );
       if (kindIndex !== -1) {
-        const newKindArray = objectKinds.concat([]);
+        const newKindArray = objectKinds!.concat([]);
         newKindArray[kindIndex].delete = true;
         setObjectKinds(newKindArray);
         saveKindData();

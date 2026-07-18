@@ -136,7 +136,10 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
 
   const onSearch = (searchParams: AdvancedSearchParams) => {
     for (const [key, value] of Object.entries(searchParams)) {
-      if (key != "page" && value != currentSearchParams[key]) {
+      if (
+        key != "page" &&
+        value != (currentSearchParams as Record<string, unknown>)[key]
+      ) {
         searchParams["page"] = 1;
         break;
       }

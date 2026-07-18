@@ -212,7 +212,7 @@ const ObjectImageEdit = (props: ObjectImageEditProps) => {
 				setAttributes({
 					title: result['post_title'],
 					objectURL: result['link'],
-					catID: result[result['cat_field']] as string,
+					catID: result[result['cat_field'] as string] as string,
 				});
 			});
 		}
@@ -262,7 +262,7 @@ const ObjectImageEdit = (props: ObjectImageEditProps) => {
 					title={title}
 					catID={catID}
 					objectID={objectID}
-					objectURL={objectURL}
+					objectURL={objectURL as string}
 					initialOpen={true}
 				/>
 				<OptionsPanel
@@ -340,7 +340,7 @@ const ObjectImageEdit = (props: ObjectImageEditProps) => {
 						<RichText
 							tagName="p"
 							className="caption-text-field"
-							value={captionText}
+							value={captionText as string}
 							allowedFormats={['core/bold', 'core/italic', 'core/link']}
 							onChange={(content) => setAttributes({ captionText: content })}
 							placeholder={__('Enter caption...')}

@@ -233,7 +233,7 @@ const ObjectInfoEdit = (props: ObjectInfoEditProps) => {
         const result = await apiFetch<MuseumObject>({ path: object_path });
         return result;
       } catch (err) {
-        setError(`Error fetching object data: ${err.message}`);
+        setError(`Error fetching object data: ${(err as Error).message}`);
         return null;
       }
     },
@@ -349,7 +349,7 @@ const ObjectInfoEdit = (props: ObjectInfoEditProps) => {
           fieldData: fieldData,
         });
       } catch (err) {
-        setError(`Error loading data: ${err.message}`);
+        setError(`Error loading data: ${(err as Error).message}`);
       }
     },
     [

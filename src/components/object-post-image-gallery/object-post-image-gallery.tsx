@@ -48,7 +48,9 @@ const ObjectPostImageSideBox = ( props: ObjectPostImageSideBoxProps ) => {
 		<div className = 'wpm_obj-image'>
 			{ !! imgData &&
 				<img
-					src     = { bestImage.URL }
+					// Non-null: bestImage is computed whenever imgData is
+					// truthy, which the surrounding guard ensures.
+					src     = { bestImage!.URL as string }
 					alt     = { altText }
 					title   = { titleText }
 					onClick = { () => openModal( imgIndex ) }
@@ -120,7 +122,7 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 					<div className = 'image-modal-image'>
 						{ !! bestImage &&
 							<img
-								src   = { bestImage.URL }
+								src   = { bestImage.URL as string }
 								title = { title || '' }
 								alt   = { alt || '' }
 							/>
@@ -128,7 +130,9 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 					</div>
 					<div className = 'image-modal-image-link'>
 						<a
-							href = { imgArray[ imgIndex ]['full'][0] }
+							// TODO(strict): possible null at runtime — 'full'
+							// can be null on the wire (see ImageSizeTuple).
+							href = { imgArray[ imgIndex ]['full']![0] }
 							target = '_blank'
 						>
 							View Full Image

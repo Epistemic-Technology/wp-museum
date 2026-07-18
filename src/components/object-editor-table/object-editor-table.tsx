@@ -22,7 +22,7 @@ const ObjectEditorTableRow = ( props: ObjectEditorTableRowProps ) => {
 	return (
 		<tr>
 			<th scope="row">{ postTitle }</th>
-			<td><a href = { editLink } aria-label={`Edit ${postTitle}`}>Edit</a></td>
+			<td><a href = { editLink as string } aria-label={`Edit ${postTitle}`}>Edit</a></td>
 			<td><a href = { link } aria-label={`View ${postTitle}`}>View</a></td>
 			<td>{ postStatus }</td>
 		</tr>

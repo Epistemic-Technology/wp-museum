@@ -354,7 +354,8 @@ export const sortCollections = ( collectionData: Collection[], sortBy: string, s
 			if ( parentIndex > -1 ) {
 				foundParent = true;
 				subCollection.foundParent = true;
-				subCollection.indentLevel = topCollections[parentIndex].indentLevel + 1;
+				subCollection.indentLevel =
+					(topCollections[parentIndex].indentLevel as number) + 1;
 				topCollections.splice( parentIndex + 1, 0, subCollection );
 			}
 		} );

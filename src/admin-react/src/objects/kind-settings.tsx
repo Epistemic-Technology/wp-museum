@@ -45,7 +45,7 @@ const KindSettings = memo(
       kinds
         ?.filter((kindItem) => kindItem.kind_id !== kindId)
         .map((kindItem) => (
-          <option key={kindItem.kind_id} value={kindItem.kind_id}>
+          <option key={kindItem.kind_id} value={kindItem.kind_id!}>
             {kindItem.label}
           </option>
         )) || [];

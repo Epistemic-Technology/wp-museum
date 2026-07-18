@@ -144,8 +144,10 @@ const basicSearchElements = document.getElementsByClassName(
 if (!!basicSearchElements) {
   for (let i = 0; i < basicSearchElements.length; i++) {
     const basicSearchElement = basicSearchElements[i] as HTMLElement;
+    // TODO(strict): dataset.attributes may be undefined at runtime if the
+    // data attribute is missing; cast preserves existing behavior.
     const attributes = attributesFromJSON(
-      basicSearchElement.dataset.attributes,
+      basicSearchElement.dataset.attributes as string,
     ) as BasicSearchFrontAttributes;
     const root = createRoot(basicSearchElement);
     root.render(<BasicSearchFront attributes={attributes} />);

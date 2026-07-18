@@ -98,7 +98,7 @@ const RemoteAdminPage = () => {
 	const [ connectionError, setConnectionError ] = useState<string | null>( null );
 
 	const textInput = useRef<HTMLInputElement>( null );
-	useEffect( () => textInput.current.focus(), [] );
+	useEffect( () => textInput.current!.focus(), [] );
 
 	useEffect(
 		() => {
@@ -140,7 +140,9 @@ const RemoteAdminPage = () => {
 	}
 
 	const cleanUrl = ( newUrl: string | null = null ) => {
-		let cleanedUrl = newUrl ? newUrl : remoteData.url;
+		// TODO(strict): possible null at runtime — remoteData.url may be
+		// null/undefined before the option is first saved; .trim() would throw.
+		let cleanedUrl = ( newUrl ? newUrl : remoteData.url ) as string;
 		cleanedUrl = cleanedUrl.trim();
 		cleanedUrl = cleanedUrl.endsWith('/') ? cleanedUrl.slice(0, -1 ) : cleanedUrl;
 		cleanedUrl = cleanedUrl
@@ -241,7 +243,7 @@ const RemoteAdminPage = () => {
 					onChange = { onUrlChange }
 					onBlur   = { onUrlBlur }
 					onKeyDown = { maybeConnect }
-					value = { remoteData.url }
+					value = { remoteData.url as string }
 				/>
 			</label>
 			<Button
@@ -265,7 +267,7 @@ const RemoteAdminPage = () => {
 }
 
 if ( !! document.getElementById( 'museum-remote-admin-container' ) ) {
-	const root = createRoot( document.getElementById( 'museum-remote-admin-container' ) );
+	const root = createRoot( document.getElementById( 'museum-remote-admin-container' )! );
 	root.render(
 		<RemoteAdminPage />
 	);

@@ -194,7 +194,7 @@ const KindSelector = ({ kinds, selectedKind, onKindChange }: KindSelectorProps) 
       >
         <option value="">-- Select Kind --</option>
         {kinds.map((kind) => (
-          <option key={kind.kind_id} value={kind.kind_id}>
+          <option key={kind.kind_id} value={kind.kind_id as number}>
             {kind.label || kind.name}
           </option>
         ))}
@@ -235,10 +235,11 @@ const OmiPmhAdmin = () => {
 
         // Auto-select the first kind if available
         if (kindsData && kindsData.length > 0) {
-          setSelectedKind(kindsData[0].kind_id.toString());
+          // TODO(strict): possible null at runtime if kind_id is unset
+          setSelectedKind(kindsData[0].kind_id!.toString());
         }
       } catch (err) {
-        setError("Failed to load kinds: " + err.message);
+        setError("Failed to load kinds: " + (err as Error).message);
       }
     };
 
@@ -278,7 +279,10 @@ const OmiPmhAdmin = () => {
       const fetchKindData = async () => {
         try {
           // Find the selected kind object
-          const kind = kinds.find((k) => k.kind_id.toString() === selectedKind);
+          // TODO(strict): possible null at runtime if kind_id is unset
+          const kind = kinds.find(
+            (k) => k.kind_id!.toString() === selectedKind,
+          );
           if (!kind) {
             throw new Error("Selected kind not found");
           }
@@ -336,7 +340,7 @@ const OmiPmhAdmin = () => {
             setIdentifierPrefix(defaultPrefix);
           }
         } catch (err) {
-          setError("Failed to load kind data: " + err.message);
+          setError("Failed to load kind data: " + (err as Error).message);
           setKindFields([]);
           // Set default mappings when there's an error
           const defaultMappings = {
@@ -411,7 +415,8 @@ const OmiPmhAdmin = () => {
 
     try {
       // Find the selected kind object
-      const kind = kinds.find((k) => k.kind_id.toString() === selectedKind);
+      // TODO(strict): possible null at runtime if kind_id is unset
+      const kind = kinds.find((k) => k.kind_id!.toString() === selectedKind);
       if (!kind) {
         throw new Error("Selected kind not found");
       }
@@ -435,7 +440,8 @@ const OmiPmhAdmin = () => {
       // Update local kinds state
       setKinds((prevKinds) =>
         prevKinds.map((k) =>
-          k.kind_id.toString() === selectedKind
+          // TODO(strict): possible null at runtime if kind_id is unset
+          k.kind_id!.toString() === selectedKind
             ? {
                 ...k,
                 oai_pmh_mappings: {
@@ -451,7 +457,7 @@ const OmiPmhAdmin = () => {
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setError("Failed to save mappings: " + err.message);
+      setError("Failed to save mappings: " + (err as Error).message);
     } finally {
       setSaving(false);
     }

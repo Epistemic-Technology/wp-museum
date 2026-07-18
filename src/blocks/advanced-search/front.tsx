@@ -144,20 +144,25 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
   };
 
   const onSearch = (searchParams: AdvancedSearchParams) => {
-    if (searchParams.searchFields?.length > 0) {
-      for (const field of searchParams.searchFields) {
+    // TODO(strict): `undefined > 0` is false at runtime, so the cast
+    // preserves the existing comparison; inside the branch searchFields is
+    // guaranteed non-empty, so the non-null assertion is safe.
+    if ((searchParams.searchFields?.length as number) > 0) {
+      for (const field of searchParams.searchFields!) {
         if (field.search) {
           if (!field.search.startsWith("~")) {
-            searchParams[field.field] = `~${field.search}`;
+            (searchParams as Record<string, unknown>)[field.field as string] =
+              `~${field.search}`;
           } else {
-            searchParams[field.field] = field.search;
+            (searchParams as Record<string, unknown>)[field.field as string] =
+              field.search;
           }
         }
       }
     }
     if (searchParams.selectedFlags?.length) {
       for (const flag of searchParams.selectedFlags) {
-        searchParams[flag] = true;
+        (searchParams as Record<string, unknown>)[flag] = true;
       }
     }
     // Use resultsPerPage setting (-1 means unlimited/all results)

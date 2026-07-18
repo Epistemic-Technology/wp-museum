@@ -49,7 +49,7 @@ export const useKindForm = (
   const updateField = useCallback((fieldName: string, value: unknown) => {
     setFormData((prev) => {
       // Only update if the value actually changed
-      if (prev[fieldName] === value) {
+      if (prev[fieldName as keyof ObjectKind] === value) {
         return prev;
       }
 
@@ -84,7 +84,7 @@ export const useKindForm = (
       setIsDirty(false);
       setLastSaveTime(new Date());
     } catch (error) {
-      const errorMessage = error.message || "Save failed";
+      const errorMessage = (error as Error).message || "Save failed";
       setSaveError(errorMessage);
       console.error("Kind form save failed:", error);
       throw error;

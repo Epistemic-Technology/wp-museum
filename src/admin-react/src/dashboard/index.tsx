@@ -173,14 +173,17 @@ const StatisticsPanel = () => {
               }),
             ]);
 
-            kindCounts[kind.type_name] = {
+            kindCounts[kind.type_name as string] = {
               label: kind.label,
-              published: parseInt(publishedRes.headers.get("X-WP-Total")) || 0,
-              pending: parseInt(pendingRes.headers.get("X-WP-Total")) || 0,
-              draft: parseInt(draftRes.headers.get("X-WP-Total")) || 0,
+              published:
+                parseInt(publishedRes.headers.get("X-WP-Total") as string) || 0,
+              pending:
+                parseInt(pendingRes.headers.get("X-WP-Total") as string) || 0,
+              draft:
+                parseInt(draftRes.headers.get("X-WP-Total") as string) || 0,
             };
           } catch (error) {
-            kindCounts[kind.type_name] = {
+            kindCounts[kind.type_name as string] = {
               label: kind.label,
               published: 0,
               pending: 0,
@@ -219,7 +222,7 @@ const StatisticsPanel = () => {
         {/* Cards for each object kind */}
         {objectKinds &&
           objectKinds.map((kind) => {
-            const counts = objectsByKind[kind.type_name] || {
+            const counts = objectsByKind[kind.type_name as string] || {
               published: 0,
               pending: 0,
               draft: 0,
@@ -229,7 +232,7 @@ const StatisticsPanel = () => {
             return (
               <StatCard
                 key={kind.kind_id}
-                title={kind.label}
+                title={kind.label as string}
                 value={total}
                 subtitle={getStatusSubtitle(counts)}
                 loading={loading}
@@ -286,7 +289,7 @@ const RecentActivity = () => {
         };
 
         objectKinds.forEach((kind) => {
-          postTypeLabels[kind.type_name] = kind.label;
+          postTypeLabels[kind.type_name as string] = kind.label as string;
         });
 
         // Fetch recent items from different sources

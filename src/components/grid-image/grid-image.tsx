@@ -30,7 +30,7 @@ interface ImgDimensions {
  * Attributes passed to the setImgData callback by <ImageSelector>.
  */
 interface ImgDataAttrs {
-	imgURL?: string;
+	imgURL?: string | null;
 	imgHeight?: number;
 	imgWidth?: number;
 	imgIndex?: number;
@@ -136,7 +136,9 @@ const GridImage = ( props: GridImageProps ) => {
 			( typeof imgIndex != 'undefined' && imgIndex != props.imgIndex )
 		) {
 			updateImgCallback( {
-				imgURL   : imgURL,
+				// <ImageSelector> may pass imgURL: null; the parent callback is
+				// typed string | undefined. Cast only — value passed unchanged.
+				imgURL   : imgURL as string,
 				imgIndex : imgIndex
 			} );
 		}

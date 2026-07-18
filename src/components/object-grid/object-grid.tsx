@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from "@wordpress/element";
-import type { CSSProperties } from "react";
+import type { CSSProperties, MouseEventHandler } from "react";
 
 import {
   MaybeLink,
@@ -66,7 +66,13 @@ const ObjectGridBox = (props: ObjectGridBoxProps) => {
       <MaybeLink
         href={link}
         doLink={linkToObject}
-        onClickCallback={onClickCallback}
+        // MaybeLink types the prop as MouseEventHandler | undefined; local
+        // default is null (falsy either way — MaybeLink truthiness-checks it).
+        onClickCallback={
+          onClickCallback as unknown as
+            | MouseEventHandler<HTMLAnchorElement>
+            | undefined
+        }
       >
         <div className="object-grid-box">
           <div className="object-grid-thumbnail-div">
@@ -148,7 +154,9 @@ const ObjectGridBoxDynamicImage = (props: ObjectGridBoxDynamicImageProps) => {
   let usePlaceholder = false;
   if (imgData !== null) {
     if (Object.entries(imgData).length > 0) {
-      bestImage = getBestImage(getFirstObjectImage(imgData), {
+      // Non-null: imgData has entries here, so getFirstObjectImage cannot
+      // return null.
+      bestImage = getBestImage(getFirstObjectImage(imgData)!, {
         width: targetWidthHeight,
         height: targetWidthHeight,
       });
@@ -190,7 +198,9 @@ const ObjectGridBoxDynamicImage = (props: ObjectGridBoxDynamicImageProps) => {
           content={excerpt}
           url={link}
           linkText="View full entry"
-          images={imgData}
+          // TODO(strict): possible null at runtime — modal can open before the
+          // image fetch resolves; ObjectModal would then crash on Object.values.
+          images={imgData!}
           close={() => setModalOpen(false)}
         />
       )}

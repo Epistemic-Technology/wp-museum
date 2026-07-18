@@ -130,8 +130,11 @@ const Collection = (props: CollectionProps) => {
         apiFetch<MuseumObject[]>({ path: objectsRestPath }).then((result) => {
           if (Array.isArray(result) && result.length > 0) {
             const newCollectionObjects: CollectionObjectData[] = result.map((result) => {
+              // TODO(strict): possible null at runtime
               const objImgURL =
-                result["thumbnail"].length > 0 ? result["thumbnail"][0] : null;
+                result["thumbnail"]!.length > 0
+                  ? (result["thumbnail"]![0] as string)
+                  : null;
               return {
                 imgURL: objImgURL,
                 title: result["post_title"],

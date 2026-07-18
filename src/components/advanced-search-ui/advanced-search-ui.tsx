@@ -91,7 +91,9 @@ const FieldSearchElement = (props: FieldSearchElementProps) => {
     let searchVals;
 
     try {
-      searchVals = JSON.parse(search);
+      // TODO(strict): search may be null/undefined at runtime; JSON.parse
+      // failures are caught below, so the cast preserves existing behavior.
+      searchVals = JSON.parse(search as string);
     } catch {
       searchVals = {};
     }
@@ -225,18 +227,19 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
     const params = new URLSearchParams(window.location.search);
     const values: AdvancedSearchValues = {};
 
-    if (params.has("search")) values.searchText = params.get("search");
+    if (params.has("search")) values.searchText = params.get("search")!;
     if (params.has("titleOnly"))
       values.onlyTitle = params.get("titleOnly") === "true";
-    if (params.has("kind")) values.selectedKind = parseInt(params.get("kind"));
+    if (params.has("kind")) values.selectedKind = parseInt(params.get("kind")!);
     if (params.has("flags"))
-      values.selectedFlags = params.get("flags").split(",");
+      values.selectedFlags = params.get("flags")!.split(",");
     if (params.has("collections"))
-      values.selectedCollections = params.get("collections").split(",");
-    if (params.has("tags")) values.selectedTags = params.get("tags").split(",");
+      values.selectedCollections = params.get("collections")!.split(",");
+    if (params.has("tags"))
+      values.selectedTags = params.get("tags")!.split(",");
     if (params.has("fields")) {
       try {
-        values.searchFields = JSON.parse(params.get("fields"));
+        values.searchFields = JSON.parse(params.get("fields")!);
       } catch (e) {
         console.error("Failed to parse fields from URL:", e);
       }
@@ -294,7 +297,9 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
       const selectedKindData = kindsData.find(
         (kindItem) => kindItem.kind_id === selectedKind,
       );
-      getFieldData(selectedKindData.type_name).then((result) =>
+      // TODO(strict): possible null at runtime — see TODO(ts-migration) above;
+      // find() can return undefined and type_name can be null.
+      getFieldData(selectedKindData!.type_name!).then((result) =>
         setFieldData(result),
       );
     }
@@ -302,7 +307,11 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
 
   useEffect(() => {
     if (!selectedKind && !!kindsData && kindsData.length > 0) {
-      setSearchValues({ ...searchValues, selectedKind: kindsData[0].kind_id });
+      setSearchValues({
+        ...searchValues,
+        // TODO(strict): kind_id is typed number | null; preserved as-is.
+        selectedKind: kindsData[0].kind_id as number,
+      });
     }
   }, [kindsData]);
 
@@ -316,8 +325,8 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
     search: string | null = null,
   ) => {
     const newSearchFields = !!searchFields ? [...searchFields] : [];
-    let fieldValue = field;
-    let searchValue = search;
+    let fieldValue: string | null | undefined = field;
+    let searchValue: string | null | undefined = search;
     if (fieldValue === null) {
       if (
         typeof newSearchFields[index] !== "undefined" &&
@@ -350,7 +359,10 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
   const collectionOptions = () => {
     const opts: { value: number; label: string }[] = [];
     Object.entries(collectionData).forEach(([index, collection]) => {
-      opts[index] = { value: collection.ID, label: collection.post_title };
+      opts[index as unknown as number] = {
+        value: collection.ID,
+        label: collection.post_title,
+      };
     });
     return opts;
   };
@@ -410,7 +422,9 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
           <Button
             isSecondary
             onClick={() =>
-              setAttributes({ defaultSearch: JSON.stringify(searchValues) })
+              // TODO(strict): possible undefined at runtime if inEditor is set
+              // without setAttributes; preserved as-is.
+              setAttributes!({ defaultSearch: JSON.stringify(searchValues) })
             }
           >
             Set Defaults

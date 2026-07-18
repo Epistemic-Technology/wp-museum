@@ -114,10 +114,11 @@ const ObjectImageAttachmentEdit = ( props: ObjectImageAttachmentEditProps ) => {
 	} );
 
 	const updateImgData = ( imgId: number, title: string, caption: string, description: string, alt: string ) => {
-		imgData[imgId].title       = title;
-		imgData[imgId].caption     = caption;
-		imgData[imgId].description = description;
-		imgData[imgId].alt         = alt;
+		// TODO(strict): possible null at runtime
+		imgData![imgId].title       = title;
+		imgData![imgId].caption     = caption;
+		imgData![imgId].description = description;
+		imgData![imgId].alt         = alt;
 	}
 
 	const updateImgAttach = ( updatedImgAttach: number[] ) => {
@@ -175,8 +176,9 @@ const ObjectImageAttachmentEdit = ( props: ObjectImageAttachmentEditProps ) => {
 		}
 		imgAttach[ imgIndex ] = imgAttach[ newIndex ];
 		imgAttach[ newIndex ] = imgId;
-		imgData[ imgId ].sort_order = newIndex;
-		imgData[ otherId ].sort_order = imgIndex;
+		// TODO(strict): possible null at runtime
+		imgData![ imgId ].sort_order = newIndex;
+		imgData![ otherId ].sort_order = imgIndex;
 
 		const updatedImgAttach = ( Array.isArray(imgAttach) ? [ ...imgAttach ] : [] );
 		setAttributes( {

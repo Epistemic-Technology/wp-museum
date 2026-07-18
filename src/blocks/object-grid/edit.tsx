@@ -112,14 +112,14 @@ const GridDimensionsPanel = ( props: GridDimensionsPanelProps ) => {
 			<RangeControl
 				label    = 'Columns'
 				value    = { columns }
-				onChange = { columns => updateColumns( columns ) }
+				onChange = { columns => updateColumns( columns as number ) }
 				min      = { 2 }
 				max      = { 8 }
 			/>
 			<RangeControl
 				label    = 'Rows'
 				value    = { rows }
-				onChange = { rows => updateRows( rows ) }
+				onChange = { rows => updateRows( rows as number ) }
 				min      = { 2 }
 				max      = { 12 }
 			/>
@@ -362,7 +362,7 @@ class ObjectGrid extends Component<ObjectGridProps, ObjectGridState> {
 						key                    = { column + row * columns }
 						objectID               = { objectData[ column + row * columns ].objectID }
 						imgDimensions          = { imgDimensions }
-						imgURL                 = { objectData[ column + row * columns ].imgURL }
+						imgURL                 = { objectData[ column + row * columns ].imgURL as string }
 						imgIndex               = { objectData[ column + row * columns ].imgIndex }
 						updateImgCallback      = { imgData => this.updateImgData( column + row * columns, imgData ) }
 						updateObjectIDCallback = { newObjectID => this.updateObjectID( column + row * columns, newObjectID ) }

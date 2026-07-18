@@ -55,13 +55,15 @@ const ObjectImageBox = (props: ObjectImageBoxProps) => {
     width: 300,
   };
 
-  const bestImage = getBestImage(getFirstObjectImage(imgData), imgDimensions);
+  // TODO(strict): possible null at runtime — imgData may be an empty object,
+  // in which case getFirstObjectImage returns null and getBestImage crashes.
+  const bestImage = getBestImage(getFirstObjectImage(imgData)!, imgDimensions);
 
   // TODO(ts-migration): title/alt are read on the whole images map (keyed by
   // attachment ID), not on an individual image record — always undefined, so
   // these fall through to "". Preserving existing (buggy) behavior.
   const imgAttrs = {
-    src: bestImage.URL,
+    src: bestImage.URL as string,
     title: (imgData as any).title || "",
     alt: (imgData as any).alt || "",
   };
@@ -69,7 +71,9 @@ const ObjectImageBox = (props: ObjectImageBoxProps) => {
   return (
     <div className="grid-image-wrapper" style={imgStyle}>
       <MaybeLink href={object.URL} doLink={linkToObjects}>
-        <img {...imgAttrs} onClick={() => onClickCallback(object.ID) || null} />
+        {/* TODO(strict): possible undefined at runtime — onClickCallback is an
+            optional prop; clicking with no callback provided would crash. */}
+        <img {...imgAttrs} onClick={() => onClickCallback!(object.ID) || null} />
       </MaybeLink>
     </div>
   );

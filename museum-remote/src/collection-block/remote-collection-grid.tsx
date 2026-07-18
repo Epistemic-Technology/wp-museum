@@ -232,8 +232,12 @@ const RemoteCollectionGrid = ( props: RemoteCollectionGridProps ) => {
 					<div className = 'thumbnail-wrapper'>
 							<ThumbnailImage
 								thumbnailURL       = { thumbnailURL }
-								imgDimensions      = { imgDimensions }
-								setSearchModalOpen = { setSearchModalOpen }
+								// TODO(strict): possibly undefined at runtime —
+								// imgDimensions is an optional attribute and
+								// setSearchModalOpen is not passed on the
+								// frontend; casts preserve current behavior.
+								imgDimensions      = { imgDimensions as ImageDimensions }
+								setSearchModalOpen = { setSearchModalOpen as ( isOpen: boolean ) => void }
 							/>
 					</div>
 				}

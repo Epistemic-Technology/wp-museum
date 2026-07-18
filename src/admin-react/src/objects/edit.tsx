@@ -98,12 +98,13 @@ const Edit = (props: EditProps) => {
     // Update the parent state with the form data
     // We need to simulate the event structure that updateKind expects
     Object.keys(formData).forEach((key) => {
-      if (formData[key] !== kindItem[key]) {
+      const kindKey = key as keyof ObjectKind;
+      if (formData[kindKey] !== kindItem[kindKey]) {
         const mockEvent = {
           target: {
-            type: typeof formData[key] === "boolean" ? "checkbox" : "text",
-            value: formData[key],
-            checked: formData[key],
+            type: typeof formData[kindKey] === "boolean" ? "checkbox" : "text",
+            value: formData[kindKey],
+            checked: formData[kindKey],
           },
         };
         updateKind(kindItem.kind_id, key, mockEvent);
@@ -229,14 +230,17 @@ const Edit = (props: EditProps) => {
     if (fieldItem.startsWith("dimension")) {
       const newFieldData = Object.assign({}, fieldData);
       const [dimension, key, index] = fieldItem.split(".");
-      const dimensionsField = fieldData[fieldId]["dimensions"];
+      // TODO(strict): possible null at runtime if called before fields load
+      const dimensionsField = fieldData![fieldId]["dimensions"];
       const newDimensionData = dimensionsField
         ? dimensionsField
         : dimensionsDefault;
       if (key == "n") {
         newDimensionData.n = newValue;
       } else {
-        newDimensionData[key][index] = newValue;
+        (newDimensionData as unknown as Record<string, Record<string, unknown>>)[
+          key
+        ][index] = newValue;
       }
       newFieldData[fieldId]["dimensions"] = newDimensionData;
       setFieldData(newFieldData);
@@ -246,8 +250,15 @@ const Edit = (props: EditProps) => {
 
     // Update field data immediately
     const newFieldData = Object.assign({}, fieldData);
-    if (fieldData[fieldId][fieldItem] !== newValue) {
-      newFieldData[fieldId][fieldItem] = newValue;
+    // TODO(strict): possible null at runtime if called before fields load
+    if (
+      (fieldData![fieldId] as unknown as Record<string, unknown>)[
+        fieldItem
+      ] !== newValue
+    ) {
+      (newFieldData[fieldId] as unknown as Record<string, unknown>)[
+        fieldItem
+      ] = newValue;
       setFieldData(newFieldData);
       setFieldsSaveState((prev) => ({ ...prev, hasUnsavedChanges: true }));
     }
@@ -276,7 +287,8 @@ const Edit = (props: EditProps) => {
 
   const updateFactors = (fieldId: number, newFactors: string[]) => {
     if (
-      JSON.stringify(fieldData[fieldId]["factors"]) !==
+      // TODO(strict): possible null at runtime if called before fields load
+      JSON.stringify(fieldData![fieldId]["factors"]) !==
       JSON.stringify(newFactors)
     ) {
       const newFieldData = Object.assign({}, fieldData);
@@ -292,7 +304,8 @@ const Edit = (props: EditProps) => {
   ) => {
     if (sourceFieldId === targetFieldId) return;
 
-    const fieldValues = Object.values(fieldData);
+    // TODO(strict): possible null at runtime if called before fields load
+    const fieldValues = Object.values(fieldData!);
     const sourceField = fieldValues.find((f) => f.field_id === sourceFieldId);
     const targetField = fieldValues.find((f) => f.field_id === targetFieldId);
 
@@ -357,7 +370,8 @@ const Edit = (props: EditProps) => {
   const defaultFieldData: EditableField = {
     field_id: 0,
     slug: "",
-    kind_id: kindId,
+    // TODO(strict): possible null at runtime — wire kind_id is number | null
+    kind_id: kindId as number,
     name: "",
     type: "plain",
     display_order: 0,
@@ -469,7 +483,7 @@ const Edit = (props: EditProps) => {
     const lastSaveTimes = [
       kindForm.lastSaveTime,
       fieldsSaveState.lastSaveTime,
-    ].filter(Boolean);
+    ].filter(Boolean) as Date[];
     if (lastSaveTimes.length > 0) {
       const mostRecent = new Date(
         Math.max(...lastSaveTimes.map((t) => t.getTime())),

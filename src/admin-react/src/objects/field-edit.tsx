@@ -80,12 +80,12 @@ const DimensionFields = ({
   fieldId,
   updateField,
 }: DimensionFieldsProps) => {
-  if (dimensionsData.n <= 1) {
+  if (dimensionsData.n! <= 1) {
     return null;
   }
 
   const dimensionFields: ReactElement[] = [];
-  for (let i = 0; i < dimensionsData.n; i++) {
+  for (let i = 0; i < dimensionsData.n!; i++) {
     const inputId = `dimension-${fieldId}-${i}`;
     dimensionFields.push(
       <div className="dimension-field" key={`dimension-${i}`}>
@@ -199,7 +199,7 @@ const FieldTypeControls = ({
             <label htmlFor={`dimensions-${fieldId}`}>Dimensions</label>
             <select
               id={`dimensions-${fieldId}`}
-              value={dimensionsData.n}
+              value={dimensionsData.n!}
               onChange={(event) =>
                 updateField(fieldId, "dimension.n", event.target.value)
               }
@@ -412,7 +412,7 @@ const FieldEdit = (props: FieldEditProps) => {
             newField={newField}
           />
 
-          {!newField && type === "measure" && dimensionsData.n > 1 && (
+          {!newField && type === "measure" && dimensionsData.n! > 1 && (
             <DimensionFields
               dimensionsData={dimensionsData}
               fieldId={fieldId}

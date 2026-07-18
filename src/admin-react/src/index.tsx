@@ -21,7 +21,7 @@ const initializeAdminPageRouting = () => {
 if (!!document.getElementById("wpm-react-admin-app-container-general")) {
   initializeAdminPageRouting();
   const root = createRoot(
-    document.getElementById("wpm-react-admin-app-container-general"),
+    document.getElementById("wpm-react-admin-app-container-general")!,
   );
   root.render(<GeneralOptions />);
 } else if (
@@ -29,25 +29,25 @@ if (!!document.getElementById("wpm-react-admin-app-container-general")) {
 ) {
   initializeAdminPageRouting();
   const root = createRoot(
-    document.getElementById("wpm-react-admin-app-container-dashboard"),
+    document.getElementById("wpm-react-admin-app-container-dashboard")!,
   );
   root.render(<Dashboard />);
 } else if (!!document.getElementById("wpm-react-admin-app-container-objects")) {
   initializeAdminPageRouting();
   const root = createRoot(
-    document.getElementById("wpm-react-admin-app-container-objects"),
+    document.getElementById("wpm-react-admin-app-container-objects")!,
   );
   root.render(<ObjectPage />);
 } else if (!!document.getElementById("wpm-react-admin-app-container-remote")) {
   initializeAdminPageRouting();
   const root = createRoot(
-    document.getElementById("wpm-react-admin-app-container-remote"),
+    document.getElementById("wpm-react-admin-app-container-remote")!,
   );
   root.render(<RemoteAdmin />);
 } else if (!!document.getElementById("wpm-react-admin-app-container-oai-pmh")) {
   initializeAdminPageRouting();
   const root = createRoot(
-    document.getElementById("wpm-react-admin-app-container-oai-pmh"),
+    document.getElementById("wpm-react-admin-app-container-oai-pmh")!,
   );
   root.render(<OmiPmhAdmin />);
 }

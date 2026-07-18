@@ -111,9 +111,9 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 	}
 
 	const addChildObject = ( child: WPCorePostResponse, kind: ObjectKindChild ) => {
-		const {
-			kind_id
-		} = kind;
+		// TODO(strict): kind_id is number | null on the wire; a null here would
+		// index the "null" key at runtime. Asserted to preserve behavior.
+		const kind_id = kind.kind_id as number;
 
 		const updatedChildObjectData: Record<string, MuseumObject[]> = childObjectData ? Object.assign( {}, childObjectData ) : {};
 		if ( typeof updatedChildObjectData[ kind_id ] === 'undefined' ) {
@@ -139,16 +139,18 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 	const deleteChildObject = ( child: MuseumObject, kind: ObjectKindChild ) => {
 		if ( ! childObjects ) return;
 		const updatedChildObjects: Record<string, number[]> = Object.assign( {}, childObjects );
-		if ( typeof updatedChildObjects[ kind.kind_id ] === 'undefined' ) {
+		// TODO(strict): kind_id is number | null on the wire; asserted to
+		// preserve the existing index behavior.
+		if ( typeof updatedChildObjects[ kind.kind_id as number ] === 'undefined' ) {
 			return;
 		}
 		// TODO(ts-migration): mixes shapes — the array elements are numeric
 		// post IDs (no `.id` property) and `child` is museum-shaped (uppercase
 		// `ID`, no `.id`), so this compares undefined === undefined and always
 		// matches index 0. Pre-existing behavior preserved.
-		const index = updatedChildObjects[ kind.kind_id ].findIndex( object => ( object as any ).id === ( child as any ).id );
+		const index = updatedChildObjects[ kind.kind_id as number ].findIndex( object => ( object as any ).id === ( child as any ).id );
 		if ( index === -1 ) return;
-		updatedChildObjects[ kind.kind_id ].splice( index, 1 );
+		updatedChildObjects[ kind.kind_id as number ].splice( index, 1 );
 		setAttributes( {
 			childObjects : updatedChildObjects,
 			childObjectsStr : JSON.stringify( updatedChildObjects )
@@ -186,7 +188,9 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 				postContent += '<!-- wp:' + templateItem[0];
 				if ( templateItem.length > 1 ) {
 					postContent += ' {'
-					Object.entries( templateItem[1] ).forEach( ( [ key, value ] ) => {
+					// TODO(strict): the tuple's second element is optional; the
+					// length check above guarantees it exists here.
+					Object.entries( templateItem[1] as Record<string, unknown> ).forEach( ( [ key, value ] ) => {
 						postContent += `"${key}": "${value}", `
 					} );
 					postContent = postContent.slice(0, -2 );
@@ -214,8 +218,8 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 		<ChildKind
 			key               = { kind.kind_id }
 			kind              = { kind }
-			kindObjects       = { childObjectData && childObjectData[ kind.kind_id ] ?
-				childObjectData[ kind.kind_id] :
+			kindObjects       = { childObjectData && childObjectData[ kind.kind_id as number ] ?
+				childObjectData[ kind.kind_id as number ] :
 				[]
 			}
 			newChildObject    = { newChildObject }
