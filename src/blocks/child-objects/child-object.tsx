@@ -1,0 +1,133 @@
+import {
+	RichText
+} from '@wordpress/block-editor';
+
+import {
+	Button
+} from '@wordpress/components';
+
+import {
+	useState
+} from '@wordpress/element';
+
+import {
+	trash
+} from '../../icons';
+
+import type { MuseumObject, ImageSizeTuple } from '../../types';
+
+const decodeHTMLEntities = ( text: string ): string => {
+	var textArea = document.createElement('textarea');
+	textArea.innerHTML = text;
+	return textArea.value;
+}
+
+// TODO(ts-migration): `decodedPostTitle` is referenced below but was never
+// defined in the original JS — rendering this component throws a
+// ReferenceError at runtime. Declared ambient (erased at compile time) to
+// preserve the existing behavior without a compile error.
+declare const decodedPostTitle: string;
+
+// TODO(ts-migration): `isLarge` was dropped from @wordpress/components'
+// Button prop types, but the Edit/View buttons below still pass it (a legacy
+// styling prop at runtime). Cast the component to `any` to keep the
+// currently-working props without behavior change.
+const UntypedButton = Button as any;
+
+interface ChildObjectProps {
+	/**
+	 * TODO(ts-migration): freshly-created children are WP core REST responses
+	 * (lowercase `id`, no `post_title`/`thumbnail`) mixed in with museum-shaped
+	 * records by edit.tsx — typed as MuseumObject to match how this component
+	 * reads the data.
+	 */
+	objectData: MuseumObject;
+	updateTitle: ( child: MuseumObject, newTitle: string ) => void;
+	deleteChildObject: ( child: MuseumObject ) => void;
+}
+
+const ChildObject = ( props: ChildObjectProps ) => {
+	const {
+		objectData,
+		updateTitle,
+		deleteChildObject
+	} = props;
+
+	const {
+		edit_link,
+		link,
+		post_title,
+		ID,
+		thumbnail
+	} = objectData;
+
+	const [ currentTitle, updateCurrentTitle ] = useState( post_title );
+
+	const onTitleChange = ( newTitle: string ) => {
+		updateTitle( objectData, newTitle );
+		updateCurrentTitle( newTitle )
+	}
+
+	const deleteObject = () => {
+		// TODO: Replace with accessible modal dialog for better accessibility
+		const confirmDelete = confirm( `Are you sure you want to delete ${post_title}? This cannot be undone.`);
+		if ( ! confirmDelete ) return;
+		deleteChildObject( objectData );
+	}
+
+	return (
+		<div className = 'child-object'>
+			<Button
+				className = 'child-object-remove-button'
+				icon      = { trash }
+				onClick   = { deleteObject }
+				title     = 'Delete Object'
+				aria-label = {`Delete ${decodedPostTitle} object`}
+			/>
+			<div className = 'child-object-image-div'>
+				{ thumbnail && ( thumbnail as ImageSizeTuple )[0] ?
+					<img
+						className = 'child-object-image'
+						src       = { ( thumbnail as ImageSizeTuple )[0] }
+						alt       = { decodedPostTitle }
+					/>
+					:
+					<div className = 'child-object-image-placeholder'></div>
+				}
+			</div>
+			<div className = 'child-object-content'>
+				<div className = 'child-object-info'>
+					<RichText
+						className      = 'child-object-title-input'
+						value          = { currentTitle }
+						onChange       = { onTitleChange }
+						allowedFormats = { [] }
+					/>
+				</div>
+				<div className = 'child-object-actions'>
+					{ edit_link &&
+						<UntypedButton
+							href = { decodeHTMLEntities( edit_link ) }
+							isLarge
+							isSecondary
+						>
+							Edit
+						</UntypedButton>
+					}
+					{ link &&
+						<UntypedButton
+							href = { decodeHTMLEntities( link ) }
+							isLarge
+							isSecondary
+						>
+							View
+						</UntypedButton>
+					}
+				</div>
+			</div>
+
+		</div>
+	);
+}
+
+export default ChildObject;

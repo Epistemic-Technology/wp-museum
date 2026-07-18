@@ -47,7 +47,7 @@ lando playwright --grep="createObjectKind creates a complete object kind"
 
 ## Test Utilities
 
-The `utils.js` file provides common functionality for WordPress and Museum plugin testing:
+The `utils.ts` file provides common functionality for WordPress and Museum plugin testing:
 
 ### `loginAsAdmin(page, adminUser?, adminPass?)`
 
@@ -255,8 +255,8 @@ Tests for validating the utility functions including:
 
 ## Configuration
 
-Playwright configuration is in `playwright.config.js`. Key settings:
+Playwright configuration is in `playwright.config.ts`. Key settings:
 - Base URL: `https://wp-test.lndo.site`
 - Browsers: Chromium, Firefox, WebKit
-- Global setup: `global-setup.js` (loads environment variables)
+- Global setup: `global-setup.ts` (loads environment variables)
 - Parallel execution: Enabled by default (disable with `--workers=1`)

@@ -1,0 +1,736 @@
+import apiFetch from "@wordpress/api-fetch";
+import { useState, useEffect } from "@wordpress/element";
+import { Spinner } from "@wordpress/components";
+import { baseRestPath, wordPressRestBase } from "../util";
+import type {
+  ObjectKind,
+  Collection,
+  RemoteClient,
+  HealthCheckItem,
+  DashboardHealthResponse,
+} from "../../../types";
+
+/**
+ * Minimal WP core REST post shape (wp/v2 posts/pages/registered post types)
+ * as consumed by this dashboard. Not part of the wp-museum/v1 wire types.
+ */
+interface WPCorePost {
+  id: number;
+  type: string;
+  modified: string;
+  title?: { rendered?: string };
+}
+
+/**
+ * A normalized recent-activity entry: a WP core post, page, museum object,
+ * or museum Collection tagged with a display type.
+ */
+interface ActivityItem {
+  type: string;
+  modified: string;
+  isCollection: boolean;
+  /** WP core shape (posts/pages/museum objects). */
+  id?: number;
+  title?: { rendered?: string };
+  /** Museum Collection wire shape. */
+  ID?: number;
+  post_title?: string;
+}
+
+/** Per-kind object counts by post status. */
+interface KindStatusCounts {
+  label?: string | null;
+  published: number;
+  pending: number;
+  draft: number;
+}
+
+/** A pending museum object annotated with its kind. */
+interface PendingObject extends WPCorePost {
+  kind_label: string | null;
+  kind_name: string | null;
+}
+
+/** Data localized onto the page by the plugin's admin PHP. */
+interface WpmAdminData {
+  pluginVersion?: string;
+  wpVersion?: string;
+  phpVersion?: string;
+  phpMemoryLimit?: string;
+  dbTablesOk?: boolean;
+}
+
+type WpmWindow = Window & { wpmAdminData?: WpmAdminData };
+
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  subtitle?: string;
+  loading?: boolean;
+  href?: string;
+  onClick?: () => void;
+}
+
+/**
+ * Statistics Card Component
+ */
+const StatCard = ({
+  title,
+  value,
+  subtitle,
+  loading,
+  href,
+  onClick,
+}: StatCardProps) => {
+  const CardContent = () => (
+    <>
+      <div className="stat-card-header">{title}</div>
+      {loading ? (
+        <div className="stat-card-loading">
+          <Spinner />
+        </div>
+      ) : (
+        <>
+          <div className="stat-card-value">{value}</div>
+          {subtitle && <div className="stat-card-subtitle">{subtitle}</div>}
+        </>
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <a href={href} className="stat-card stat-card-clickable">
+        <CardContent />
+      </a>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="stat-card stat-card-clickable"
+        onClick={onClick}
+      >
+        <CardContent />
+      </button>
+    );
+  }
+
+  return (
+    <div className="stat-card">
+      <CardContent />
+    </div>
+  );
+};
+
+/**
+ * Statistics Panel Component
+ */
+const StatisticsPanel = () => {
+  const [objectKinds, setObjectKinds] = useState<ObjectKind[] | null>(null);
+  const [collections, setCollections] = useState<Collection[] | null>(null);
+  const [remoteClients, setRemoteClients] = useState<RemoteClient[] | null>(
+    null,
+  );
+  const [objectsByKind, setObjectsByKind] = useState<
+    Record<string, KindStatusCounts>
+  >({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch all data in parallel
+        const [kindsRes, collectionsRes, clientsRes] = await Promise.all([
+          apiFetch<ObjectKind[]>({ path: `${baseRestPath}/mobject_kinds` }),
+          apiFetch<Collection[]>({ path: `${baseRestPath}/collections` }),
+          apiFetch<RemoteClient[]>({ path: `${baseRestPath}/remote_clients` }),
+        ]);
+
+        setObjectKinds(kindsRes);
+        setCollections(collectionsRes);
+        setRemoteClients(clientsRes);
+
+        // Fetch object counts by kind and status
+        const kindCounts: Record<string, KindStatusCounts> = {};
+        for (const kind of kindsRes) {
+          try {
+            // Fetch counts for each status
+            const [publishedRes, pendingRes, draftRes] = await Promise.all([
+              apiFetch<Response, false>({
+                path: `${baseRestPath}/${kind.type_name}?per_page=1&status=publish`,
+                parse: false,
+              }),
+              apiFetch<Response, false>({
+                path: `${baseRestPath}/${kind.type_name}?per_page=1&status=pending`,
+                parse: false,
+              }),
+              apiFetch<Response, false>({
+                path: `${baseRestPath}/${kind.type_name}?per_page=1&status=draft`,
+                parse: false,
+              }),
+            ]);
+
+            kindCounts[kind.type_name] = {
+              label: kind.label,
+              published: parseInt(publishedRes.headers.get("X-WP-Total")) || 0,
+              pending: parseInt(pendingRes.headers.get("X-WP-Total")) || 0,
+              draft: parseInt(draftRes.headers.get("X-WP-Total")) || 0,
+            };
+          } catch (error) {
+            kindCounts[kind.type_name] = {
+              label: kind.label,
+              published: 0,
+              pending: 0,
+              draft: 0,
+            };
+          }
+        }
+        setObjectsByKind(kindCounts);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const totalCollections = collections?.length || 0;
+  const totalKinds = objectKinds?.length || 0;
+  const activeClients = remoteClients?.filter((c) => !c.blocked).length || 0;
+
+  // Build status subtitle for object kinds
+  const getStatusSubtitle = (counts: KindStatusCounts): string => {
+    const parts: string[] = [];
+    if (counts.published > 0) parts.push(`${counts.published} published`);
+    if (counts.pending > 0) parts.push(`${counts.pending} pending`);
+    if (counts.draft > 0) parts.push(`${counts.draft} draft`);
+    return parts.length > 0 ? parts.join(", ") : "No objects";
+  };
+
+  return (
+    <div className="dashboard-section">
+      <h2>At a Glance</h2>
+      <div className="stats-grid">
+        {/* Cards for each object kind */}
+        {objectKinds &&
+          objectKinds.map((kind) => {
+            const counts = objectsByKind[kind.type_name] || {
+              published: 0,
+              pending: 0,
+              draft: 0,
+            };
+            const total = counts.published + counts.pending + counts.draft;
+
+            return (
+              <StatCard
+                key={kind.kind_id}
+                title={kind.label}
+                value={total}
+                subtitle={getStatusSubtitle(counts)}
+                loading={loading}
+                href={`edit.php?post_type=${kind.type_name}`}
+              />
+            );
+          })}
+
+        {/* Collections Card */}
+        <StatCard
+          title="Collections"
+          value={totalCollections}
+          loading={loading}
+          href="edit.php?post_type=wpm_collection"
+        />
+
+        {/* Remote Clients Card */}
+        <StatCard
+          title="Remote Clients"
+          value={activeClients}
+          subtitle={
+            remoteClients && remoteClients.length > 0
+              ? `${remoteClients.filter((c) => c.blocked).length} blocked`
+              : "None registered"
+          }
+          loading={loading}
+          href="admin.php?page=museum_remote"
+        />
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Recent Activity Feed Component
+ */
+const RecentActivity = () => {
+  const [recentItems, setRecentItems] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      try {
+        // First, fetch object kinds to get all museum object types
+        const objectKinds = await apiFetch<ObjectKind[]>({
+          path: `${baseRestPath}/mobject_kinds`,
+        }).catch(() => [] as ObjectKind[]);
+
+        // Create a map of post type to label
+        const postTypeLabels: Record<string, string> = {
+          post: "Post",
+          page: "Page",
+          wpm_collection: "Collection",
+        };
+
+        objectKinds.forEach((kind) => {
+          postTypeLabels[kind.type_name] = kind.label;
+        });
+
+        // Fetch recent items from different sources
+        const fetchPromises: Promise<unknown[]>[] = [
+          // Regular posts
+          apiFetch<WPCorePost[]>({
+            path: `${wordPressRestBase}/posts?per_page=10&orderby=modified&order=desc`,
+          }).catch(() => []),
+          // Pages
+          apiFetch<WPCorePost[]>({
+            path: `${wordPressRestBase}/pages?per_page=10&orderby=modified&order=desc`,
+          }).catch(() => []),
+          // Collections
+          apiFetch<Collection[]>({
+            path: `${baseRestPath}/collections?per_page=10&orderby=modified&order=desc`,
+          }).catch(() => []),
+        ];
+
+        // Fetch museum objects for each kind
+        objectKinds.forEach((kind) => {
+          fetchPromises.push(
+            apiFetch<WPCorePost[]>({
+              path: `${wordPressRestBase}/${kind.type_name}?per_page=10&orderby=modified&order=desc`,
+            }).catch(() => []),
+          );
+        });
+
+        const results = await Promise.all(fetchPromises);
+        const [regularPosts, pages, collections, ...museumObjectsByKind] =
+          results as [
+            WPCorePost[],
+            WPCorePost[],
+            Collection[],
+            ...WPCorePost[][],
+          ];
+
+        console.log("Post Type Labels Map:", postTypeLabels);
+        console.log("Regular Posts:", regularPosts);
+        console.log("Pages:", pages);
+        console.log("Collections:", collections);
+        console.log("Museum Objects by Kind:", museumObjectsByKind);
+
+        // Combine and categorize all items
+        const combined: ActivityItem[] = [];
+
+        // Add regular posts
+        (regularPosts || []).forEach((item) => {
+          console.log("Regular Post item.type:", item.type);
+          combined.push({
+            ...item,
+            type: postTypeLabels[item.type] || "Post",
+            modified: item.modified,
+            isCollection: false,
+          });
+        });
+
+        // Add pages
+        (pages || []).forEach((item) => {
+          console.log("Page item.type:", item.type);
+          combined.push({
+            ...item,
+            type: postTypeLabels[item.type] || "Page",
+            modified: item.modified,
+            isCollection: false,
+          });
+        });
+
+        // Add collections (different structure)
+        (collections || []).forEach((item) => {
+          combined.push({
+            ...item,
+            type: "Collection",
+            modified: item.post_modified,
+            isCollection: true,
+          });
+        });
+
+        // Add museum objects
+        museumObjectsByKind.forEach((objects) => {
+          if (objects && objects.length > 0) {
+            objects.forEach((item) => {
+              console.log("Museum Object item.type:", item.type);
+              combined.push({
+                ...item,
+                type: postTypeLabels[item.type] || "Museum Object",
+                modified: item.modified,
+                isCollection: false,
+              });
+            });
+          }
+        });
+
+        // Sort by modified date
+        combined.sort(
+          (a, b) =>
+            (new Date(b.modified) as any) - (new Date(a.modified) as any),
+        );
+
+        setRecentItems(combined.slice(0, 20));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching recent activity:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchRecentActivity();
+  }, []);
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = (now as any) - (date as any);
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) {
+      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  const getEditUrl = (item: ActivityItem): string => {
+    if (item.isCollection) {
+      return `post.php?post=${item.ID}&action=edit`;
+    } else {
+      return `post.php?post=${item.id}&action=edit`;
+    }
+  };
+
+  const getTitle = (item: ActivityItem) => {
+    if (item.isCollection) {
+      return item.post_title;
+    } else {
+      return item.title?.rendered || (item.title as unknown as string);
+    }
+  };
+
+  return (
+    <div className="dashboard-section">
+      <h2>Recent Activity</h2>
+      {loading ? (
+        <div className="loading-container">
+          <Spinner />
+        </div>
+      ) : recentItems.length === 0 ? (
+        <p className="empty-message">No recent activity</p>
+      ) : (
+        <div className="activity-feed">
+          {recentItems.map((item, index) => (
+            <div key={index} className="activity-item">
+              <div className="activity-type-badge">{item.type}</div>
+              <div className="activity-content">
+                <a href={getEditUrl(item)} className="activity-title">
+                  {getTitle(item)}
+                </a>
+                <div className="activity-meta">
+                  Modified {formatDate(item.modified)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Pending Objects Component
+ */
+const PendingObjects = () => {
+  const [pendingObjects, setPendingObjects] = useState<PendingObject[]>([]);
+  const [objectKinds, setObjectKinds] = useState<ObjectKind[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPendingObjects = async () => {
+      try {
+        // First, fetch all object kinds
+        const kinds = await apiFetch<ObjectKind[]>({
+          path: `${baseRestPath}/mobject_kinds`,
+        });
+        setObjectKinds(kinds);
+
+        // Fetch pending objects for each kind
+        const allPendingObjects: PendingObject[] = [];
+        for (const kind of kinds) {
+          try {
+            const objects = await apiFetch<WPCorePost[]>({
+              path: `${wordPressRestBase}/${kind.type_name}?status=pending&per_page=100`,
+            });
+            if (objects && objects.length > 0) {
+              allPendingObjects.push(
+                ...objects.map((obj) => ({
+                  ...obj,
+                  kind_label: kind.label,
+                  kind_name: kind.type_name,
+                })),
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Error fetching pending objects for ${kind.type_name}:`,
+              error,
+            );
+          }
+        }
+
+        // Sort by modified date (most recent first)
+        allPendingObjects.sort(
+          (a, b) =>
+            (new Date(b.modified) as any) - (new Date(a.modified) as any),
+        );
+
+        setPendingObjects(allPendingObjects);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching pending objects:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchPendingObjects();
+  }, []);
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = (now as any) - (date as any);
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) {
+      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  return (
+    <div className="dashboard-section">
+      <h2>Pending Review</h2>
+      {loading ? (
+        <div className="loading-container">
+          <Spinner />
+        </div>
+      ) : pendingObjects.length === 0 ? (
+        <p className="empty-message">No objects pending review</p>
+      ) : (
+        <div className="pending-objects-list">
+          {pendingObjects.map((object) => (
+            <div key={object.id} className="pending-object-item">
+              <div className="pending-object-type-badge">
+                {object.kind_label}
+              </div>
+              <div className="pending-object-content">
+                <a
+                  href={`post.php?post=${object.id}&action=edit`}
+                  className="pending-object-title"
+                >
+                  {object.title?.rendered || "Untitled"}
+                </a>
+                <div className="pending-object-meta">
+                  Last modified {formatDate(object.modified)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * System Status Component
+ */
+const SystemStatus = () => {
+  const pluginVersion =
+    (window as WpmWindow).wpmAdminData?.pluginVersion || "Unknown";
+  const wpVersion = (window as WpmWindow).wpmAdminData?.wpVersion || "Unknown";
+  const phpVersion =
+    (window as WpmWindow).wpmAdminData?.phpVersion || "Unknown";
+  const phpMemoryLimit =
+    (window as WpmWindow).wpmAdminData?.phpMemoryLimit || "Unknown";
+  const dbTablesOk = (window as WpmWindow).wpmAdminData?.dbTablesOk;
+
+  return (
+    <div className="dashboard-section">
+      <h2>System Information</h2>
+      <div className="system-status">
+        <div className="status-item">
+          <span className="status-label">Plugin Version:</span>
+          <span className="status-value">{pluginVersion}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">WordPress Version:</span>
+          <span className="status-value">{wpVersion}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">PHP Version:</span>
+          <span className="status-value">{phpVersion}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">PHP Memory Limit:</span>
+          <span className="status-value">{phpMemoryLimit}</span>
+        </div>
+        <div className="status-item">
+          <span className="status-label">Database Tables:</span>
+          {dbTablesOk === false ? (
+            <span className="status-value status-error">Missing</span>
+          ) : (
+            <span className="status-value status-success">Active</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Quick Actions Component
+ */
+const QuickActions = () => {
+  const [objectKinds, setObjectKinds] = useState<ObjectKind[]>([]);
+
+  useEffect(() => {
+    apiFetch<ObjectKind[]>({ path: `${baseRestPath}/mobject_kinds` })
+      .then((kinds) => setObjectKinds(kinds || []))
+      .catch(() => setObjectKinds([]));
+  }, []);
+
+  const actions: { label: string; href: string }[] = [
+    ...objectKinds.map((kind) => ({
+      label: `Add ${kind.label}`,
+      href: `post-new.php?post_type=${kind.type_name}`,
+    })),
+    { label: "Add Collection", href: "post-new.php?post_type=wpm_collection" },
+    {
+      label: "Manage Object Kinds",
+      href: "admin.php?page=wpm-react-admin-objects",
+    },
+    { label: "Import / Export CSV", href: "admin.php?page=wpm-objects-admin" },
+  ];
+
+  return (
+    <div className="dashboard-section">
+      <h2>Quick Actions</h2>
+      <div className="quick-actions-list">
+        {actions.map((action) => (
+          <a key={action.href} href={action.href} className="quick-action-link">
+            {action.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Health Panel Component
+ */
+const HealthPanel = () => {
+  const [checks, setChecks] = useState<HealthCheckItem[] | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    apiFetch<DashboardHealthResponse>({
+      path: `${baseRestPath}/dashboard_health`,
+    })
+      .then((health) => setChecks(health?.checks || []))
+      .catch(() => setError(true));
+  }, []);
+
+  return (
+    <div className="dashboard-section">
+      <h2>Health</h2>
+      {error ? (
+        <p className="empty-message">Unable to run health checks.</p>
+      ) : checks === null ? (
+        <div className="loading-container">
+          <Spinner />
+        </div>
+      ) : checks.length === 0 ? (
+        <div className="health-all-clear">All checks passed</div>
+      ) : (
+        <div className="health-list">
+          {checks.map((check) => (
+            <div key={check.id} className={`health-item health-${check.severity}`}>
+              <p className="health-message">{check.message}</p>
+              {check.link && (
+                <a href={check.link} className="health-link">
+                  Review
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface DashboardProps {
+  [key: string]: unknown;
+}
+
+/**
+ * Main Dashboard Component
+ */
+const Dashboard = (props: DashboardProps) => {
+  return (
+    <div className="museum-admin-dashboard">
+      <div className="admin-header">
+        <h1>Museum Dashboard</h1>
+      </div>
+
+      <div className="dashboard-content">
+        <div className="dashboard-main-column">
+          <StatisticsPanel />
+          <RecentActivity />
+          <PendingObjects />
+        </div>
+
+        <div className="dashboard-side-column">
+          <QuickActions />
+          <HealthPanel />
+          <SystemStatus />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

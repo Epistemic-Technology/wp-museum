@@ -8,17 +8,17 @@ module.exports = {
     ...getWebpackEntryPoints("script")(),
     admin: {
       import: [
-        "./src/admin-react/src/index.js",
+        "./src/admin-react/src/index.tsx",
         "./src/admin-react/src/admin.scss",
       ],
       filename: "admin-react.js",
     },
     remote: {
-      import: "./museum-remote/src/index.js",
+      import: "./museum-remote/src/index.ts",
       filename: "museum-remote-admin.js",
     },
     "remote-front": {
-      import: "./museum-remote/src/frontend.js",
+      import: "./museum-remote/src/frontend.tsx",
       filename: "museum-remote-front.js",
     },
     components: {
