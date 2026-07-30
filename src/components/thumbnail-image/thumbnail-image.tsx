@@ -2,13 +2,6 @@
 
 import type { ImageDimensions } from '../image-size-panel/image-size-panel';
 
-// TODO(ts-migration): `alt` and `title` are referenced below but never declared or
-// destructured from props — evaluating the <img> branch throws a ReferenceError at
-// runtime. Preserving that behavior: `declare const` satisfies the compiler while
-// emitting no code, so the identifiers remain undeclared at runtime.
-declare const alt: any;
-declare const title: any;
-
 interface ThumbnailImageProps {
 	/** URL of the thumbnail image to display. */
 	thumbnailURL?: string | null;
@@ -16,6 +9,10 @@ interface ThumbnailImageProps {
 	imgDimensions: ImageDimensions;
 	/** Opens the search modal when the placeholder is clicked. */
 	setSearchModalOpen: ( isOpen: boolean ) => void;
+	/** Alt text for the thumbnail, falling back to `title`. */
+	alt?: string;
+	/** Title used as alt text when `alt` is not supplied. */
+	title?: string;
 }
 
 const ThumbnailImage = ( props: ThumbnailImageProps ) => {
@@ -23,6 +20,8 @@ const ThumbnailImage = ( props: ThumbnailImageProps ) => {
 		thumbnailURL,
 		imgDimensions,
 		setSearchModalOpen,
+		alt,
+		title,
 	} = props;
 
 	const thumbnailImageOrPlaceholder = thumbnailURL ?
