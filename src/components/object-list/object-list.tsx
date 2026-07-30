@@ -59,6 +59,7 @@ export const ObjectList = ( props: ObjectListProps ) => {
 	const ObjectRows = !! mObjects &&
 		mObjects.map( result =>
 			<ObjectRow
+				key          = { result.ID }
 				objectData   = { result }
 				displayImage = { displayImages }
 			/>
