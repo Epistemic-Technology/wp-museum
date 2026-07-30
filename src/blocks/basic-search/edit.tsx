@@ -108,7 +108,7 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 				<PanelBody
 					title = 'Search Options'
 				>
-					{ /* TODO(ts-migration): SelectControl's types expect string
+					{ /* NOTE(wp-types): SelectControl's types expect string
 					   values, but these numeric option values (and numeric
 					   value props) work at runtime; cast to keep behavior. */ }
 					<SelectControl

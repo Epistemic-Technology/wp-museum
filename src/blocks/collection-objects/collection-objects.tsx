@@ -71,7 +71,7 @@ const CollectionObjects = ( { attributes, setAttributes }: CollectionObjectsProp
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Display' ) }>
-					{ /* TODO(ts-migration): SelectControl types expect string values; these numeric value/options work at runtime and are preserved unchanged. */ }
+					{ /* NOTE(wp-types): SelectControl types expect string values; these numeric value/options work at runtime and are preserved unchanged. */ }
 					<SelectControl
 						label={ __( 'Results per Page' ) }
 						value={ resultsPerPage as any }

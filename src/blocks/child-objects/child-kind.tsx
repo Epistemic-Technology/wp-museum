@@ -6,7 +6,7 @@ import type { MuseumObject, ObjectKindChild } from '../../types';
 interface ChildKindProps {
 	kind: ObjectKindChild;
 	/**
-	 * TODO(ts-migration): records freshly created through the editor are WP
+	 * NOTE(wp-types): records freshly created through the editor are WP
 	 * core REST responses (lowercase `id`) rather than museum-shaped objects;
 	 * typed as MuseumObject[] to match how they are consumed.
 	 */

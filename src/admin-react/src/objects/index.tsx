@@ -167,7 +167,7 @@ const ObjectAdminControl = () => {
   // Handle initial load
   useEffect(() => {
     if (selectedPage === "edit" && objectKinds) {
-      // TODO(strict): getParam may return null; parseInt(null) yields NaN,
+      // NOTE(wp-types): getParam may return null; parseInt(null) yields NaN,
       // which the truthiness check below already handles.
       const kindId = parseInt(getParam("kind_id") as string);
       if (kindId) {
@@ -392,7 +392,7 @@ const ObjectAdminControl = () => {
       );
     case "edit":
       if (kindItem) {
-        // TODO(ts-migration): Edit's props are typed as the wire `ObjectKind`,
+        // NOTE(wp-types): Edit's props are typed as the wire `ObjectKind`,
         // but locally created kinds (defaultKind / imported kinds) may lack
         // the server-computed properties (oai_pmh_mappings, children, ...)
         // until the next refresh. Cast to preserve current runtime behavior.

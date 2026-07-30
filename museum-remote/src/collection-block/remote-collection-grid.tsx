@@ -232,7 +232,7 @@ const RemoteCollectionGrid = ( props: RemoteCollectionGridProps ) => {
 					<div className = 'thumbnail-wrapper'>
 							<ThumbnailImage
 								thumbnailURL       = { thumbnailURL }
-								// TODO(strict): possibly undefined at runtime —
+								// NOTE(wp-types): possibly undefined at runtime —
 								// imgDimensions is an optional attribute and
 								// setSearchModalOpen is not passed on the
 								// frontend; casts preserve current behavior.

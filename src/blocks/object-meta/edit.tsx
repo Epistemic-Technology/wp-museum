@@ -85,7 +85,7 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
   } else if (fieldType == "rich") {
     inputElement = (
       <RichText
-        // TODO(ts-migration): RichText's types don't declare a `name` prop,
+        // NOTE(wp-types): RichText's types don't declare a `name` prop,
         // but the prop was passed through at runtime before; spread-cast
         // keeps the identical runtime prop without a type error.
         {...({ name: fieldSlug } as any)}
@@ -170,7 +170,7 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
   } else if (fieldType == "links") {
     inputElement = <LinksControl value={fieldValue} onChange={onChange} />;
   } else {
-    // TODO(ts-migration): `name` is not a valid <div> prop in React's types,
+    // NOTE(wp-types): `name` is not a valid <div> prop in React's types,
     // but it was passed through to the DOM attribute before; spread-cast
     // keeps the identical runtime prop.
     inputElement = <div {...({ name: fieldSlug } as any)}>{fieldValue}</div>;
@@ -234,7 +234,7 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
 
   const { postType, postId, isSavingPost, currentPostStatus } = useSelect(
     (select) => {
-      // TODO(ts-migration): @wordpress/data's typed select() cannot resolve
+      // NOTE(wp-types): @wordpress/data's typed select() cannot resolve
       // the "core/editor" string key to its store selectors (types as never);
       // cast keeps the identical string-key lookup at runtime.
       const {
@@ -314,7 +314,7 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
                 updatedFieldErrors[fieldSlug] = (
                   <span>
                     {`${fieldName} must be unique, but is already used by `}
-                    {/* TODO(strict): edit_link is string | null on the wire;
+                    {/* NOTE(wp-types): edit_link is string | null on the wire;
                       cast preserves the existing render. */}
                   <a href={objectData.edit_link as string}>
                     {objectData.post_title}
@@ -456,7 +456,7 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
     helpText: string | null,
     detailedInstructions: string | null,
   ) => {
-    // TODO(strict): nulls are passed here on blur; stripslashes coerces
+    // NOTE(wp-types): nulls are passed here on blur; stripslashes coerces
     // via (str + ''), so the casts preserve the existing behavior.
     setCurrentHelpText(stripslashes(helpText as string));
     setCurrentDetailedInstructions(stripslashes(detailedInstructions as string));

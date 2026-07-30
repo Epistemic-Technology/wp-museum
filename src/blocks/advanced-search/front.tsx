@@ -101,7 +101,7 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
     resultsPerPage,
   } = attributes;
 
-  // TODO(ts-migration): the initial state is an empty OBJECT while the
+  // NOTE(wp-types): the initial state is an empty OBJECT while the
   // fetched value (and AdvancedSearchUI's prop type) is an array; cast
   // preserves the existing literal.
   const [collectionData, setCollectionData] = useState<Collection[]>(
@@ -109,7 +109,7 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
   );
   const [kindsData, setKindsData] = useState<ObjectKind[]>([]);
   const [searchResults, setSearchResults] = useState<MuseumObject[]>([]);
-  // TODO(ts-migration): the initial state is an empty ARRAY that is then
+  // NOTE(wp-types): the initial state is an empty ARRAY that is then
   // treated as a params object; cast preserves the existing literal.
   const [currentSearchParams, setCurrentSearchParams] =
     useState<AdvancedSearchParams>([] as unknown as AdvancedSearchParams);
@@ -144,7 +144,7 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
   };
 
   const onSearch = (searchParams: AdvancedSearchParams) => {
-    // TODO(strict): `undefined > 0` is false at runtime, so the cast
+    // NOTE(wp-types): `undefined > 0` is false at runtime, so the cast
     // preserves the existing comparison; inside the branch searchFields is
     // guaranteed non-empty, so the non-null assertion is safe.
     if ((searchParams.searchFields?.length as number) > 0) {
@@ -225,7 +225,7 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
           currentPage={currentPage}
           totalPages={totalPages}
           searchCallback={onSearch}
-          /* TODO(ts-migration): AdvancedSearchParams carries extra keys
+          /* NOTE(wp-types): AdvancedSearchParams carries extra keys
              (searchFields, selectedFlags, …) beyond MuseumObjectSearchParams'
              index signature; cast preserves what is sent today. */
           searchParams={currentSearchParams as MuseumObjectSearchParams}

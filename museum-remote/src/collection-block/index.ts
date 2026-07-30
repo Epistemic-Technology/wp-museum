@@ -52,4 +52,4 @@ registerBlockType( 'museum-remote/collection-block', {
 	category: 'embed',
 	edit,
 	save: () => null
-} as any ); // TODO(ts-migration): @wordpress/blocks' BlockConfiguration requires an `attributes` key and a BlockEditProps-shaped edit component; this dynamic block defines attributes server-side, so cast to keep the existing registration unchanged.
+} as any ); // NOTE(wp-types): @wordpress/blocks' BlockConfiguration requires an `attributes` key and a BlockEditProps-shaped edit component; this dynamic block defines attributes server-side, so cast to keep the existing registration unchanged.

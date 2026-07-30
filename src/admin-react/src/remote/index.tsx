@@ -4,7 +4,7 @@ import { Button, SVG, Path } from "@wordpress/components";
 
 import type { RemoteClient, AdminOptions } from "../../../types";
 
-// TODO(ts-migration): RemoteClient.blocked is `true | null` on the wire, never
+// NOTE(wp-types): RemoteClient.blocked is `true | null` on the wire, never
 // false, but the checkbox UI writes real booleans (including false) into local
 // state before POSTing. This row type widens `blocked` to represent the local
 // working shape without changing behavior.

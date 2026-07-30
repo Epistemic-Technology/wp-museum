@@ -164,7 +164,7 @@ const withPagination = < P extends object >( BaseComponent: ComponentType<P> ) =
 					<PageList />
 				</div>
 			}
-			{ /* TODO(ts-migration): cast because TS cannot prove
+			{ /* NOTE(wp-types): cast because TS cannot prove
 			   Omit<P & WithPaginationProps, keyof WithPaginationProps>
 			   is assignable to generic P; runtime spread is unchanged. */ }
 			<BaseComponent { ...( otherProps as unknown as P ) } />

@@ -97,7 +97,7 @@ const EmbeddedSearchEdit = ( props: EmbeddedSearchEditProps ) => {
 					</label>
 				</PanelRow>
 				<PanelRow>
-					{ /* TODO(ts-migration): RangeControl types expect numbers for
+					{ /* NOTE(wp-types): RangeControl types expect numbers for
 					     min/max/step/initialPosition, but the working code passes
 					     string literals; cast to preserve behavior. */ }
 					<RangeControl

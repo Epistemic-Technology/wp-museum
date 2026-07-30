@@ -111,7 +111,7 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 	}
 
 	const addChildObject = ( child: WPCorePostResponse, kind: ObjectKindChild ) => {
-		// TODO(strict): kind_id is number | null on the wire; a null here would
+		// NOTE(wp-types): kind_id is number | null on the wire; a null here would
 		// index the "null" key at runtime. Asserted to preserve behavior.
 		const kind_id = kind.kind_id as number;
 
@@ -119,7 +119,7 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 		if ( typeof updatedChildObjectData[ kind_id ] === 'undefined' ) {
 			updatedChildObjectData[ kind_id ] = [];
 		}
-		// TODO(ts-migration): mixes shapes — `child` is a WP core REST response
+		// NOTE(wp-types): mixes shapes — `child` is a WP core REST response
 		// (lowercase `id`), pushed into a list of museum-shaped objects
 		// (uppercase `ID`) consumed by ChildObject.
 		updatedChildObjectData[ kind_id ].push( child as unknown as MuseumObject );
@@ -139,7 +139,7 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 	const deleteChildObject = ( child: MuseumObject, kind: ObjectKindChild ) => {
 		if ( ! childObjects ) return;
 		const updatedChildObjects: Record<string, number[]> = Object.assign( {}, childObjects );
-		// TODO(strict): kind_id is number | null on the wire; asserted to
+		// NOTE(wp-types): kind_id is number | null on the wire; asserted to
 		// preserve the existing index behavior.
 		if ( typeof updatedChildObjects[ kind.kind_id as number ] === 'undefined' ) {
 			return;
@@ -188,7 +188,7 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 				postContent += '<!-- wp:' + templateItem[0];
 				if ( templateItem.length > 1 ) {
 					postContent += ' {'
-					// TODO(strict): the tuple's second element is optional; the
+					// NOTE(wp-types): the tuple's second element is optional; the
 					// length check above guarantees it exists here.
 					Object.entries( templateItem[1] as Record<string, unknown> ).forEach( ( [ key, value ] ) => {
 						postContent += `"${key}": "${value}", `

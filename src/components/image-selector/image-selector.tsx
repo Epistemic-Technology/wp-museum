@@ -19,7 +19,7 @@ import {
 
 import { getBestImage } from '../../javascript/util';
 
-// TODO(ts-migration): @wordpress/components' deprecated IconButton type
+// NOTE(wp-types): @wordpress/components' deprecated IconButton type
 // resolves its acceptable props to `never`, rejecting the currently-working
 // className/icon/onClick props. Cast to keep behavior unchanged.
 const IconButtonCompat = IconButton as any;

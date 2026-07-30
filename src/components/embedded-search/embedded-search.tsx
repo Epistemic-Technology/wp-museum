@@ -75,7 +75,7 @@ const EmbeddedSearch = ( props: EmbeddedSearchProps ) => {
 		if ( runSearch ) {
 			runSearch( searchValues );
 		} else if ( searchPageURL ) {
-			// TODO(ts-migration): URLSearchParams typing expects string values,
+			// NOTE(wp-types): URLSearchParams typing expects string values,
 			// but search params can include numbers/booleans/arrays; they were
 			// already coerced to strings at runtime, so cast to keep behavior.
 			const queryString = new URLSearchParams( searchValues as Record<string, string> ).toString();

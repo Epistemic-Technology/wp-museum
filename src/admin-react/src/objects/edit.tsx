@@ -19,7 +19,7 @@ import { navigateToMain } from "../router";
 
 const HELP_PANEL_STORAGE_KEY = "wpm-field-types-help-open";
 
-// TODO(ts-migration): see comment at the usage site — memo() from
+// NOTE(wp-types): see comment at the usage site — memo() from
 // @wordpress/element loses KindSettings' props type.
 const KindSettingsCompat = KindSettings as any;
 
@@ -590,7 +590,7 @@ const Edit = (props: EditProps) => {
           <Card className="kind-settings-card">
             <CardBody>
               <h2>Object Settings</h2>
-              {/* TODO(ts-migration): @wordpress/element's memo() typing
+              {/* NOTE(wp-types): @wordpress/element's memo() typing
                   erases KindSettings' props interface (it resolves to
                   `object`), rejecting these currently-working props — cast
                   the component rather than changing behavior. */}

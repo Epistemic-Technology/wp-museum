@@ -33,7 +33,7 @@ const ObjectRow = ( props: ObjectRowProps ) => {
 			<div className = 'object-row-content'>
 				{ displayImage &&
 					<div className = 'object-row-image'>
-						{ /* TODO(ts-migration): thumbnail can be `[]` or null on the
+						{ /* NOTE(wp-types): thumbnail can be `[]` or null on the
 						   wire (object without an image); cast preserves the existing
 						   unguarded index access. */ }
 						<a href = { link }><img src={( thumbnail as ImageSizeTuple )[0]} alt={decodedPostTitle} /></a>

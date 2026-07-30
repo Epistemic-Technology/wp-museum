@@ -75,7 +75,7 @@ interface CollectionMainNavigationEditProps {
 	setAttributes: ( attributes: Partial<CollectionMainNavigationBlockAttributes> ) => void;
 }
 
-// TODO(ts-migration): ColorPicker's current types don't accept the `disabled`
+// NOTE(wp-types): ColorPicker's current types don't accept the `disabled`
 // prop this block has always passed, and the deprecated onChangeComplete
 // callback's argument is typed as string | LegacyColor-object while runtime
 // always receives the object form with `.hex`. Cast to `any` to preserve

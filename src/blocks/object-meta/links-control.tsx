@@ -1,5 +1,5 @@
 import apiFetch from "@wordpress/api-fetch";
-// TODO(ts-migration): @types/wordpress__block-editor does not declare
+// NOTE(wp-types): @types/wordpress__block-editor does not declare
 // __experimentalLinkControl; ts-ignore keeps the identical runtime import.
 // @ts-ignore
 import { __experimentalLinkControl as LinkControl } from "@wordpress/block-editor";

@@ -14,7 +14,7 @@ import {
 
 import { __ } from "@wordpress/i18n";
 
-// TODO(ts-migration): RangeControl is passed string literals for min/max/step/
+// NOTE(wp-types): RangeControl is passed string literals for min/max/step/
 // initialPosition (e.g. min='0.25') while @wordpress/components types them as
 // numbers. The strings work at runtime, so cast the component to keep the
 // existing props unchanged.

@@ -30,7 +30,7 @@ declare const decodedPostTitle: string;
 
 interface ChildObjectProps {
 	/**
-	 * TODO(ts-migration): freshly-created children are WP core REST responses
+	 * NOTE(wp-types): freshly-created children are WP core REST responses
 	 * (lowercase `id`, no `post_title`/`thumbnail`) mixed in with museum-shaped
 	 * records by edit.tsx — typed as MuseumObject to match how this component
 	 * reads the data.

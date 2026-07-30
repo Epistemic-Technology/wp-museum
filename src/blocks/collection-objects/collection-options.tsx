@@ -18,7 +18,7 @@ import {
 
 import { museum } from "../../icons";
 
-// TODO(ts-migration): PluginDocumentSettingPanel's types don't accept the
+// NOTE(wp-types): PluginDocumentSettingPanel's types don't accept the
 // `opened` prop, but it is passed through and works at runtime; cast the
 // component to keep behavior unchanged.
 const PluginDocumentSettingPanelUntyped = PluginDocumentSettingPanel as any;

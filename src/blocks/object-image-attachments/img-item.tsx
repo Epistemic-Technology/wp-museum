@@ -39,7 +39,7 @@ const MoveToolbar = ( props: MoveToolbarProps ) => {
 	} = props;
 
 	return (
-		// TODO(ts-migration): @wordpress/components' ToolbarProps requires a
+		// NOTE(wp-types): @wordpress/components' ToolbarProps requires a
 		// `label` prop (the accessible toolbar variant), but this legacy
 		// label-less usage works at runtime (renders as a ToolbarGroup).
 		// Props cast to keep current behavior compiling.

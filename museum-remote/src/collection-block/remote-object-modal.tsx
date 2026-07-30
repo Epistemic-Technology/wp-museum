@@ -76,13 +76,13 @@ const RemoteObjectModal = ( props: RemoteObjectModalProps ) => {
 	return (
 		<>
 		{ modalOpen &&
-			// TODO(ts-migration): `images` receives the Object.values() ARRAY
+			// NOTE(wp-types): `images` receives the Object.values() ARRAY
 			// although ObjectModal types the prop as the keyed
 			// ObjectImagesResponse map; ObjectModal immediately calls
 			// Object.values() on it again (a no-op on an array), so runtime
 			// behavior is identical. Cast preserves the existing call.
 			<ObjectModal
-				// TODO(strict): post_title / link are typed optional on
+				// NOTE(wp-types): post_title / link are typed optional on
 				// Partial<MuseumObject>; casts preserve current behavior.
 				title    = { post_title as string }
 				content  = { excerpt }

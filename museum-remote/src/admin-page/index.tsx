@@ -154,7 +154,7 @@ const RemoteAdminPage = () => {
 	}
 
 	const getUUID = ( newData: RemoteData | false | null = null ) => {
-		// TODO(ts-migration): GET /remote_data returns `false` before the option
+		// NOTE(wp-types): GET /remote_data returns `false` before the option
 		// is first saved; that value flows through here and is dereferenced as an
 		// object (yielding undefined properties). Cast preserves current behavior.
 		const data = ( newData === null ? remoteData : newData ) as RemoteData;
@@ -177,7 +177,7 @@ const RemoteAdminPage = () => {
 	const doConnect = ( newData: RemoteData | false | null = null ) => {
 		setCurrentlyConnecting( true );
 		setConnectionError( null );
-		// TODO(ts-migration): GET /remote_data returns `false` before the option
+		// NOTE(wp-types): GET /remote_data returns `false` before the option
 		// is first saved; doConnect is then called with `false` and reads
 		// properties off it (yielding undefined). Cast preserves current behavior.
 		const data = ( newData === null ? remoteData : newData ) as RemoteData;

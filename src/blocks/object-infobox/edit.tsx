@@ -35,7 +35,7 @@ import type {
 
 import type { ImageDimensions } from "../../components/image-size-panel/image-size-panel";
 
-// TODO(ts-migration): ObjectEmbedPanel's props type requires initialOpen, but
+// NOTE(wp-types): ObjectEmbedPanel's props type requires initialOpen, but
 // this block has never passed it (so it is undefined at runtime). Cast to keep
 // the currently-working call site unchanged.
 const ObjectEmbedPanelCompat = ObjectEmbedPanel as any;

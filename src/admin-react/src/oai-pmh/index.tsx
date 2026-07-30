@@ -303,7 +303,7 @@ const OmiPmhAdmin = () => {
               name: field.name,
               type: "kind_field",
             }));
-            // TODO(ts-migration): this fallback puts the numeric field_id
+            // NOTE(wp-types): this fallback puts the numeric field_id
             // into `id`, whereas OaiPmhAvailableField.id is a string on the
             // wire; it is only used as a React key, so behavior is preserved
             // via assertion.
@@ -312,7 +312,7 @@ const OmiPmhAdmin = () => {
 
           // Extract Dublin Core mappings from kind data
           if (kind.oai_pmh_mappings) {
-            // TODO(ts-migration): kind.oai_pmh_mappings also carries
+            // NOTE(wp-types): kind.oai_pmh_mappings also carries
             // identifier_prefix (a string) alongside the per-field mapping
             // objects; it is stored in dcMappings state as-is and later
             // overwritten on save. Assertion preserves current behavior.

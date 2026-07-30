@@ -98,7 +98,7 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
     resultsPerPage,
   } = attributes;
 
-  // TODO(ts-migration): the initial state is an empty OBJECT while the
+  // NOTE(wp-types): the initial state is an empty OBJECT while the
   // fetched value (and AdvancedSearchUI's prop type) is an array; cast
   // preserves the existing literal.
   const [collectionData, setCollectionData] = useState<Collection[]>(
@@ -208,7 +208,7 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
           />
         </PanelBody>
         <PanelBody title="Results">
-          {/* TODO(ts-migration): SelectControl's types expect string values,
+          {/* NOTE(wp-types): SelectControl's types expect string values,
               but these numeric option values (and numeric value props) work
               at runtime; cast to keep behavior. */}
           <SelectControl
@@ -268,7 +268,7 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
           currentPage={(searchResults[0] as any)?.query_data?.current_page || 1}
           totalPages={(searchResults[0] as any)?.query_data?.num_pages || 0}
           searchCallback={onSearch}
-          /* TODO(ts-migration): AdvancedSearchParams carries extra keys
+          /* NOTE(wp-types): AdvancedSearchParams carries extra keys
              (searchFields, posts_per_page, …) beyond MuseumObjectSearchParams'
              index signature; cast preserves what is sent today. */
           searchParams={currentSearchParams as MuseumObjectSearchParams}

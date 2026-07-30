@@ -108,7 +108,7 @@ const InfoContent = (props: InfoContentProps) => {
       .map((key) => (
         <li key={"field_list_" + key} style={{ fontSize: fontSize + "em" }}>
           <span className="field-name">{fieldData[key]["name"]}: </span>
-          {/* TODO(ts-migration): content is typed as MuseumObjectFieldValue,
+          {/* NOTE(wp-types): content is typed as MuseumObjectFieldValue,
               which includes non-renderable link/array shapes; in practice
               those arrive as strings (or null, normalized to "Unknown"
               above). Cast to ReactNode to keep rendering unchanged. */}

@@ -309,7 +309,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
     if (!selectedKind && !!kindsData && kindsData.length > 0) {
       setSearchValues({
         ...searchValues,
-        // TODO(strict): kind_id is typed number | null; preserved as-is.
+        // NOTE(wp-types): kind_id is typed number | null; preserved as-is.
         selectedKind: kindsData[0].kind_id as number,
       });
     }
@@ -444,7 +444,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
               (showObjectType ? " search-visible" : " search-hidden")
             }
           >
-            {/* TODO(ts-migration): SelectControl's types want string
+            {/* NOTE(wp-types): SelectControl's types want string
               value/option values, but kind_id values are numbers at runtime;
               cast to keep the existing behavior. */}
             <SelectControl
@@ -508,7 +508,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
             />
           )}
           {(inEditor || showCollections) && (
-            // TODO(ts-migration): SelectControl's types want string option
+            // NOTE(wp-types): SelectControl's types want string option
             // values, but collection IDs are numbers at runtime; cast to keep
             // the existing behavior.
             <SelectControl

@@ -41,7 +41,7 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
     columns = 3,
   } = attributes;
 
-  // TODO(ts-migration): the initial state is an empty ARRAY that is then
+  // NOTE(wp-types): the initial state is an empty ARRAY that is then
   // treated as a params object; cast preserves the existing literal.
   const [currentSearchParams, setCurrentSearchParams] =
     useState<MuseumObjectSearchParams>([] as unknown as MuseumObjectSearchParams);

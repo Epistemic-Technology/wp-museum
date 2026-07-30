@@ -18,7 +18,7 @@ import type { MuseumObject, ObjectImagesResponse } from "../../types";
 
 interface ObjectGridBoxProps {
   mObject: MuseumObject;
-  // TODO(ts-migration): defaults to "" (a string), while ObjectGrid passes a
+  // NOTE(wp-types): defaults to "" (a string), while ObjectGrid passes a
   // CSSProperties object; kept as-is and cast on the style attribute below.
   imgStyle?: CSSProperties | string;
   displayTitle?: boolean;
@@ -143,7 +143,7 @@ const ObjectGridBoxDynamicImage = (props: ObjectGridBoxDynamicImageProps) => {
     setImgData(null);
     fetchObjectImages(mObject.ID).then((result) => {
       if (result !== null) {
-        // TODO(ts-migration): fetchObjectImages (src/javascript/util) returns
+        // NOTE(wp-types): fetchObjectImages (src/javascript/util) returns
         // Promise<unknown> from untyped apiFetch; cast to the known response shape.
         setImgData(result as ObjectImagesResponse);
       }

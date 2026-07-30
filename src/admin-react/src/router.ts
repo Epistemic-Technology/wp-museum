@@ -49,7 +49,7 @@ export const updateUrlParams = (
     }
   });
 
-  // TODO(ts-migration): remaining values may be numbers at runtime;
+  // NOTE(wp-types): remaining values may be numbers at runtime;
   // URLSearchParams stringifies them, but its lib type only accepts strings.
   const urlParams = new URLSearchParams(updatedParams as Record<string, string>);
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;

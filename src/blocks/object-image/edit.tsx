@@ -78,7 +78,7 @@ interface ImgDataUpdate {
 	totalImages?: number;
 }
 
-// TODO(ts-migration): edit passes imgHeight/imgWidth props to ImageSelector
+// NOTE(wp-types): edit passes imgHeight/imgWidth props to ImageSelector
 // and ImageSizePanel, which do not declare (or use) those props. Cast to keep
 // the currently-working props unchanged rather than removing them.
 const ImageSelectorCompat = ImageSelector as any;
