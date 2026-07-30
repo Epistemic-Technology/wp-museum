@@ -30,6 +30,19 @@ module.exports = {
 		...defaultPreset.setupFiles,
 		'<rootDir>/tests/unit/support/jest-setup.js',
 	],
+	// @wordpress/element bundles its own copy of react/react-dom, so a
+	// component that takes its hooks from @wordpress/element gets a different
+	// React instance than react-dom/server does, and every hook call fails
+	// with "Invalid hook call". Pin all of them to one copy — which is what
+	// production does anyway, since webpack externalizes React to the single
+	// instance WordPress provides on window.
+	moduleNameMapper: {
+		...defaultPreset.moduleNameMapper,
+		'^react$': require.resolve( 'react' ),
+		'^react-dom$': require.resolve( 'react-dom' ),
+		'^react-dom/server$': require.resolve( 'react-dom/server' ),
+		'^react/jsx-runtime$': require.resolve( 'react/jsx-runtime' ),
+	},
 	testPathIgnorePatterns: [
 		'/node_modules/',
 		'<rootDir>/vendor/',
