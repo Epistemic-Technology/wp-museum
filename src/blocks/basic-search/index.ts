@@ -13,7 +13,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from '@wordpress/blocks';
+import { registerMuseumBlock } from '../register-museum-block';
 import { __ } from '@wordpress/i18n';
 import { museum } from '../../icons';
 
@@ -22,17 +22,10 @@ import { museum } from '../../icons';
  */
 import edit from './edit';
 
-registerBlockType( 'wp-museum/basic-search', {
+registerMuseumBlock( 'wp-museum/basic-search', {
 	title    : __( 'Basic Search' ),
-	// TODO(ts-migration): registerBlockType's types only accept a dashicon
-	// string or an icon descriptor object, but a plain JSX element works at
-	// runtime; cast to keep behavior unchanged.
-	icon     : museum as any,
+	icon     : museum,
 	category : 'wp-museum',
-	// TODO(ts-migration): edit's typed props (attributes as
-	// BasicSearchAttributes) are narrower than the generic
-	// BlockEditProps<Record<string, unknown>> the types expect; cast to keep
-	// behavior unchanged.
-	edit     : edit as any,
+	edit     : edit,
 	save     : () => null,
 } );

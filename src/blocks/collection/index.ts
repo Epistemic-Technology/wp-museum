@@ -27,7 +27,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from "@wordpress/blocks";
+import { registerMuseumBlock } from "../register-museum-block";
 import { __ } from "@wordpress/i18n";
 
 /**
@@ -37,10 +37,10 @@ import edit from "./edit";
 
 import { museum } from "../../icons";
 
-registerBlockType("wp-museum/collection", {
+registerMuseumBlock("wp-museum/collection", {
   title: __("Collection"),
   category: "wp-museum",
   icon: museum,
   edit,
   save: () => null,
-} as any); // TODO(ts-migration): @wordpress/blocks' BlockConfiguration requires an `attributes` key and a BlockEditProps-shaped edit component; this dynamic block defines attributes server-side via block.json, so cast to keep the existing registration unchanged.
+});

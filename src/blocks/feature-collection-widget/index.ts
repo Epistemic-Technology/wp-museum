@@ -15,7 +15,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from '@wordpress/blocks';
+import { registerMuseumBlock } from '../register-museum-block';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -27,17 +27,10 @@ import edit from './edit';
 /**
  * Registers the block.
  */
-registerBlockType( 'wp-museum/feature-collection-widget', {
+registerMuseumBlock( 'wp-museum/feature-collection-widget', {
 	title    : __( 'Featured Collection'),
-	// TODO(ts-migration): registerBlockType's types only accept a dashicon
-	// string or an icon descriptor object, but a plain JSX element works at
-	// runtime; cast to keep behavior unchanged.
-	icon     : museum as any,
+	icon     : museum,
 	category : 'widgets',
-	// TODO(ts-migration): edit's typed props (attributes as
-	// FeaturedCollectionEditAttributes) are narrower than the generic
-	// BlockEditProps<Record<string, unknown>> the types expect; cast to keep
-	// behavior unchanged.
-	edit     : edit as any,
+	edit     : edit,
 	save     : () => null,
 } );

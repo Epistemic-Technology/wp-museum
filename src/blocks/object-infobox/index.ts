@@ -30,7 +30,7 @@
  *  - fontSize       {number}  Font size of description & field text (em).
  *  - titleTag       {string}  HTML tag for title (h1, h2, p, etc).
  */
-import { registerBlockType } from "@wordpress/blocks";
+import { registerMuseumBlock } from "../register-museum-block";
 
 import { __ } from "@wordpress/i18n";
 
@@ -39,20 +39,13 @@ import { museum } from '../../icons';
 
 
 
-registerBlockType('wp-museum/object-infobox', {
+registerMuseumBlock('wp-museum/object-infobox', {
 	title: __('Object Infobox'),
-	// TODO(ts-migration): registerBlockType's types only accept a dashicon
-	// string or an icon descriptor object, but a plain JSX element works at
-	// runtime; cast to keep behavior unchanged.
-	icon: museum as any,
+	icon: museum,
 	category: 'wp-museum',
 	supports: {
 		align: [ 'left', 'right', 'center' ]
 	},
-	// TODO(ts-migration): edit's typed props (attributes as
-	// ObjectInfoboxAttributes) are narrower than the generic
-	// BlockEditProps<Record<string, unknown>> the types expect; cast to keep
-	// behavior unchanged.
-	edit: edit as any,
+	edit: edit,
 	save       : ( ) => null
 });

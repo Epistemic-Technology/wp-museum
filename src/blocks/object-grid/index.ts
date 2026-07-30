@@ -22,7 +22,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from "@wordpress/blocks";
+import { registerMuseumBlock } from "../register-museum-block";
 
 /**
  * Internal dependencies
@@ -32,11 +32,7 @@ import save from './save';
 
 
 
-// TODO(ts-migration): This block's title, category, and attributes are
-// registered server-side from block.json, so the client-side settings contain
-// only edit/save; the BlockConfiguration types require the missing fields, so
-// cast to keep the existing call unchanged.
-registerBlockType( 'wp-museum/object-grid', {
+registerMuseumBlock( 'wp-museum/object-grid', {
 	edit,
 	save
-} as any );
+} );

@@ -25,7 +25,7 @@
 /**
  * WordPress dependencies
  */
-import { registerBlockType } from "@wordpress/blocks";
+import { registerMuseumBlock } from "../register-museum-block";
 
 import { __ } from "@wordpress/i18n";
 
@@ -39,12 +39,7 @@ import { museum } from '../../icons';
 import edit from './edit';
 import save from './save';
 
-// TODO(ts-migration): the settings object uses attribute type 'float' (not a
-// valid block-attribute type — @wordpress/blocks types only allow
-// string/boolean/object/null/array/integer/number) and null defaults for
-// number/string attributes. Cast to keep the currently-working registration
-// unchanged.
-registerBlockType( 'wp-museum/object-image', {
+registerMuseumBlock( 'wp-museum/object-image', {
 	title      : __( 'Object Image'),
 	icon       : museum,
 	category   : 'wp-museum',
@@ -131,4 +126,4 @@ registerBlockType( 'wp-museum/object-image', {
 	},
 	edit,
 	save
-} as any );
+} );
