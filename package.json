@@ -26,6 +26,8 @@
     "phpunit:debug": "docker compose exec -e XDEBUG_MODE=debug fpm-test php -d xdebug.start_with_request=yes /app/vendor/bin/phpunit",
     "test": "docker compose exec fpm-test bash -c '/app/docker/reset-test-wordpress.sh && phpunit'",
     "test:reset": "docker compose exec fpm-test /app/docker/reset-test-wordpress.sh",
+    "test:unit": "wp-scripts test-unit-js --config jest.config.js",
+    "test:unit:watch": "wp-scripts test-unit-js --config jest.config.js --watch",
     "test:e2e": "docker compose --profile playwright run --rm playwright /app/docker/run-playwright.sh",
     "test:e2e:ui": "docker compose --profile playwright run --rm playwright npx playwright test --ui",
     "test:e2e:debug": "docker compose --profile playwright run --rm playwright npx playwright test --debug",
