@@ -94,10 +94,7 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 		width: 1024
 	}
 
-	// TODO(ts-migration): pre-existing `!! imgArray.length > 0` compares a
-	// boolean to a number (true > 0 — same result as length > 0); cast keeps
-	// the expression as-is without changing behavior.
-	const bestImage = ( ( !! imgArray.length as unknown as number ) > 0 ) ?
+	const bestImage = imgArray.length > 0 ?
 		getBestImage( imgArray[ imgIndex ], imgDimensions ) :
 		null;
 
