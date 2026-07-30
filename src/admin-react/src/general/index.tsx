@@ -6,7 +6,7 @@ import { Button } from "@wordpress/components";
 
 import { __ } from "@wordpress/i18n";
 
-import { baseRestPath } from "../util";
+import { baseRestPath } from "../../../javascript/util";
 
 import type { AdminOptions } from "../../../types";
 

@@ -1,7 +1,7 @@
 import apiFetch from "@wordpress/api-fetch";
 import { useState, useEffect } from "@wordpress/element";
 import { Spinner } from "@wordpress/components";
-import { baseRestPath, wordPressRestBase } from "../util";
+import { baseRestPath, wordPressRestBase } from "../../../javascript/util";
 import type {
   ObjectKind,
   Collection,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "@wordpress/element";
 import apiFetch from "@wordpress/api-fetch";
 
-import { baseRestPath } from "../util";
+import { baseRestPath } from "../../../javascript/util";
 import type {
   ObjectKind,
   OaiPmhMappings,
