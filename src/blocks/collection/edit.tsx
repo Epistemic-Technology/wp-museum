@@ -17,13 +17,6 @@ import {
 
 import apiFetch from "@wordpress/api-fetch";
 
-// Utility function to decode HTML entities
-const decodeHtmlEntities = (text: string): string => {
-  const textArea = document.createElement("textarea");
-  textArea.innerHTML = text;
-  return textArea.value;
-};
-
 /**
  * Internal dependencies.
  */
@@ -36,6 +29,8 @@ import {
   CollectionEmbedPanel,
   CollectionSearchBox,
 } from "../../components";
+
+import { decodeHtmlEntities } from "../../javascript/util";
 
 import type { ImageDimensions } from "../../components/image-size-panel/image-size-panel";
 import type {

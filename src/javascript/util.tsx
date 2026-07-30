@@ -114,6 +114,21 @@ export function getFirstObjectImage( imgData: ObjectImagesResponse ): ObjectImag
 }
 
 /**
+ * Decode HTML entities in a string.
+ *
+ * Post titles and excerpts arrive from the REST API with entities encoded
+ * (`&amp;`, `&#8217;`, …). Round-tripping them through a detached textarea
+ * lets the browser do the decoding.
+ *
+ * @param {string} text Text possibly containing HTML entities.
+ */
+export function decodeHtmlEntities( text: string ): string {
+	const textArea = document.createElement( 'textarea' );
+	textArea.innerHTML = text;
+	return textArea.value;
+}
+
+/**
  * Javascript implementation of php's stripslashes.
  *
  * @link https://github.com/kvz/locutus/blob/master/src/php/strings/stripslashes.js

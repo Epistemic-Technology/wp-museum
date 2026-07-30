@@ -61,13 +61,6 @@ type FetchSearchResults = (
  */
 const refreshInterval = 300;
 
-// Utility function to decode HTML entities
-const decodeHtmlEntities = (text: string): string => {
-  const textArea = document.createElement("textarea");
-  textArea.innerHTML = text;
-  return textArea.value;
-};
-
 interface SearchBoxProps {
   fetchSearchResults: FetchSearchResults;
   close: () => void;
