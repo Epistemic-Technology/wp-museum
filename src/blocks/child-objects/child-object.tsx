@@ -14,13 +14,9 @@ import {
 	trash
 } from '../../icons';
 
-import type { MuseumObject, ImageSizeTuple } from '../../types';
+import { decodeHtmlEntities } from '../../javascript/util';
 
-const decodeHTMLEntities = ( text: string ): string => {
-	var textArea = document.createElement('textarea');
-	textArea.innerHTML = text;
-	return textArea.value;
-}
+import type { MuseumObject, ImageSizeTuple } from '../../types';
 
 interface ChildObjectProps {
 	/**
@@ -49,7 +45,7 @@ const ChildObject = ( props: ChildObjectProps ) => {
 		thumbnail
 	} = objectData;
 
-	const decodedPostTitle = decodeHTMLEntities( post_title );
+	const decodedPostTitle = decodeHtmlEntities( post_title );
 
 	const [ currentTitle, updateCurrentTitle ] = useState( post_title );
 
@@ -97,7 +93,7 @@ const ChildObject = ( props: ChildObjectProps ) => {
 				<div className = 'child-object-actions'>
 					{ edit_link &&
 						<Button
-							href = { decodeHTMLEntities( edit_link ) }
+							href = { decodeHtmlEntities( edit_link ) }
 							isSecondary
 						>
 							Edit
@@ -105,7 +101,7 @@ const ChildObject = ( props: ChildObjectProps ) => {
 					}
 					{ link &&
 						<Button
-							href = { decodeHTMLEntities( link ) }
+							href = { decodeHtmlEntities( link ) }
 							isSecondary
 						>
 							View
