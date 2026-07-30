@@ -47,14 +47,6 @@ interface BasicSearchEditProps {
 	setAttributes: ( attributes: Partial<BasicSearchAttributes> ) => void;
 }
 
-// TODO(ts-migration): pre-existing bug — onSearch below reads
-// `currentSearchParams`, which is never declared in this file (front.js has it
-// as state; this editor component does not). At runtime any search with a
-// changed non-page param throws a ReferenceError. This declaration is
-// type-only (emits no code) so the compiler accepts the reference without
-// changing behavior.
-declare const currentSearchParams: MuseumObjectSearchParams;
-
 // TODO(ts-migration): pre-existing prop mismatch — PaginatedObjectList expects
 // `mObjects` plus pagination props (currentPage, totalPages, searchCallback,
 // searchParams), but this block passes `objects`, `displayImages`, and
@@ -85,6 +77,8 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 	} = attributes;
 
 	const [ searchResults, setSearchResults ] = useState<MuseumObject[]>( [] );
+	const [ currentSearchParams, setCurrentSearchParams ] =
+		useState<MuseumObjectSearchParams>( {} );
 
 	const onSearch = ( searchParams: MuseumObjectSearchParams ) => {
 		for ( const [ key, value ] of Object.entries( searchParams ) ) {
@@ -93,6 +87,7 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 				break;
 			}
 		}
+		setCurrentSearchParams( searchParams );
 		apiFetch<MuseumObject[]>( {
 			path:   `${baseRestPath}/search`,
 			method: 'POST',
