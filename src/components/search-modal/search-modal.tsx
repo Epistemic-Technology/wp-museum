@@ -61,12 +61,6 @@ type FetchSearchResults = (
  */
 const refreshInterval = 300;
 
-// TODO(ts-migration): `isLarge` was dropped from @wordpress/components'
-// Button prop types, but the cancel button below still passes it (a no-op /
-// legacy styling prop at runtime). Cast the component to `any` to keep the
-// currently-working props without behavior change.
-const UntypedButton = Button as any;
-
 // Utility function to decode HTML entities
 const decodeHtmlEntities = (text: string): string => {
   const textArea = document.createElement("textarea");
@@ -319,14 +313,13 @@ const SearchBox = (props: SearchBoxProps) => {
             <div
                 className = 'bottom-controls'
             >
-                <UntypedButton
+                <Button
                     isSecondary
-                    isLarge
                     className   = 'cancel-button'
                     onClick     = { close }
                 >
                     Cancel
-                </UntypedButton>
+                </Button>
             </div>
         </Modal>
     );

@@ -28,12 +28,6 @@ const decodeHTMLEntities = ( text: string ): string => {
 // preserve the existing behavior without a compile error.
 declare const decodedPostTitle: string;
 
-// TODO(ts-migration): `isLarge` was dropped from @wordpress/components'
-// Button prop types, but the Edit/View buttons below still pass it (a legacy
-// styling prop at runtime). Cast the component to `any` to keep the
-// currently-working props without behavior change.
-const UntypedButton = Button as any;
-
 interface ChildObjectProps {
 	/**
 	 * TODO(ts-migration): freshly-created children are WP core REST responses
@@ -106,22 +100,20 @@ const ChildObject = ( props: ChildObjectProps ) => {
 				</div>
 				<div className = 'child-object-actions'>
 					{ edit_link &&
-						<UntypedButton
+						<Button
 							href = { decodeHTMLEntities( edit_link ) }
-							isLarge
 							isSecondary
 						>
 							Edit
-						</UntypedButton>
+						</Button>
 					}
 					{ link &&
-						<UntypedButton
+						<Button
 							href = { decodeHTMLEntities( link ) }
-							isLarge
 							isSecondary
 						>
 							View
-						</UntypedButton>
+						</Button>
 					}
 				</div>
 			</div>

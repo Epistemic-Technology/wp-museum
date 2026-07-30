@@ -34,12 +34,6 @@ import RemoteCollectionGrid from './remote-collection-grid';
 import type { Collection } from '../types';
 import type { RemoteCollectionAttributes, RemoteData } from './remote-collection-grid';
 
-// TODO(ts-migration): `isLarge` was dropped from @wordpress/components'
-// Button prop types, but the search button below still passes it (a no-op /
-// legacy styling prop at runtime). Cast the component to `any` to keep the
-// currently-working props without behavior change.
-const UntypedButton = Button as any;
-
 interface RemoteCollectionSearchBoxProps {
 	close: () => void;
 	returnCallback: ( collectionID: number | null ) => void;
@@ -141,14 +135,13 @@ const RemoteCollectionEdit = ( props: RemoteCollectionEditProps ) => {
 					}
 				</PanelRow>
 				<PanelRow>
-					<UntypedButton
+					<Button
 						onClick = { () => setSearchModalOpen( true ) }
-						isLarge
 						isPrimary
 						title = 'Search for Collection'
 					>
 						{ collectionID ? 'Replace' : 'Search' }
-					</UntypedButton>
+					</Button>
 					{ searchModalOpen &&
 						<RemoteCollectionSearchBox
 							close = { () => setSearchModalOpen( false ) }

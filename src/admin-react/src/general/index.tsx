@@ -119,10 +119,7 @@ const GeneralOptions = () => {
           </div>
 
           <div className="action-buttons">
-            {/* TODO(ts-migration): @wordpress/components Button types reject
-                the deprecated isLarge/isPrimary prop combo that works at
-                runtime; cast to keep current behavior. */}
-            <Button {...({ isPrimary: true, isLarge: true } as any)} onClick={doSave}>
+            <Button isPrimary onClick={doSave}>
               Save Settings
             </Button>
           </div>

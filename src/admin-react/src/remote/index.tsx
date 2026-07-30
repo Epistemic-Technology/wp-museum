@@ -235,10 +235,7 @@ const RemoteAdmin = (props: RemoteAdminProps) => {
       )}
 
       <div className="action-buttons">
-        {/* TODO(ts-migration): isPrimary/isLarge are deprecated Button props
-            rejected by @wordpress/components types but still handled at
-            runtime; cast to keep current behavior. */}
-        <Button {...({ isPrimary: true, isLarge: true } as any)} onClick={doSave}>
+        <Button isPrimary onClick={doSave}>
           Save Settings
         </Button>
       </div>

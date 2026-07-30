@@ -247,9 +247,6 @@ const RemoteAdminPage = () => {
 				/>
 			</label>
 			<Button
-				// TODO(ts-migration): `isLarge` is no longer in the Button prop
-				// types but still works at runtime; cast keeps the prop.
-				{ ...( { isLarge: true } as any ) }
 				isPrimary
 				onClick = { () => doConnect() }
 			>

@@ -13,12 +13,6 @@ import {
 } from "../router";
 import type { ObjectKind } from "../../../types";
 
-// TODO(ts-migration): `isLarge`, `isPrimary`, and `isSecondary` were dropped
-// from @wordpress/components' Button prop types, but the buttons below still
-// pass them (legacy styling props at runtime). Cast the component to `any`
-// to keep the currently-working props without behavior change.
-const UntypedButton = Button as any;
-
 /**
  * The kind shape managed client-side by this admin screen: a wire
  * `ObjectKind` whose server-computed properties (`oai_pmh_mappings`,
@@ -481,37 +475,33 @@ const Main = (props: MainProps) => {
         <div key={index} className="kind-item">
           <div className="kind-label">{kindItem.label}</div>
           <div className="object-action-buttons">
-            <UntypedButton
+            <Button
               onClick={() => editKind(kindItem)}
-              isLarge
               isSecondary
             >
               Edit
-            </UntypedButton>
-            <UntypedButton
-              isLarge
+            </Button>
+            <Button
               isSecondary
               onClick={() => deleteKind(kindItem)}
             >
               Delete
-            </UntypedButton>
-            <UntypedButton
-              isLarge
+            </Button>
+            <Button
               isSecondary
               onClick={() => handleExportCSV(kindItem)}
             >
               Export CSV
-            </UntypedButton>
-            <UntypedButton isLarge isSecondary>
+            </Button>
+            <Button isSecondary>
               Import CSV
-            </UntypedButton>
-            <UntypedButton
-              isLarge
+            </Button>
+            <Button
               isSecondary
               onClick={() => exportKind(kindItem)}
             >
               Export Kind
-            </UntypedButton>
+            </Button>
           </div>
         </div>
       ));
@@ -524,12 +514,12 @@ const Main = (props: MainProps) => {
         </div>
         <div className="kinds-list">{kindRows}</div>
         <div className="main-actions">
-          <UntypedButton onClick={newKind} isLarge isPrimary>
+          <Button onClick={newKind} isPrimary>
             Add New Object Type
-          </UntypedButton>
-          <UntypedButton onClick={handleImportClick} isLarge isSecondary>
+          </Button>
+          <Button onClick={handleImportClick} isSecondary>
             Import Object Type
-          </UntypedButton>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
