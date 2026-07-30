@@ -3,16 +3,7 @@
  */
 
 import apiFetch from '@wordpress/api-fetch';
-import {
-	// TODO(ts-migration): useState/useEffect are NOT exported by
-	// @wordpress/components (they are undefined at runtime, so this component
-	// crashes when rendered) — they should come from @wordpress/element.
-	// Pre-existing bug preserved; @ts-expect-error keeps the import compiling.
-	// @ts-expect-error -- see TODO(ts-migration) above
-	useState,
-	// @ts-expect-error -- see TODO(ts-migration) above
-	useEffect
-} from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 
 import {
 	baseRestPath,
