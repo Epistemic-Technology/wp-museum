@@ -308,25 +308,18 @@ const sortCollectionsHelper = ( collectionData: Collection[], sortBy: string, so
 		switch( sortBy ) {
 			case 'Alphabetical' :
 				return sortMultiplier * ( a.post_title < b.post_title ? -1 : 1 );
-			case 'Date Created' :
-				// TODO(ts-migration): aDate/bDate are assigned without ever
-				// being declared — a pre-existing bug that throws a
-				// ReferenceError in strict-mode modules when this branch runs.
-				// Preserved as-is (with @ts-ignore) for zero behavior change.
-				// @ts-ignore
-				aDate = new Date( a.post_date_gmt );
-				// @ts-ignore
-				bDate = new Date( b.post_date_gmt );
-				// @ts-ignore
+			case 'Date Created' : {
+				// post_date_gmt is nullable on the wire; a missing date sorts
+				// as the epoch rather than producing an Invalid Date.
+				const aDate = new Date( a.post_date_gmt ?? 0 );
+				const bDate = new Date( b.post_date_gmt ?? 0 );
 				return sortMultiplier * ( aDate < bDate ? -1 : 1 );
-			case 'Date Updated' :
-				// TODO(ts-migration): see above — same undeclared aDate/bDate bug.
-				// @ts-ignore
-				aDate = new Date( a.post_modified_gmt );
-				// @ts-ignore
-				bDate = new Date( b.post_modified_gmt );
-				// @ts-ignore
+			}
+			case 'Date Updated' : {
+				const aDate = new Date( a.post_modified_gmt );
+				const bDate = new Date( b.post_modified_gmt );
 				return sortMultiplier * ( aDate < bDate ? -1 : 1 );
+			}
 			default :
 				return 0;
 		}
