@@ -58,13 +58,12 @@ const CollectionObjectsFront = ( props: CollectionObjectsFrontProps ) => {
 			parse  : false,
 		} )
 			.then( ( response: Response ) => {
-				// TODO(ts-migration): headers.get() returns string | null, so these
-				// states hold strings at runtime despite being typed number; also the
-				// `|| 0` is mistakenly inside the get() argument (pre-existing bug).
-				// Preserved as-is; @ts-expect-error because no cast silences TS2872.
-				setCurrentPage( ( response.headers.get( 'X-WP-Page' ) || 1 ) as unknown as number );
-				// @ts-expect-error -- see TODO(ts-migration) above
-				setTotalPages( response.headers.get( 'X-WP-TotalPages' || 0 ) as unknown as number );
+				setCurrentPage(
+					parseInt( response.headers.get( 'X-WP-Page' ) ?? '' ) || 1
+				);
+				setTotalPages(
+					parseInt( response.headers.get( 'X-WP-TotalPages' ) ?? '' ) || 0
+				);
 				return response.json();
 			} )
 			.then ( ( result: MuseumObject[] ) => {
