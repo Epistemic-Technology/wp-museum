@@ -30,9 +30,10 @@ const ObjectRow = ( props: ObjectRowProps ) => {
 			<div className = 'object-row-content'>
 				{ displayImage &&
 					<div className = 'object-row-image'>
-						{ /* NOTE(wp-types): thumbnail can be `[]` or null on the
-						   wire (object without an image); cast preserves the existing
-						   unguarded index access. */ }
+						{ /* TODO(strict): thumbnail can be `[]` or null on the wire
+						   (object without an image); the cast preserves the existing
+						   unguarded index access, which yields an undefined src for
+						   `[]` and throws for null. Tracked in #126. */ }
 						<a href = { link }><img src={( thumbnail as ImageSizeTuple )[0]} alt={decodedPostTitle} /></a>
 					</div>
 				}
