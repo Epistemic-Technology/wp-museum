@@ -14,14 +14,6 @@ import { RichText } from '@wordpress/block-editor';
  */
 import type { ObjectImageAttributes } from './edit';
 
-// TODO(ts-migration): imgAlt and imgTitle are referenced in the img alt
-// attribute below but are not defined anywhere in this module — evaluating
-// that expression throws a ReferenceError (pre-existing bug, preserved).
-// `declare` satisfies the compiler without emitting any binding, so runtime
-// behavior and the serialized markup are unchanged.
-declare const imgAlt: string | undefined;
-declare const imgTitle: string | undefined;
-
 export default function save ( { attributes }: { attributes: ObjectImageAttributes } ) {
 	const {
 		title,
@@ -50,7 +42,7 @@ export default function save ( { attributes }: { attributes: ObjectImageAttribut
 					src       = { imgURL }
 					height    = { imgDimensions.height }
 					width     = { imgDimensions.width }
-					alt       = { imgAlt || imgTitle || 'Museum object image' }
+					alt       = { title || 'Museum object image' }
 				/>
 			}
 			{ displayTitle && title &&
