@@ -22,12 +22,6 @@ const decodeHTMLEntities = ( text: string ): string => {
 	return textArea.value;
 }
 
-// TODO(ts-migration): `decodedPostTitle` is referenced below but was never
-// defined in the original JS — rendering this component throws a
-// ReferenceError at runtime. Declared ambient (erased at compile time) to
-// preserve the existing behavior without a compile error.
-declare const decodedPostTitle: string;
-
 interface ChildObjectProps {
 	/**
 	 * NOTE(wp-types): freshly-created children are WP core REST responses
@@ -54,6 +48,8 @@ const ChildObject = ( props: ChildObjectProps ) => {
 		ID,
 		thumbnail
 	} = objectData;
+
+	const decodedPostTitle = decodeHTMLEntities( post_title );
 
 	const [ currentTitle, updateCurrentTitle ] = useState( post_title );
 

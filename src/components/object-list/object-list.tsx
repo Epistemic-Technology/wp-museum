@@ -2,12 +2,7 @@ import type { ImageSizeTuple, MuseumObject } from '../../types';
 
 import withPagination from '../with-pagination/with-pagination';
 
-// TODO(ts-migration): `decodedPostTitle` is referenced in ObjectRow's JSX but
-// is never defined anywhere — pre-existing bug: rendering with
-// displayImage=true throws a ReferenceError at runtime. This ambient
-// declaration is type-only (emits no code) so tsc compiles without changing
-// that behavior.
-declare const decodedPostTitle: string;
+import { decodeHtmlEntities } from '../../javascript/util';
 
 interface ObjectRowProps {
 	objectData: MuseumObject;
@@ -26,6 +21,8 @@ const ObjectRow = ( props: ObjectRowProps ) => {
 		excerpt,
 		thumbnail
 	} = objectData;
+
+	const decodedPostTitle = decodeHtmlEntities( post_title );
 
 	return (
 		<div className = 'object-row'>
