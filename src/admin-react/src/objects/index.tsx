@@ -477,27 +477,27 @@ const Main = (props: MainProps) => {
           <div className="object-action-buttons">
             <Button
               onClick={() => editKind(kindItem)}
-              isSecondary
+              variant="secondary"
             >
               Edit
             </Button>
             <Button
-              isSecondary
+              variant="secondary"
               onClick={() => deleteKind(kindItem)}
             >
               Delete
             </Button>
             <Button
-              isSecondary
+              variant="secondary"
               onClick={() => handleExportCSV(kindItem)}
             >
               Export CSV
             </Button>
-            <Button isSecondary>
+            <Button variant="secondary">
               Import CSV
             </Button>
             <Button
-              isSecondary
+              variant="secondary"
               onClick={() => exportKind(kindItem)}
             >
               Export Kind
@@ -514,10 +514,10 @@ const Main = (props: MainProps) => {
         </div>
         <div className="kinds-list">{kindRows}</div>
         <div className="main-actions">
-          <Button onClick={newKind} isPrimary>
+          <Button onClick={newKind} variant="primary">
             Add New Object Type
           </Button>
-          <Button onClick={handleImportClick} isSecondary>
+          <Button onClick={handleImportClick} variant="secondary">
             Import Object Type
           </Button>
           <input

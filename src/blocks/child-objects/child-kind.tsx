@@ -53,7 +53,7 @@ const ChildKind = ( props: ChildKindProps ) => {
 			<Button
 				className = 'new-child-object'
 				onClick   = { () => newChildObject( kind ) }
-				isPrimary
+				variant   = 'primary'
 			>
 				New { label }
 			</Button>

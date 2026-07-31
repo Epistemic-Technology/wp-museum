@@ -307,7 +307,7 @@ const SearchBox = (props: SearchBoxProps) => {
                 className = 'bottom-controls'
             >
                 <Button
-                    isSecondary
+                    variant     = 'secondary'
                     className   = 'cancel-button'
                     onClick     = { close }
                 >
@@ -413,7 +413,7 @@ const SearchButton = (props: SearchButtonProps) => {
 
   return (
     <>
-      <Button isSecondary onClick={openModal}>
+      <Button variant="secondary" onClick={openModal}>
         {children}
       </Button>
       {isOpen && (

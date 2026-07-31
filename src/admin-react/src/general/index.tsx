@@ -119,7 +119,7 @@ const GeneralOptions = () => {
           </div>
 
           <div className="action-buttons">
-            <Button isPrimary onClick={doSave}>
+            <Button variant="primary" onClick={doSave}>
               Save Settings
             </Button>
           </div>

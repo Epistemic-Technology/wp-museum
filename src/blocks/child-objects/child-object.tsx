@@ -93,16 +93,16 @@ const ChildObject = ( props: ChildObjectProps ) => {
 				<div className = 'child-object-actions'>
 					{ edit_link &&
 						<Button
-							href = { decodeHtmlEntities( edit_link ) }
-							isSecondary
+							href    = { decodeHtmlEntities( edit_link ) }
+							variant = 'secondary'
 						>
 							Edit
 						</Button>
 					}
 					{ link &&
 						<Button
-							href = { decodeHtmlEntities( link ) }
-							isSecondary
+							href    = { decodeHtmlEntities( link ) }
+							variant = 'secondary'
 						>
 							View
 						</Button>

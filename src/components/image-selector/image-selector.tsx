@@ -14,15 +14,10 @@ import {
 import apiFetch from "@wordpress/api-fetch";
 
 import {
-	IconButton,
+	Button,
 } from '@wordpress/components';
 
 import { getBestImage } from '../../javascript/util';
-
-// NOTE(wp-types): @wordpress/components' deprecated IconButton type
-// resolves its acceptable props to `never`, rejecting the currently-working
-// className/icon/onClick props. Cast to keep behavior unchanged.
-const IconButtonCompat = IconButton as any;
 
 import type { CSSProperties, ReactElement } from 'react';
 
@@ -192,12 +187,12 @@ const ImageSelector: {
 				className = 'image-selector-container'
 				style     = { selectorStyle }
 			>
-				<IconButtonCompat
+				<Button
 					className = 'left-arrow selector-button'
 					icon      = 'arrow-left-alt2'
 					onClick   = { () => updateImageIndex( -1 ) }
 				/>
-				<IconButtonCompat
+				<Button
 					className = 'right-arrow selector-button'
 					icon      = 'arrow-right-alt2'
 					onClick   = { () => updateImageIndex( 1 ) }

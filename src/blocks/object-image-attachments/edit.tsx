@@ -213,7 +213,7 @@ const ObjectImageAttachmentEdit = ( props: ObjectImageAttachmentEditProps ) => {
 	const mediaOpenButton = ( { open }: { open: () => void } ) => (
 			<Button
 				onClick = { open }
-				isPrimary
+				variant = 'primary'
 			>
 				Add Image(s)
 			</Button>

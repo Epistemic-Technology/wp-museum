@@ -162,19 +162,19 @@ const ImageSizePanel = ( props: ImageSizePanelProps ) => {
 					<p>{ __( 'Image Alignment' ) }</p>
 					<ButtonGroup>
 						<Button
-							isPrimary = { imgAlignment === 'left' }
+							variant   = { imgAlignment === 'left' ? 'primary' : undefined }
 							onClick   = { () => { updateimgAlignment( 'left' ) } }
 						>
 							<Dashicon icon = 'align-left'/>
 						</Button>
 						<Button
-							isPrimary = { imgAlignment === 'center' }
+							variant   = { imgAlignment === 'center' ? 'primary' : undefined }
 							onClick   = { () => { updateimgAlignment( 'center' ) } }
 						>
 							<Dashicon icon = 'align-center'/>
 						</Button>
 						<Button
-							isPrimary = { imgAlignment === 'right' }
+							variant   = { imgAlignment === 'right' ? 'primary' : undefined }
 							onClick   = { () => { updateimgAlignment( 'right' ) } }
 						>
 							<Dashicon icon = 'align-right'/>
