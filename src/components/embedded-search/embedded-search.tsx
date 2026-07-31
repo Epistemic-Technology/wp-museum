@@ -138,7 +138,7 @@ const EmbeddedSearch = ( props: EmbeddedSearchProps ) => {
 					</div>
 				</div>
 				<Button
-					isPrimary
+					variant   = 'primary'
 					className = 'wpm-embedded-search-button'
 					aria-label = { `${searchButtonText} museum objects` }
 					onClick   = { () => doSearch() }
@@ -147,7 +147,7 @@ const EmbeddedSearch = ( props: EmbeddedSearchProps ) => {
 				</Button>
 				{ showReset &&
 					<Button
-						isSecondary
+						variant   = 'secondary'
 						className = 'wpm-embedded-search-button'
 						aria-label = 'Clear search and reset results'
 						onClick   = { resetSearch }

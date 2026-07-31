@@ -410,7 +410,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
       {inEditor && (
         <div className="advanced-search-editor-buttons">
           <Button
-            isSecondary
+            variant="secondary"
             onClick={() => {
               setSearchValues({});
               // Clear URL parameters when resetting search
@@ -420,7 +420,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
             Reset Search
           </Button>
           <Button
-            isSecondary
+            variant="secondary"
             onClick={() =>
               // TODO(strict): possible undefined at runtime if inEditor is set
               // without setAttributes; preserved as-is.
@@ -473,7 +473,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
             }}
           />
           <Button
-            isPrimary
+            variant="primary"
             className="advanced-search-search-button"
             onClick={() => handleSearch(searchValues)}
           >
@@ -561,7 +561,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
         )}
       </div>
       <Button
-        isPrimary
+        variant="primary"
         className="advanced-search-button"
         onClick={() => {
           const resetValues = {};
