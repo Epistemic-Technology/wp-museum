@@ -46,6 +46,8 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
   const [currentSearchParams, setCurrentSearchParams] =
     useState<MuseumObjectSearchParams>([] as unknown as MuseumObjectSearchParams);
   const [searchResults, setSearchResults] = useState<MuseumObject[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [currentSearchText, setCurrentSearchText] = useState(searchText);
 
   const onSearch = (searchParams: MuseumObjectSearchParams) => {
@@ -55,19 +57,35 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
         break;
       }
     }
-    // TODO(ts-migration): pre-existing bug — the server ignores `numberposts`
-    // (only per_page, page, etc. are read); preserved as-is.
-    searchParams["numberposts"] = resultsPerPage;
+    searchParams["per_page"] = resultsPerPage;
+    // withPagination mutates and re-submits the object it is handed as
+    // `searchParams`, so the searched params have to become the current ones —
+    // otherwise paging re-submits the mount-time object (empty searchText) and
+    // blanks the results. Matches advanced-search/front.tsx.
+    setCurrentSearchParams(searchParams);
     if (searchParams["searchText"]) {
-      apiFetch<MuseumObject[]>({
+      apiFetch({
         path: `${baseRestPath}/search`,
         method: "POST",
         data: searchParams,
-      }).then((result) => {
-        setSearchResults(result);
-      });
+        parse: false,
+      })
+        .then((response) => {
+          setCurrentPage(
+            parseInt(response.headers.get("X-WP-Page") ?? "") || 1,
+          );
+          setTotalPages(
+            parseInt(response.headers.get("X-WP-TotalPages") ?? "") || 0,
+          );
+          return response.json();
+        })
+        .then((result: MuseumObject[]) => {
+          setSearchResults(result);
+        });
     } else {
       setSearchResults([]);
+      setCurrentPage(1);
+      setTotalPages(0);
     }
   };
 
@@ -87,19 +105,6 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
       });
     }
   }, []);
-
-  let currentPage = 1;
-  let totalPages = 0;
-  // TODO(ts-migration): pre-existing bug — `query_data` never exists on the
-  // wire (schema-stripped); pagination info actually arrives via X-WP-*
-  // headers, so this branch never runs. Casts preserve current behavior.
-  if (
-    searchResults.length > 0 &&
-    typeof (searchResults[0] as any).query_data != "undefined"
-  ) {
-    currentPage = (searchResults[0] as any).query_data.current_page;
-    totalPages = (searchResults[0] as any).query_data.num_pages;
-  }
 
   return (
     <div className="wpm-basic-search-block">
@@ -144,10 +149,11 @@ const basicSearchElements = document.getElementsByClassName(
 if (!!basicSearchElements) {
   for (let i = 0; i < basicSearchElements.length; i++) {
     const basicSearchElement = basicSearchElements[i] as HTMLElement;
-    // TODO(strict): dataset.attributes may be undefined at runtime if the
-    // data attribute is missing; cast preserves existing behavior.
+    // The data attribute is missing (or empty) if render.php could not encode
+    // the block attributes; fall back to an empty set so the block still
+    // mounts with its defaults rather than throwing out of JSON.parse.
     const attributes = attributesFromJSON(
-      basicSearchElement.dataset.attributes as string,
+      basicSearchElement.dataset.attributes || "{}",
     ) as BasicSearchFrontAttributes;
     const root = createRoot(basicSearchElement);
     root.render(<BasicSearchFront attributes={attributes} />);

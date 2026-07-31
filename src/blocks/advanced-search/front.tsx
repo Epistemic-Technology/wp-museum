@@ -25,16 +25,19 @@ interface SearchFieldEntry {
  * AdvancedSearchUI plus the pagination/limit keys added here and by
  * withPagination.
  *
- * TODO(ts-migration): pre-existing bug — the server ignores posts_per_page,
- * selectedFlags, selectedKind, and searchFields (only per_page, page, status,
- * s/searchText, onlyTitle, post_title, post_content, tilde-prefixed field
- * slugs, selectedCollections, and selectedTags are read); shape preserved
- * as-is.
+ * `Objects_Controller::get_items()` (the /search callback) reads per_page,
+ * page, status, s/searchText, onlyTitle, post_title, post_content,
+ * tilde-prefixed field slugs, selectedCollections and selectedTags.
+ * `selectedFlags` and `searchFields` are not read directly — onSearch below
+ * expands them into the field-slug params the server does read.
+ *
+ * TODO(ts-migration): `selectedKind` is still ignored by the server; /search
+ * always queries every kind, and there is no request param for restricting it
+ * (the per-kind routes are GET-only). Fixing it needs a server-side change.
  */
 interface AdvancedSearchParams {
   page?: number;
   per_page?: number;
-  posts_per_page?: number;
   searchText?: string;
   onlyTitle?: boolean;
   selectedFlags?: string[];
@@ -109,6 +112,8 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
   );
   const [kindsData, setKindsData] = useState<ObjectKind[]>([]);
   const [searchResults, setSearchResults] = useState<MuseumObject[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(0);
   // NOTE(wp-types): the initial state is an empty ARRAY that is then
   // treated as a params object; cast preserves the existing literal.
   const [currentSearchParams, setCurrentSearchParams] =
@@ -178,6 +183,10 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
+        setCurrentPage(parseInt(response.headers.get("X-WP-Page") ?? "") || 1);
+        setTotalPages(
+          parseInt(response.headers.get("X-WP-TotalPages") ?? "") || 0,
+        );
         return response.json();
       })
       .then((data) => {
@@ -186,21 +195,10 @@ const AdvancedSearchFront = (props: AdvancedSearchFrontProps) => {
       .catch((error) => {
         console.error("Search request failed:", error);
         setSearchResults([]); // Reset to empty state on error
+        setCurrentPage(1);
+        setTotalPages(0);
       });
   };
-
-  let currentPage = 1;
-  let totalPages = 0;
-  // TODO(ts-migration): pre-existing bug — `query_data` never exists on the
-  // wire (schema-stripped); pagination info actually arrives via X-WP-*
-  // headers, so this branch never runs. Casts preserve current behavior.
-  if (
-    searchResults.length > 0 &&
-    typeof (searchResults[0] as any).query_data !== "undefined"
-  ) {
-    currentPage = (searchResults[0] as any).query_data.current_page;
-    totalPages = (searchResults[0] as any).query_data.num_pages;
-  }
 
   return (
     <>

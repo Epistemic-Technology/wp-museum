@@ -21,7 +21,7 @@ import {
 
 import apiFetch from '@wordpress/api-fetch';
 
-import type { ComponentType, ChangeEvent } from 'react';
+import type { ChangeEvent } from 'react';
 
 /**
  * Internal dependencies
@@ -47,13 +47,6 @@ interface BasicSearchEditProps {
 	setAttributes: ( attributes: Partial<BasicSearchAttributes> ) => void;
 }
 
-// TODO(ts-migration): pre-existing prop mismatch — PaginatedObjectList expects
-// `mObjects` plus pagination props (currentPage, totalPages, searchCallback,
-// searchParams), but this block passes `objects`, `displayImages`, and
-// `columns`, so the list receives undefined mObjects and renders nothing.
-// Cast preserves current behavior.
-const UntypedPaginatedObjectList = PaginatedObjectList as ComponentType<any>;
-
 /**
  * Basic search of the catalogue.
  *
@@ -77,6 +70,8 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 	} = attributes;
 
 	const [ searchResults, setSearchResults ] = useState<MuseumObject[]>( [] );
+	const [ currentPage, setCurrentPage ] = useState<number>( 1 );
+	const [ totalPages, setTotalPages ] = useState<number>( 0 );
 	const [ currentSearchParams, setCurrentSearchParams ] =
 		useState<MuseumObjectSearchParams>( {} );
 
@@ -87,14 +82,26 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 				break;
 			}
 		}
+		searchParams['per_page'] = resultsPerPage;
 		setCurrentSearchParams( searchParams );
-		apiFetch<MuseumObject[]>( {
+		apiFetch( {
 			path:   `${baseRestPath}/search`,
 			method: 'POST',
-			data:   searchParams
-		} ).then( result => {
-			setSearchResults( result );
-		} );
+			data:   searchParams,
+			parse:  false
+		} )
+			.then( response => {
+				setCurrentPage(
+					parseInt( response.headers.get( 'X-WP-Page' ) ?? '' ) || 1
+				);
+				setTotalPages(
+					parseInt( response.headers.get( 'X-WP-TotalPages' ) ?? '' ) || 0
+				);
+				return response.json();
+			} )
+			.then( ( result: MuseumObject[] ) => {
+				setSearchResults( result );
+			} );
 	}
 
 	return (
@@ -156,10 +163,13 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 				</a>
 			}
 			{ searchResults &&
-				<UntypedPaginatedObjectList
-					objects       = { searchResults }
-					displayImages = { true }
-					columns       = { columns }
+				<PaginatedObjectList
+					currentPage    = { currentPage }
+					totalPages     = { totalPages }
+					searchCallback = { onSearch }
+					searchParams   = { currentSearchParams }
+					mObjects       = { searchResults }
+					displayImages  = { true }
 				/>
 			}
 		</div>
