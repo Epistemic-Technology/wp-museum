@@ -49,14 +49,8 @@ const RemoteCollectionSearchBox = ( props: RemoteCollectionSearchBoxProps ) => {
 		wpmRestBase
 	} = props;
 
-	// TODO(ts-migration): SearchBox sometimes invokes fetchSearchResults with
-	// only two arguments (see FetchSearchResults in search-modal.tsx); this
-	// implementation unconditionally calls updateLastRefresh, so those calls
-	// throw at runtime. Pre-existing bug preserved.
-	const fetchSearchResults = ( searchText: string | null, onlyTitle: boolean, updateLastRefresh?: ( refreshTime: Date ) => void, updateResults?: ( results: Collection[] ) => void ) => {
-		// TODO(strict): possible undefined at runtime — two-argument calls from
-		// SearchBox reach here without updateLastRefresh (pre-existing bug above).
-		updateLastRefresh!( new Date() );
+	const fetchSearchResults = ( searchText: string | null, onlyTitle: boolean, updateLastRefresh: ( refreshTime: Date ) => void, updateResults: ( results: Collection[] ) => void ) => {
+		updateLastRefresh( new Date() );
 		let fetchURL = `${remoteData.url}${wpmRestBase}/collections?uuid=${remoteData.uuid}`;
 		if ( onlyTitle ) {
 			fetchURL += `&post_title=${searchText}`;
@@ -68,8 +62,7 @@ const RemoteCollectionSearchBox = ( props: RemoteCollectionSearchBoxProps ) => {
 				console.log( response.statusText );
 				return;
 			}
-			// TODO(strict): possible undefined at runtime — see updateLastRefresh above.
-			response.json().then( data => updateResults!( data ) );
+			response.json().then( data => updateResults( data ) );
 		} );
 	}
 
