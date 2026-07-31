@@ -4,7 +4,6 @@ import type { ReactNode, MouseEventHandler } from "react";
 
 import type {
 	Collection,
-	ImageSizeTuple,
 	ObjectImage,
 	ObjectImagesResponse,
 } from "../types";
@@ -53,6 +52,14 @@ export interface BestFitImage {
 	width: number;
 }
 
+/**
+ * Finds the smallest available image size at least as large as the requested
+ * dimensions, falling back to the full-size image.
+ *
+ * Size tuples arrive from `wp_get_attachment_image_src()` as
+ * `[url, width, height, isResized]` (see ImageSizeTuple). If no size fits and
+ * the full size is unavailable, URL is null and the dimensions are 0.
+ */
 export function getBestImage( imgData: ObjectImage, imgDimensions: { height: number; width: number } ): BestFitImage {
 	const bestFitImage: BestFitImage = {
 		'URL'    : null,
@@ -65,15 +72,11 @@ export function getBestImage( imgData: ObjectImage, imgDimensions: { height: num
 			continue;
 		}
 
-		// TODO(ts-migration): the wire tuple order is [url, width, height,
-		// isResized] (see ImageSizeTuple), but this destructuring transposes
-		// width/height. Pre-existing bug preserved for zero behavior change.
 		let [
 			URL,
-			height,
 			width,
-			isIntermediate
-		] = dataArray as ImageSizeTuple;
+			height
+		] = dataArray;
 
 		if ( height >= imgDimensions.height &&
 			 height <  bestFitImage.height &&
@@ -87,18 +90,20 @@ export function getBestImage( imgData: ObjectImage, imgDimensions: { height: num
 	}
 
 	if ( bestFitImage.URL === null ) {
-		// TODO(ts-migration): same width/height transposition as above; also
-		// imgData['full'] can be null on the wire, so the cast preserves the
-		// existing (crash-prone) runtime behavior.
-		const [
-			URL,
-			height,
-			width,
-			isIntermediate
-		] = imgData['full'] as ImageSizeTuple;
-		bestFitImage.URL    = URL;
-		bestFitImage.height = height;
-		bestFitImage.width  = width
+		const fullSize = imgData['full'];
+		if ( Array.isArray( fullSize ) && fullSize.length >= 4 ) {
+			const [
+				URL,
+				width,
+				height
+			] = fullSize;
+			bestFitImage.URL    = URL;
+			bestFitImage.height = height;
+			bestFitImage.width  = width
+		} else {
+			bestFitImage.height = 0;
+			bestFitImage.width  = 0;
+		}
 	}
 
 	return bestFitImage;

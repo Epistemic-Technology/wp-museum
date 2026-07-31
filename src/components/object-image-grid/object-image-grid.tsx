@@ -55,25 +55,34 @@ const ObjectImageBox = (props: ObjectImageBoxProps) => {
     width: 300,
   };
 
-  // TODO(strict): possible null at runtime — imgData may be an empty object,
-  // in which case getFirstObjectImage returns null and getBestImage crashes.
-  const bestImage = getBestImage(getFirstObjectImage(imgData)!, imgDimensions);
+  const firstImage = getFirstObjectImage(imgData);
+  const bestImage = firstImage ? getBestImage(firstImage, imgDimensions) : null;
 
-  // TODO(ts-migration): title/alt are read on the whole images map (keyed by
-  // attachment ID), not on an individual image record — always undefined, so
-  // these fall through to "". Preserving existing (buggy) behavior.
+  // Objects with no attached images (or whose image sizes all failed to
+  // resolve) get the same placeholder as objects whose images haven't loaded.
+  if (!firstImage || !bestImage || bestImage.URL === null) {
+    return (
+      <div className="grid-image-wrapper" style={imgStyle}>
+        <div className="placeholder-box"></div>
+      </div>
+    );
+  }
+
   const imgAttrs = {
-    src: bestImage.URL as string,
-    title: (imgData as any).title || "",
-    alt: (imgData as any).alt || "",
+    src: bestImage.URL,
+    title: firstImage.title || "",
+    alt: firstImage.alt || "",
   };
 
   return (
     <div className="grid-image-wrapper" style={imgStyle}>
       <MaybeLink href={object.URL} doLink={linkToObjects}>
-        {/* TODO(strict): possible undefined at runtime — onClickCallback is an
-            optional prop; clicking with no callback provided would crash. */}
-        <img {...imgAttrs} onClick={() => onClickCallback!(object.ID) || null} />
+        <img
+          {...imgAttrs}
+          onClick={
+            onClickCallback ? () => onClickCallback(object.ID) : undefined
+          }
+        />
       </MaybeLink>
     </div>
   );

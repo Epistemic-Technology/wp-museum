@@ -33,9 +33,10 @@ export interface WPRestError {
  * WordPress attachment image tuple, from `wp_get_attachment_image_src()`:
  * `[url, width, height, is_resized]`.
  *
- * NOTE: the wire order is url, WIDTH, HEIGHT, boolean. Several JS consumers
- * (`getBestImage` in `src/javascript/util.js`) destructure it as
- * `[URL, height, width, isIntermediate]` — a pre-existing width/height swap.
+ * NOTE: the wire order is url, WIDTH, HEIGHT, boolean. `getBestImage` in
+ * `src/javascript/util.tsx` used to destructure it as
+ * `[URL, height, width, isIntermediate]`; that swap was fixed in #147, so
+ * destructure in wire order.
  */
 export type ImageSizeTuple = [
 	url: string,

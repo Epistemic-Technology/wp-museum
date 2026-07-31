@@ -46,11 +46,9 @@ const ObjectPostImageSideBox = ( props: ObjectPostImageSideBoxProps ) => {
 
 	return (
 		<div className = 'wpm_obj-image'>
-			{ !! imgData &&
+			{ !! bestImage?.URL &&
 				<img
-					// Non-null: bestImage is computed whenever imgData is
-					// truthy, which the surrounding guard ensures.
-					src     = { bestImage!.URL as string }
+					src     = { bestImage.URL }
 					alt     = { altText }
 					title   = { titleText }
 					onClick = { () => openModal( imgIndex ) }
@@ -82,12 +80,18 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 	const imgArray = Object.values( imgData )
 		.sort( (a, b ) => a['sort_order'] - b['sort_order'] );
 
+	const currentImage = imgArray[ imgIndex ];
+
 	const {
 		title       = null,
 		caption     = null,
 		description = null,
 		alt         = null,
-	} = imgArray[ imgIndex ];
+	} = currentImage;
+
+	// 'full' is null on the wire when the src lookup fails for that size.
+	const fullSize    = currentImage[ 'full' ];
+	const fullSizeURL = Array.isArray( fullSize ) ? fullSize[ 0 ] : null;
 
 	const imgDimensions = {
 		height: 1024,
@@ -125,16 +129,16 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 							/>
 						}
 					</div>
-					<div className = 'image-modal-image-link'>
-						<a
-							// TODO(strict): possible null at runtime — 'full'
-							// can be null on the wire (see ImageSizeTuple).
-							href = { imgArray[ imgIndex ]['full']![0] }
-							target = '_blank'
-						>
-							View Full Image
-						</a>
-					</div>
+					{ !! fullSizeURL &&
+						<div className = 'image-modal-image-link'>
+							<a
+								href = { fullSizeURL }
+								target = '_blank'
+							>
+								View Full Image
+							</a>
+						</div>
+					}
 					{ displayCaption &&
 						<div className = 'image-modal-caption'>
 							{ caption }
@@ -164,10 +168,7 @@ const ObjectPostImageGallery = ( props: ObjectPostImageGalleryProps ) => {
 	const [ modalOpen, setModalOpen ] = useState( false );
 	const [ imgIndex, setImgIndex ] = useState( 0 );
 
-	// TODO(ts-migration): pre-existing quirk — updateImgData is invoked with
-	// postId below but never took a parameter (it closes over postId);
-	// optional unused param keeps the call site unchanged.
-	const updateImgData = ( _postId?: number ) => {
+	const updateImgData = () => {
 		fetchObjectImages( postId ).then( images => setImgData( images as ObjectImagesResponse ) );
 	}
 
@@ -192,7 +193,7 @@ const ObjectPostImageGallery = ( props: ObjectPostImageGalleryProps ) => {
 
 	useEffect( () => {
 		if ( !! postId ) {
-			updateImgData( postId );
+			updateImgData();
 		}
 	}, [ postId ] );
 
