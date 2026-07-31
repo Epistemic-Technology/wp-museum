@@ -177,6 +177,17 @@ const DublinCoreFieldMapping = ({
   );
 };
 
+/**
+ * The string form of a kind's id, as used for the selector value and for
+ * matching the selected kind. `kind_id` is the database primary key and is
+ * always present on kinds returned by the REST API — the wire type allows
+ * null only because an unsaved `ObjectKind` has no id yet. Such a kind gets
+ * the empty string, which matches no selection, instead of crashing on
+ * `null.toString()`.
+ */
+const kindIdString = (kind: Pick<ObjectKind, "kind_id">): string =>
+  kind.kind_id === null ? "" : String(kind.kind_id);
+
 interface KindSelectorProps {
   kinds: ObjectKind[];
   selectedKind: string;
@@ -194,7 +205,7 @@ const KindSelector = ({ kinds, selectedKind, onKindChange }: KindSelectorProps) 
       >
         <option value="">-- Select Kind --</option>
         {kinds.map((kind) => (
-          <option key={kind.kind_id} value={kind.kind_id as number}>
+          <option key={kind.kind_id} value={kindIdString(kind)}>
             {kind.label || kind.name}
           </option>
         ))}
@@ -235,8 +246,7 @@ const OmiPmhAdmin = () => {
 
         // Auto-select the first kind if available
         if (kindsData && kindsData.length > 0) {
-          // TODO(strict): possible null at runtime if kind_id is unset
-          setSelectedKind(kindsData[0].kind_id!.toString());
+          setSelectedKind(kindIdString(kindsData[0]));
         }
       } catch (err) {
         setError("Failed to load kinds: " + (err as Error).message);
@@ -279,10 +289,7 @@ const OmiPmhAdmin = () => {
       const fetchKindData = async () => {
         try {
           // Find the selected kind object
-          // TODO(strict): possible null at runtime if kind_id is unset
-          const kind = kinds.find(
-            (k) => k.kind_id!.toString() === selectedKind,
-          );
+          const kind = kinds.find((k) => kindIdString(k) === selectedKind);
           if (!kind) {
             throw new Error("Selected kind not found");
           }
@@ -415,8 +422,7 @@ const OmiPmhAdmin = () => {
 
     try {
       // Find the selected kind object
-      // TODO(strict): possible null at runtime if kind_id is unset
-      const kind = kinds.find((k) => k.kind_id!.toString() === selectedKind);
+      const kind = kinds.find((k) => kindIdString(k) === selectedKind);
       if (!kind) {
         throw new Error("Selected kind not found");
       }
@@ -440,8 +446,7 @@ const OmiPmhAdmin = () => {
       // Update local kinds state
       setKinds((prevKinds) =>
         prevKinds.map((k) =>
-          // TODO(strict): possible null at runtime if kind_id is unset
-          k.kind_id!.toString() === selectedKind
+          kindIdString(k) === selectedKind
             ? {
                 ...k,
                 oai_pmh_mappings: {
