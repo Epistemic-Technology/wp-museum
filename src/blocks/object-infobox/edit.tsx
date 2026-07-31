@@ -268,13 +268,20 @@ const ObjectInfoEdit = (props: ObjectInfoEditProps) => {
 
         // Format content based on field type
         let content: MuseumObjectFieldValue = "";
-        // TODO(ts-migration): 'tinyint' is not a real field type (the boolean
-        // type is 'flag') and flag values arrive as JSON booleans, not 1, so
-        // this branch never matches. Preserved as-is; the cast keeps the
-        // no-overlap comparison compiling.
-        if ((fieldsMetadata[key]["type"] as string) === "tinyint") {
+        // Boolean fields have type 'flag' and arrive as JSON booleans. (The
+        // type used to be stored as 'tinyint' with a 1/0 value; see
+        // translate_field_types() in database-upgrade.php.)
+        if (fieldsMetadata[key]["type"] === "flag") {
+          // Only map a value that is actually present: a flag that was never
+          // set stays empty so info-content's "Unknown" normalization still
+          // applies, rather than asserting "No".
+          const flagValue = objectData[fieldsMetadata[key]["slug"]];
           content =
-            objectData[fieldsMetadata[key]["slug"]] === 1 ? "Yes" : "No";
+            flagValue === undefined || flagValue === null
+              ? ""
+              : flagValue
+                ? "Yes"
+                : "No";
         } else {
           content = objectData[
             fieldsMetadata[key]["slug"]
@@ -402,8 +409,6 @@ const ObjectInfoEdit = (props: ObjectInfoEditProps) => {
     displayImage,
     linkToObject,
     totalImages,
-    imgHeight,
-    imgWidth,
     imgIndex,
   } = attributes;
 
@@ -447,8 +452,6 @@ const ObjectInfoEdit = (props: ObjectInfoEditProps) => {
         excerpt={displayExcerpt ? excerpt : null}
         imgIndex={imgIndex}
         imgURL={imgURL}
-        imgHeight={imgHeight}
-        imgWidth={imgWidth}
         displayImage={displayImage}
         objectURL={linkToObject ? objectURL : null}
         fields={fields}

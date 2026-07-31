@@ -138,27 +138,44 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 
 	const deleteChildObject = ( child: MuseumObject, kind: ObjectKindChild ) => {
 		if ( ! childObjects ) return;
-		const updatedChildObjects: Record<string, number[]> = Object.assign( {}, childObjects );
+		// The attribute holds plain post IDs (see the child_objects meta schema
+		// in class-objectposttype.php). `child` is museum-shaped (`ID`) when it
+		// came from the REST refresh, but is still the WP core create response
+		// (`id`) when it was added in this editing session.
+		const childRecord = child as unknown as { ID?: number; id?: number };
+		const childId = childRecord.ID ?? childRecord.id;
+		if ( ! childId ) return;
+
 		// NOTE(wp-types): kind_id is number | null on the wire; asserted to
 		// preserve the existing index behavior.
-		if ( typeof updatedChildObjects[ kind.kind_id as number ] === 'undefined' ) {
-			return;
+		const kindId = kind.kind_id as number;
+		const updatedChildObjects: Record<string, number[]> = Object.assign( {}, childObjects );
+		const kindObjects = updatedChildObjects[ kindId ];
+		const index = Array.isArray( kindObjects ) ?
+			kindObjects.findIndex( objectId => objectId === childId ) :
+			-1;
+		if ( index !== -1 ) {
+			// Object.assign only shallow-copies, so the per-kind array is still
+			// the one held in the current attribute value — copy it before
+			// splicing rather than mutating the attribute in place.
+			updatedChildObjects[ kindId ] = kindObjects.filter(
+				( _objectId, objectIndex ) => objectIndex !== index
+			);
+			setAttributes( {
+				childObjects : updatedChildObjects,
+				childObjectsStr : JSON.stringify( updatedChildObjects )
+			} );
 		}
-		// TODO(ts-migration): mixes shapes — the array elements are numeric
-		// post IDs (no `.id` property) and `child` is museum-shaped (uppercase
-		// `ID`, no `.id`), so this compares undefined === undefined and always
-		// matches index 0. Pre-existing behavior preserved.
-		const index = updatedChildObjects[ kind.kind_id as number ].findIndex( object => ( object as any ).id === ( child as any ).id );
-		if ( index === -1 ) return;
-		updatedChildObjects[ kind.kind_id as number ].splice( index, 1 );
-		setAttributes( {
-			childObjects : updatedChildObjects,
-			childObjectsStr : JSON.stringify( updatedChildObjects )
-		} );
+
+		// The object is deleted whether or not the attribute knew about it: a
+		// bookkeeping mismatch must not leave the user unable to remove a
+		// child they can see.
 		apiFetch( {
-			path    :  `${wordpressRestPath}/${kind.type_name}/${child.ID}`,
+			path    :  `${wordpressRestPath}/${kind.type_name}/${childId}`,
 			method  : 'DELETE'
-		} ).then( result => console.log(result) );
+		} ).catch( error => {
+			console.error( `Failed to delete child object ${childId}`, error );
+		} );
 	}
 
 	const updateChildObject = ( child: MuseumObject, kind: ObjectKindChild, data: { title: string } ) => {
@@ -173,32 +190,15 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 		const {
 			type_name,
 			label,
-			block_template
-		// TODO(ts-migration): `block_template` is never present on child kinds
-		// on the wire (schema-stripped server-side), so this template-insertion
-		// path always operates on undefined. Asserted here to preserve the
-		// existing behavior.
-		} = kind as ObjectKindChild & {
-			block_template?: [ string, Record<string, unknown>? ][];
-		};
+		} = kind;
 
-		let postContent = '';
-		if ( block_template ) {
-			block_template.forEach( templateItem => {
-				postContent += '<!-- wp:' + templateItem[0];
-				if ( templateItem.length > 1 ) {
-					postContent += ' {'
-					// NOTE(wp-types): the tuple's second element is optional; the
-					// length check above guarantees it exists here.
-					Object.entries( templateItem[1] as Record<string, unknown> ).forEach( ( [ key, value ] ) => {
-						postContent += `"${key}": "${value}", `
-					} );
-					postContent = postContent.slice(0, -2 );
-					postContent += '}';
-				}
-				postContent += " /-->\n\n"
-			} );
-		}
+		// New children are created with empty content. This used to serialize
+		// the kind's `block_template` into the post content, but child kinds are
+		// serialized with ObjectKind::to_array() (class-objectkind.php), which
+		// has no `block_template` key — and the Kinds_Controller schema strips
+		// it from full kinds too — so that code could never run. Restoring it
+		// requires putting block_template on the wire first.
+		const postContent = '';
 
 		apiFetch<WPCorePostResponse>( {
 			path: `${wordpressRestPath}/${type_name}/`,
