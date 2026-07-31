@@ -41,17 +41,14 @@ type SearchReturnCallback = (postId: number | null) => void;
 /**
  * Callback to fetch results for the search.
  *
- * TODO(ts-migration): updateLastRefresh/updateResults are typed optional
- * because SearchBox invokes this with only two arguments in the delayed
- * (setTimeout) path and in onTitleToggle, while both existing implementations
- * unconditionally call updateLastRefresh(new Date()) — those two-argument
- * calls throw a TypeError at runtime. Pre-existing bug preserved.
+ * Every implementation dereferences updateLastRefresh and updateResults, so
+ * all four arguments are required and every call site passes them.
  */
 type FetchSearchResults = (
-  searchText: string | null,
+  searchText: string,
   onlyTitle: boolean,
-  updateLastRefresh?: (refreshTime: Date) => void,
-  updateResults?: (results: SearchResult[]) => void,
+  updateLastRefresh: (refreshTime: Date) => void,
+  updateResults: (results: SearchResult[]) => void,
 ) => void;
 
 /**
@@ -174,7 +171,8 @@ const SearchBox = (props: SearchBoxProps) => {
       } else {
         setTimerId(
           setTimeout(
-            () => fetchSearchResults(content, onlyTitle),
+            () =>
+              fetchSearchResults(content, onlyTitle, setLastRefresh, setResults),
             refreshInterval -
               ((currentTime as unknown as number) -
                 (lastRefresh as unknown as number)),
@@ -190,8 +188,24 @@ const SearchBox = (props: SearchBoxProps) => {
   const onTitleToggle = () => {
     setOnlyTitle(!onlyTitle);
     setSelectedItem(0);
-    fetchSearchResults(searchText, !onlyTitle);
+    // Same threshold as onChangeSearchText: below it there is nothing worth
+    // searching for, and the previous results stay on screen.
+    if (searchText !== null && searchText.length > 2) {
+      fetchSearchResults(searchText, !onlyTitle, setLastRefresh, setResults);
+    }
   };
+
+  // The debounced search used to be dead (it called fetchSearchResults with
+  // two arguments, which threw). Now that it fires, a pending timer has to be
+  // cancelled when the box goes away, or it resolves against an unmounted
+  // component.
+  useEffect(() => {
+    return () => {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+      }
+    };
+  }, [timerId]);
 
   /**
    * Callback to capture keypresses from the search input for navigating the
@@ -480,10 +494,7 @@ const ObjectSearchBox = (props: ObjectSearchBoxProps) => {
     <SearchBox
       close={close}
       title={title}
-      // TODO(strict): see TODO(ts-migration) on FetchSearchResults — the
-      // implementation requires args that SearchBox sometimes omits
-      // (pre-existing runtime bug preserved); cast is type-only.
-      fetchSearchResults={fetchSearchResults as FetchSearchResults}
+      fetchSearchResults={fetchSearchResults}
       returnCallback={returnCallback}
     />
   );
@@ -538,10 +549,7 @@ const CollectionSearchBox = (props: CollectionSearchBoxProps) => {
     <SearchBox
       close={close}
       title={title}
-      // TODO(strict): see TODO(ts-migration) on FetchSearchResults — the
-      // implementation requires args that SearchBox sometimes omits
-      // (pre-existing runtime bug preserved); cast is type-only.
-      fetchSearchResults={fetchSearchResults as FetchSearchResults}
+      fetchSearchResults={fetchSearchResults}
       returnCallback={returnCallback}
     />
   );

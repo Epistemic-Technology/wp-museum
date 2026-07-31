@@ -79,16 +79,20 @@ const FeaturedCollectionEdit = ( props: FeaturedCollectionEditProps ) => {
 	// Array.isArray() is therefore only true for the empty case, so
 	// collectionBoxes is always empty. Pre-existing bug preserved via type
 	// assertion.
+	//
+	// Iterating the object's keys is NOT a fix on its own: those keys are
+	// wpm_collection_tax TERM ids, while FeaturedCollection fetches
+	// /collections/{id}, which takes a collection POST id and does not even
+	// check the post type (Collections_Controller::get_post). Feeding it term
+	// ids would render arbitrary posts as featured collections. The REST layer
+	// has to expose the collection post id (or a term -> post lookup) first.
 	if ( ! isEmpty( objectData ) && Array.isArray( objectData.collections ) ) {
 		collectionBoxes = ( objectData.collections as unknown as number[] ).map( collectionID =>
-			// TODO(ts-migration): FeaturedCollection expects a `showImage` prop,
-			// but the spread attributes only provide `showFeatureImage`, so
-			// showImage is always undefined. Pre-existing behavior preserved;
-			// cast keeps the missing required prop compiling.
 			<FeaturedCollection
-				{ ...( attributes as any ) }
-				key          = { collectionID }
-				collectionID = { collectionID }
+				key             = { collectionID }
+				collectionID    = { collectionID }
+				showImage       = { showFeatureImage }
+				showDescription = { showDescription }
 			/>
 		);
 	}

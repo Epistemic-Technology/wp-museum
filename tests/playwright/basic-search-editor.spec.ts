@@ -8,12 +8,13 @@
  *
  *   ReferenceError: currentSearchParams is not defined
  *
- * The block still renders no results — PaginatedObjectList is handed
- * `objects` where it expects `mObjects`, which is the other half of #131 and
- * is not fixed here — so this asserts on the absence of the crash rather than
- * on rendered results.
+ * At the time this was written the block also rendered no results, because
+ * PaginatedObjectList was handed `objects` where it expects `mObjects` (the
+ * other half of #131, since fixed under #147). This test still asserts on the
+ * absence of the crash rather than on rendered results.
  *
  * @see https://github.com/Epistemic-Technology/wp-museum/issues/131
+ * @see https://github.com/Epistemic-Technology/wp-museum/issues/147
  */
 
 import { test, expect } from "@playwright/test";

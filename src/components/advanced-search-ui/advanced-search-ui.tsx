@@ -23,8 +23,9 @@ interface SearchFieldEntry {
  * Search values managed by AdvancedSearchUI.
  *
  * `selectedKind` is a number when seeded from kindsData or parsed from the
- * URL, but a string once the user picks a kind in the SelectControl (see the
- * TODO(ts-migration) note on the kind lookup below).
+ * URL, but a string once the user picks a kind in the SelectControl (whose
+ * onChange always yields a string), so consumers must normalise before
+ * comparing it against `kind_id`.
  */
 interface AdvancedSearchValues {
   searchText?: string;
@@ -88,14 +89,20 @@ const FieldSearchElement = (props: FieldSearchElementProps) => {
 
   let inputElement;
   if (type === "date") {
-    let searchVals;
+    // `search` is null until something is typed into the field (and
+    // JSON.parse( null ) returns null rather than throwing), so fall back to
+    // an empty date range for anything that is not a parsed JSON object.
+    let searchVals: { fromDate?: string; toDate?: string } = {};
 
-    try {
-      // TODO(strict): search may be null/undefined at runtime; JSON.parse
-      // failures are caught below, so the cast preserves existing behavior.
-      searchVals = JSON.parse(search as string);
-    } catch {
-      searchVals = {};
+    if (typeof search === "string" && search !== "") {
+      try {
+        const parsedSearch = JSON.parse(search);
+        if (!!parsedSearch && typeof parsedSearch === "object") {
+          searchVals = parsedSearch;
+        }
+      } catch {
+        // Not valid JSON: keep the empty date range.
+      }
     }
 
     const { fromDate, toDate } = searchVals;
@@ -290,18 +297,24 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
       !!kindsData &&
       kindsData.length > 0
     ) {
-      // TODO(ts-migration): pre-existing bug — selectedKind is a string once
-      // the user picks a kind in the SelectControl, while kind_id is a number,
-      // so this strict comparison never matches after user selection.
-      // Preserved as-is.
+      // kind_id is an integer in the REST schema, while selectedKind is a
+      // string whenever it comes from the SelectControl (or from a
+      // defaultSearch that was saved after the user picked a kind), so
+      // compare the numeric values.
+      const selectedKindId =
+        typeof selectedKind === "string"
+          ? parseInt(selectedKind, 10)
+          : selectedKind;
       const selectedKindData = kindsData.find(
-        (kindItem) => kindItem.kind_id === selectedKind,
+        (kindItem) => kindItem.kind_id === selectedKindId,
       );
-      // TODO(strict): possible null at runtime — see TODO(ts-migration) above;
-      // find() can return undefined and type_name can be null.
-      getFieldData(selectedKindData!.type_name!).then((result) =>
-        setFieldData(result),
-      );
+      // No matching kind (or a kind with no post type): leave the current
+      // field data in place rather than fetching fields for nothing.
+      if (!!selectedKindData && !!selectedKindData.type_name) {
+        getFieldData(selectedKindData.type_name).then((result) =>
+          setFieldData(result),
+        );
+      }
     }
   }, [selectedKind, kindsData]);
 
@@ -419,16 +432,16 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
           >
             Reset Search
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              // TODO(strict): possible undefined at runtime if inEditor is set
-              // without setAttributes; preserved as-is.
-              setAttributes!({ defaultSearch: JSON.stringify(searchValues) })
-            }
-          >
-            Set Defaults
-          </Button>
+          {!!setAttributes && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setAttributes({ defaultSearch: JSON.stringify(searchValues) })
+              }
+            >
+              Set Defaults
+            </Button>
+          )}
         </div>
       )}
       <div

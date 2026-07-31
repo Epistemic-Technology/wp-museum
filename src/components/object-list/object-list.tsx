@@ -1,4 +1,4 @@
-import type { ImageSizeTuple, MuseumObject } from '../../types';
+import type { MuseumObject } from '../../types';
 
 import withPagination from '../with-pagination/with-pagination';
 
@@ -24,17 +24,20 @@ const ObjectRow = ( props: ObjectRowProps ) => {
 
 	const decodedPostTitle = decodeHtmlEntities( post_title );
 
+	// thumbnail is `[]` for an object with no image, and null when the src
+	// lookup failed; either way there is nothing to display.
+	const thumbnailURL =
+		Array.isArray( thumbnail ) && thumbnail.length > 0 ? thumbnail[ 0 ] : null;
+
 	return (
 		<div className = 'object-row'>
 			<a href = { link }><h2>{ post_title }</h2></a>
 			<div className = 'object-row-content'>
 				{ displayImage &&
 					<div className = 'object-row-image'>
-						{ /* TODO(strict): thumbnail can be `[]` or null on the wire
-						   (object without an image); the cast preserves the existing
-						   unguarded index access, which yields an undefined src for
-						   `[]` and throws for null. Tracked in #126. */ }
-						<a href = { link }><img src={( thumbnail as ImageSizeTuple )[0]} alt={decodedPostTitle} /></a>
+						{ !! thumbnailURL &&
+							<a href = { link }><img src={ thumbnailURL } alt={decodedPostTitle} /></a>
+						}
 					</div>
 				}
 				<div className = 'object-info'>

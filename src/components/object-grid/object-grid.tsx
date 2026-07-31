@@ -192,15 +192,16 @@ const ObjectGridBoxDynamicImage = (props: ObjectGridBoxDynamicImageProps) => {
               : null
         }
       />
+      {/* imgData may still be null here (the modal can open before the image
+          fetch resolves) or empty for an object with no images; ObjectModal
+          renders the entry without a gallery in both cases. */}
       {doObjectModal && modalOpen && (
         <ObjectModal
           title={decodedPostTitle}
           content={excerpt}
           url={link}
           linkText="View full entry"
-          // TODO(strict): possible null at runtime — modal can open before the
-          // image fetch resolves; ObjectModal would then crash on Object.values.
-          images={imgData!}
+          images={imgData}
           close={() => setModalOpen(false)}
         />
       )}

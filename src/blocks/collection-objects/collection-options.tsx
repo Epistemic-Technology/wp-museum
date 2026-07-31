@@ -127,23 +127,18 @@ const CollectionSettingsPanel = (props: CollectionSettingsPanelProps) => {
           />
         </>
       )}
-      {/* TODO(ts-migration): RadioControl types expect string option values / selected; these boolean values (and the string comparison in onChange) are pre-existing behavior, preserved unchanged. */}
       <RadioControl
         label="Collection Display"
         help={
           "Should the collection objects and description be " +
           "displayed as a single page or separately with a toggle?"
         }
-        selected={singlePage as any}
-        options={
-          [
-            { label: "Single Page", value: true },
-            { label: "Toggle", value: false },
-          ] as any
-        }
-        onChange={(val) =>
-          updateMeta("single_page", val === "true" ? true : false)
-        }
+        selected={singlePage ? "true" : "false"}
+        options={[
+          { label: "Single Page", value: "true" },
+          { label: "Toggle", value: "false" },
+        ]}
+        onChange={(val) => updateMeta("single_page", val === "true")}
       />
     </PluginDocumentSettingPanelUntyped>
   );

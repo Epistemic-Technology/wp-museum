@@ -13,12 +13,6 @@ import { useState } from "@wordpress/element";
 import { hexToRgb } from "../../javascript/util";
 import { ObjectSearchBox, ImageSelector } from "../../components";
 
-// TODO(ts-migration): this block has always passed imgHeight/imgWidth to
-// ImageSelector, which ImageSelectorProps does not declare (the component
-// ignores them at runtime). Cast to keep the currently-working call site
-// unchanged.
-const ImageSelectorCompat = ImageSelector as any;
-
 import type { ElementType, ReactNode } from "react";
 
 import type {
@@ -44,8 +38,6 @@ interface InfoContentProps {
   excerpt: string | null;
   imgURL: string | null;
   imgIndex: number;
-  imgHeight: number;
-  imgWidth: number;
   displayImage: boolean;
   fields: Record<string, boolean>;
   fieldData: Record<string, InfoboxFieldData>;
@@ -72,8 +64,6 @@ const InfoContent = (props: InfoContentProps) => {
     excerpt,
     imgURL,
     imgIndex,
-    imgHeight,
-    imgWidth,
     displayImage,
     fields,
     fieldData,
@@ -139,9 +129,7 @@ const InfoContent = (props: InfoContentProps) => {
       {displayImage && (
         <div className={`infobox-img-wrapper`}>
           {objectID ? (
-            <ImageSelectorCompat
-              imgHeight={imgHeight}
-              imgWidth={imgWidth}
+            <ImageSelector
               objectID={objectID}
               imgIndex={imgIndex}
               imgURL={imgURL}

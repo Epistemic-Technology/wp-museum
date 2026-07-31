@@ -134,19 +134,21 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
       />
     );
   } else if (fieldType == "measure") {
-    // TODO(strict): possible null at runtime — dimensions is
-    // FieldDimensions | null on the wire; asserted to preserve behavior.
-    if (fieldData.dimensions!.n == 1) {
+    // `dimensions` is null on the wire when the stored JSON was malformed.
+    // Fall back to a single unlabeled measurement rather than throwing while
+    // rendering the block.
+    const dimensions = fieldData.dimensions;
+    if (!dimensions || !dimensions.n || dimensions.n == 1) {
       inputElement = (
         <input
           name={fieldSlug}
           type="number"
-          value={fieldValue[0]}
+          value={fieldValue?.[0] ?? ""}
           onChange={(event) => onMeasureChange(event, 0)}
         />
       );
     } else {
-      const dimensionElements = fieldData.dimensions!.labels.map(
+      const dimensionElements = dimensions.labels.map(
         (dimensionLabel, index) => (
           <label key={index}>
             <div className="input-element-dimension-label">
@@ -155,7 +157,7 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
             <input
               name={fieldSlug}
               type="number"
-              value={fieldValue[index]}
+              value={fieldValue?.[index] ?? ""}
               onChange={(event) => onMeasureChange(event, index)}
             />
           </label>
@@ -199,6 +201,45 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
       <div className="errorMessage">{errorText}</div>
     </div>
   );
+};
+
+/**
+ * Validates a single field's current value.
+ *
+ * Returns the message to display beneath the field, or null when the field is
+ * fine. Only emptiness of a required field is enforced: the `field_schema`
+ * check below is deliberately inert (see the commented-out assignment), it is
+ * kept so the intended rule is not lost.
+ *
+ * @param fieldData  The field definition, as returned by
+ *                   GET /wp-museum/v1/{type}/fields.
+ * @param fieldValue The field's current value in the block's attributes.
+ */
+export const getFieldError = (
+  fieldData: MObjectField,
+  fieldValue: any,
+): ReactNode => {
+  const { field_schema: fieldSchema, required } = fieldData;
+
+  if (required && !fieldValue) {
+    return <span>Field is required but empty.</span>;
+  }
+
+  if (fieldSchema) {
+    // field_schema is a regex typed by hand in the admin UI, so it may not
+    // compile. Guarded because nothing here is worth breaking the editor over.
+    try {
+      const pattern = "^" + stripslashes(fieldSchema) + "$";
+      const regex = new RegExp(pattern);
+      if (!regex.test(fieldValue)) {
+        //return ( <span>Value does not conform to schema.</span> );
+      }
+    } catch (error) {
+      // Invalid pattern stored for the field — nothing to report.
+    }
+  }
+
+  return null;
 };
 
 interface ObjectMetaEditProps {
@@ -273,30 +314,20 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
     setAttributes(setObject);
   };
 
-  const checkField = (fieldData: MObjectField) => {
-    const {
-      slug: fieldSlug,
-      field_schema: fieldSchema,
-      name: fieldName,
-      required,
-    } = fieldData;
-
-    const updatedFieldErrors = Object.assign({}, fieldErrors);
-
-    // clear existing errors
-    updatedFieldErrors[fieldSlug] = null;
+  const checkField = (fieldData: MObjectField, skipEmpty = false) => {
+    const { slug: fieldSlug, name: fieldName, required } = fieldData;
 
     const fieldValue = attributes[fieldSlug];
 
-    if (required && !fieldValue) {
-      updatedFieldErrors[fieldSlug] = <span>Field is required but empty.</span>;
-    } else if (fieldSchema) {
-      const pattern = "^" + stripslashes(fieldSchema) + "$";
-      const regex = new RegExp(pattern);
-      if (!regex.test(fieldValue)) {
-        //updatedFieldErrors[ fieldSlug ] = ( <span>Value does not conform to schema.</span> );
-      }
-    }
+    // Functional update so that checking every field in a loop does not drop
+    // the errors set for the other fields.
+    setFieldErrors((currentErrors) => ({
+      ...currentErrors,
+      [fieldSlug]:
+        skipEmpty && !fieldValue
+          ? null
+          : getFieldError(fieldData, fieldValue),
+    }));
 
     // Check to make sure catalogue ID field is unique.
     if (postData && fieldValue && postData.cat_field === fieldSlug) {
@@ -305,13 +336,11 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
         path: `${baseRestPath}/all?${fieldSlug}=${fieldValue}`,
       }).then(
         (result) => {
-          const updatedFieldErrors = Object.assign({}, fieldErrors);
-          let foundError = false;
+          let duplicateError: ReactNode = null;
           if (Array.isArray(result) && result.length > 0) {
             result.map((objectData) => {
               if (objectData.ID != postId) {
-                foundError = true;
-                updatedFieldErrors[fieldSlug] = (
+                duplicateError = (
                   <span>
                     {`${fieldName} must be unique, but is already used by `}
                     {/* NOTE(wp-types): edit_link is string | null on the wire;
@@ -324,8 +353,11 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
                 );
               }
             });
-            if (foundError) {
-              setFieldErrors(updatedFieldErrors);
+            if (duplicateError) {
+              setFieldErrors((currentErrors) => ({
+                ...currentErrors,
+                [fieldSlug]: duplicateError,
+              }));
             } else {
               if (!catFieldIsGood) setCatFieldIsGood(true);
             }
@@ -333,27 +365,29 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
         },
       );
     }
-    setFieldErrors(updatedFieldErrors);
   };
 
-  const checkAllFields = () => {
+  const checkAllFields = (skipEmpty = false) => {
     // Non-null assertion: only called from the effect below after the
-    // `!!fieldData` guard.
-    Object.entries(fieldData!).map((field) => {
-      // TODO(ts-migration): pre-existing bug — Object.entries yields
-      // [key, value] tuples, but checkField expects the field object itself,
-      // so every destructured property (slug, field_schema, name, required)
-      // is undefined here and the checks are no-ops. Cast preserves the
-      // current behavior.
-      checkField(field as unknown as MObjectField);
+    // `!!fieldData` guard. Object.values, not Object.entries — checkField
+    // takes the field itself, not a [ field_id, field ] tuple.
+    Object.values(fieldData!).map((field) => {
+      checkField(field, skipEmpty);
     });
   };
 
+  // These checks were inert until #147 — checkAllFields passed
+  // Object.entries tuples to a function expecting the field itself, so every
+  // check read undefined. Now that they run, the load-time pass skips empty
+  // fields on a new object: flagging every required field before the curator
+  // has typed anything is noise, not validation. postData is a dependency
+  // because the catalogue-uniqueness check below needs it, and it does not
+  // necessarily arrive before fieldData.
   useEffect(() => {
     if (!!fieldData && !isEmpty(fieldData)) {
-      checkAllFields();
+      checkAllFields(currentPostStatus === "auto-draft");
     }
-  }, [fieldData]);
+  }, [fieldData, postData, currentPostStatus]);
 
   // Override Gutenberg's Tab handling so keyboard navigation moves through
   // the object edit sequence — post title, description paragraph(s), then
@@ -418,11 +452,14 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
       const range = doc.createRange();
       range.selectNodeContents(el);
       range.collapse(false);
-      // TODO(strict): possible null at runtime — defaultView/getSelection
-      // can be null per the DOM types; asserted to preserve behavior.
-      const selection = doc.defaultView!.getSelection();
-      selection!.removeAllRanges();
-      selection!.addRange(range);
+      // Either can be null (a detached document has no defaultView, and
+      // getSelection() returns null when the document is not rendered). The
+      // element has already been focused, so leaving the caret where the
+      // browser put it is the right fallback.
+      const selection = doc.defaultView?.getSelection();
+      if (!selection) return;
+      selection.removeAllRanges();
+      selection.addRange(range);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
