@@ -33,7 +33,7 @@ const ObjectRow = ( props: ObjectRowProps ) => {
 						{ /* TODO(strict): thumbnail can be `[]` or null on the wire
 						   (object without an image); the cast preserves the existing
 						   unguarded index access, which yields an undefined src for
-						   `[]` and throws for null. Tracked in #126. */ }
+						   `[]` and throws for null. Tracked in #148. */ }
 						<a href = { link }><img src={( thumbnail as ImageSizeTuple )[0]} alt={decodedPostTitle} /></a>
 					</div>
 				}
