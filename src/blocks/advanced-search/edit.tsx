@@ -20,45 +20,20 @@ import apiFetch from "@wordpress/api-fetch";
  */
 import { AdvancedSearchUI, ObjectGrid, withPagination } from "../../components";
 
+import { searchObjects } from "../../javascript/util";
+
+import { toSearchRequest } from "./search-params";
+
+import type { AdvancedSearchValues } from "./search-params";
+
 import type {
   Collection,
   MuseumObject,
-  MuseumObjectSearchParams,
   ObjectFieldsResponse,
   ObjectKind,
 } from "../../types";
 
 const PaginatedObjectGrid = withPagination(ObjectGrid);
-
-/** One entry of the `searchFields` array assembled by AdvancedSearchUI. */
-interface SearchFieldEntry {
-  field?: string | null;
-  search?: string | null;
-}
-
-/**
- * Search params handled by this block: the values assembled by
- * AdvancedSearchUI plus the pagination/limit keys added here and by
- * withPagination.
- *
- * TODO(ts-migration): pre-existing bug — the server ignores posts_per_page,
- * selectedFlags, selectedKind, and searchFields (only per_page, page, status,
- * s/searchText, onlyTitle, post_title, post_content, tilde-prefixed field
- * slugs, selectedCollections, and selectedTags are read); shape preserved
- * as-is.
- */
-interface AdvancedSearchParams {
-  page?: number;
-  per_page?: number;
-  posts_per_page?: number;
-  searchText?: string;
-  onlyTitle?: boolean;
-  selectedFlags?: string[];
-  selectedCollections?: string[] | number[];
-  selectedTags?: string[];
-  selectedKind?: number | string;
-  searchFields?: SearchFieldEntry[];
-}
 
 interface AdvancedSearchAttributes {
   defaultSearch?: string;
@@ -106,8 +81,10 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
   );
   const [kindsData, setKindsData] = useState<ObjectKind[]>([]);
   const [searchResults, setSearchResults] = useState<MuseumObject[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [currentSearchParams, setCurrentSearchParams] =
-    useState<AdvancedSearchParams>({});
+    useState<AdvancedSearchValues>({});
 
   const baseRestPath = "/wp-museum/v1";
 
@@ -134,7 +111,7 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
     });
   };
 
-  const onSearch = (searchParams: AdvancedSearchParams) => {
+  const onSearch = (searchParams: AdvancedSearchValues) => {
     for (const [key, value] of Object.entries(searchParams)) {
       if (
         key != "page" &&
@@ -144,18 +121,20 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
         break;
       }
     }
-    // Use resultsPerPage setting (-1 means unlimited/all results)
-    // TODO(ts-migration): pre-existing bug — the server ignores
-    // `posts_per_page` (only `per_page` is read); preserved as-is.
-    searchParams["posts_per_page"] = resultsPerPage;
     setCurrentSearchParams(searchParams);
-    apiFetch<MuseumObject[]>({
-      path: `${baseRestPath}/search`,
-      method: "POST",
-      data: searchParams,
-    }).then((result) => {
-      setSearchResults(result);
-    });
+    // resultsPerPage of -1 means unlimited/all results.
+    searchObjects(toSearchRequest(searchParams, resultsPerPage))
+      .then((results) => {
+        setSearchResults(results.objects);
+        setCurrentPage(results.currentPage);
+        setTotalPages(results.totalPages);
+      })
+      .catch((error) => {
+        console.error("Search request failed:", error);
+        setSearchResults([]);
+        setCurrentPage(1);
+        setTotalPages(0);
+      });
   };
 
   const blockProps = useBlockProps();
@@ -261,17 +240,13 @@ const AdvancedSearchEdit = (props: AdvancedSearchEditProps) => {
       />
       {searchResults && searchResults.length > 0 && (
         <PaginatedObjectGrid
-          /* TODO(ts-migration): pre-existing bug — `query_data` never exists
-             on the wire (schema-stripped); pagination info actually arrives
-             via X-WP-* headers, so these fall back to 1 / 0. Casts preserve
-             current behavior. */
-          currentPage={(searchResults[0] as any)?.query_data?.current_page || 1}
-          totalPages={(searchResults[0] as any)?.query_data?.num_pages || 0}
+          currentPage={currentPage}
+          totalPages={totalPages}
           searchCallback={onSearch}
-          /* NOTE(wp-types): AdvancedSearchParams carries extra keys
-             (searchFields, posts_per_page, …) beyond MuseumObjectSearchParams'
-             index signature; cast preserves what is sent today. */
-          searchParams={currentSearchParams as MuseumObjectSearchParams}
+          /* withPagination sets `page` on these and hands them back to
+             onSearch, which turns them into a request; they are the block's
+             working values, not the wire shape. */
+          searchParams={currentSearchParams}
           mObjects={searchResults}
           columns={columns}
           displayTitle={true}

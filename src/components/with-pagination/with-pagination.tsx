@@ -2,16 +2,29 @@ import type { ComponentType, JSX } from 'react';
 
 import type { MuseumObjectSearchParams } from '../../types';
 
-export interface WithPaginationProps {
+/**
+ * `S` is whatever shape the wrapped block hands to its search callback. It
+ * defaults to the wire params, but blocks that page through their own working
+ * values (advanced search translates its values into a request only when it
+ * fetches) substitute those instead.
+ */
+export interface WithPaginationProps< S extends Pageable = MuseumObjectSearchParams > {
 	currentPage: number;
 	totalPages: number;
 	pagesToShow?: number;
-	searchCallback: ( searchParams: MuseumObjectSearchParams ) => void;
-	searchParams: MuseumObjectSearchParams;
+	searchCallback: ( searchParams: S ) => void;
+	searchParams: S;
+}
+
+/** The one property pagination itself sets. */
+interface Pageable {
+	page?: number;
 }
 
 const withPagination = < P extends object >( BaseComponent: ComponentType<P> ) =>
-	( props: P & WithPaginationProps ): JSX.Element => {
+	< S extends Pageable = MuseumObjectSearchParams >(
+		props: P & WithPaginationProps< S >
+	): JSX.Element => {
 	const {
 		currentPage,
 		totalPages,

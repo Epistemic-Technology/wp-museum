@@ -5,6 +5,8 @@ import type { ReactNode, MouseEventHandler } from "react";
 import type {
 	Collection,
 	ImageSizeTuple,
+	MuseumObject,
+	MuseumObjectSearchParams,
 	ObjectImage,
 	ObjectImagesResponse,
 } from "../types";
@@ -285,6 +287,48 @@ export const MaybeLink = (props: MaybeLinkProps) => {
  */
 export const fetchObjectImages = ( objectID: number | string ): Promise<ObjectImagesResponse> => {
 	return apiFetch<ObjectImagesResponse>( { path: `${baseRestPath}/all/${objectID}/images` } );
+}
+
+/**
+ * A page of search results together with the paging the server reported.
+ */
+export interface ObjectSearchResults {
+	objects: MuseumObject[];
+	/** 1-based. Falls back to 1 when the server reports no page. */
+	currentPage: number;
+	/** Falls back to 0 when the server reports no page count. */
+	totalPages: number;
+}
+
+/**
+ * Runs a search against the /search endpoint and returns the results with
+ * their pagination.
+ *
+ * Paging arrives in the X-WP-Page and X-WP-TotalPages response headers, so
+ * the response has to be read unparsed: apiFetch's default `parse: true`
+ * resolves to the JSON body alone and discards the headers.
+ */
+export const searchObjects = async (
+	searchParams: MuseumObjectSearchParams
+): Promise<ObjectSearchResults> => {
+	// No type argument: apiFetch infers `parse: false` and resolves to the
+	// unparsed Response, which is what carries the pagination headers.
+	const response = await apiFetch( {
+		path   : `${baseRestPath}/search`,
+		method : 'POST',
+		data   : searchParams,
+		parse  : false
+	} );
+
+	if ( ! response.ok ) {
+		throw new Error( `Search request failed with status ${response.status}` );
+	}
+
+	return {
+		objects     : await response.json() as MuseumObject[],
+		currentPage : parseInt( response.headers.get( 'X-WP-Page' ) ?? '' ) || 1,
+		totalPages  : parseInt( response.headers.get( 'X-WP-TotalPages' ) ?? '' ) || 0
+	};
 }
 
 /**

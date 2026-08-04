@@ -14,7 +14,7 @@ import type {
 } from "../../types";
 
 /** One entry of the `searchFields` array of the advanced-search values. */
-interface SearchFieldEntry {
+export interface SearchFieldEntry {
   field?: string | null;
   search?: string | null;
 }
@@ -26,7 +26,7 @@ interface SearchFieldEntry {
  * parsed from the URL, or picked in the SelectControl — the kind lookup
  * matches it against the numeric `kind_id`.
  */
-interface AdvancedSearchValues {
+export interface AdvancedSearchValues {
   searchText?: string;
   onlyTitle?: boolean;
   selectedFlags?: string[];

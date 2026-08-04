@@ -3,12 +3,10 @@
  */
 import { useState, useEffect, createRoot } from "@wordpress/element";
 
-import apiFetch from "@wordpress/api-fetch";
-
 /**
  * Internal dependencies
  */
-import { baseRestPath, attributesFromJSON } from "../../javascript/util";
+import { attributesFromJSON, searchObjects } from "../../javascript/util";
 
 import { EmbeddedSearch, ObjectGrid, withPagination } from "../../components";
 
@@ -46,6 +44,8 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
   const [currentSearchParams, setCurrentSearchParams] =
     useState<MuseumObjectSearchParams>([] as unknown as MuseumObjectSearchParams);
   const [searchResults, setSearchResults] = useState<MuseumObject[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [currentSearchText, setCurrentSearchText] = useState(searchText);
 
   const onSearch = (searchParams: MuseumObjectSearchParams) => {
@@ -55,19 +55,24 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
         break;
       }
     }
-    // TODO(ts-migration): pre-existing bug — the server ignores `numberposts`
-    // (only per_page, page, etc. are read); preserved as-is.
-    searchParams["numberposts"] = resultsPerPage;
+    searchParams["per_page"] = resultsPerPage;
     if (searchParams["searchText"]) {
-      apiFetch<MuseumObject[]>({
-        path: `${baseRestPath}/search`,
-        method: "POST",
-        data: searchParams,
-      }).then((result) => {
-        setSearchResults(result);
-      });
+      searchObjects(searchParams)
+        .then((results) => {
+          setSearchResults(results.objects);
+          setCurrentPage(results.currentPage);
+          setTotalPages(results.totalPages);
+        })
+        .catch((error) => {
+          console.error("Search request failed:", error);
+          setSearchResults([]);
+          setCurrentPage(1);
+          setTotalPages(0);
+        });
     } else {
       setSearchResults([]);
+      setCurrentPage(1);
+      setTotalPages(0);
     }
   };
 
@@ -87,19 +92,6 @@ const BasicSearchFront = (props: BasicSearchFrontProps) => {
       });
     }
   }, []);
-
-  let currentPage = 1;
-  let totalPages = 0;
-  // TODO(ts-migration): pre-existing bug — `query_data` never exists on the
-  // wire (schema-stripped); pagination info actually arrives via X-WP-*
-  // headers, so this branch never runs. Casts preserve current behavior.
-  if (
-    searchResults.length > 0 &&
-    typeof (searchResults[0] as any).query_data != "undefined"
-  ) {
-    currentPage = (searchResults[0] as any).query_data.current_page;
-    totalPages = (searchResults[0] as any).query_data.num_pages;
-  }
 
   return (
     <div className="wpm-basic-search-block">
