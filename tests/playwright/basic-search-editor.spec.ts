@@ -8,10 +8,10 @@
  *
  *   ReferenceError: currentSearchParams is not defined
  *
- * The block still renders no results — PaginatedObjectList is handed
- * `objects` where it expects `mObjects`, which is the other half of #131 and
- * is not fixed here — so this asserts on the absence of the crash rather than
- * on rendered results.
+ * The other half of #131 was a prop mismatch: PaginatedObjectList was handed
+ * `objects` where it expects `mObjects`, so the list always received
+ * undefined and the preview stayed empty however many objects matched. The
+ * second test covers that by searching for objects that do exist.
  *
  * @see https://github.com/Epistemic-Technology/wp-museum/issues/131
  */
@@ -23,8 +23,13 @@ import {
   createSimpleObjectKind,
   dismissEditorModals,
 } from "./utils";
+import type { ObjectKind } from "../../src/types";
 
 const RUN_ID = `${Date.now()}`;
+// A single distinctive token, so the WP `s` search matches these objects and
+// nothing else in the test database.
+const MATCH_TOKEN = `astrolabe${RUN_ID}`;
+const OBJECT_COUNT = 3;
 
 test.describe("Basic Search block in the editor (#131)", () => {
   let pageId: number;
@@ -40,6 +45,28 @@ test.describe("Basic Search block in the editor (#131)", () => {
     const nonce: string = await page.evaluate(
       () => (window as any).wpApiSettings?.nonce,
     );
+    const headers = { "X-WP-Nonce": nonce };
+
+    const kindsResp = await page.request.get(
+      "/wp-json/wp-museum/v1/mobject_kinds",
+      { headers },
+    );
+    const kinds: ObjectKind[] = await kindsResp.json();
+    const objectPostType = kinds[kinds.length - 1].type_name;
+
+    for (let i = 1; i <= OBJECT_COUNT; i++) {
+      const objectResp = await page.request.post(
+        `/wp-json/wp/v2/${objectPostType}`,
+        {
+          data: {
+            title: `${MATCH_TOKEN} ${i}`,
+            status: "publish",
+          },
+          headers,
+        },
+      );
+      expect(objectResp.ok()).toBeTruthy();
+    }
 
     const pageResp = await page.request.post("/wp-json/wp/v2/pages", {
       data: {
@@ -47,7 +74,7 @@ test.describe("Basic Search block in the editor (#131)", () => {
         status: "publish",
         content: `<!-- wp:wp-museum/basic-search /-->`,
       },
-      headers: { "X-WP-Nonce": nonce },
+      headers,
     });
     pageId = (await pageResp.json()).id;
 
@@ -101,5 +128,29 @@ test.describe("Basic Search block in the editor (#131)", () => {
     // event handler would have left the editor's error boundary in place.
     await expect(searchInput).toBeVisible();
     await expect(searchInput).toHaveValue(`sextant ${RUN_ID}`);
+  });
+
+  test("the editor preview lists matching objects", async ({ page }) => {
+    await loginAsAdmin(page);
+
+    await page.goto(`/wp-admin/post.php?post=${pageId}&action=edit`);
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForSelector(".block-editor-writing-flow", { timeout: 30000 });
+    await dismissEditorModals(page);
+
+    const searchInput = page.locator("#wpm-embedded-search-input");
+    await expect(searchInput).toBeVisible({ timeout: 30000 });
+
+    await searchInput.fill(MATCH_TOKEN);
+    await page
+      .locator("button.wpm-embedded-search-button.is-primary")
+      .first()
+      .click();
+
+    // PaginatedObjectList renders ObjectList, which emits one .object-row per
+    // result inside .search-results.
+    const resultRows = page.locator(".search-results .object-row");
+    await expect(resultRows).toHaveCount(OBJECT_COUNT, { timeout: 30000 });
+    await expect(resultRows.first()).toContainText(MATCH_TOKEN);
   });
 });

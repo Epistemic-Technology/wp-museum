@@ -19,16 +19,12 @@ import {
 	SelectControl
 } from '@wordpress/components';
 
-import apiFetch from '@wordpress/api-fetch';
-
-import type { ComponentType, ChangeEvent } from 'react';
+import type { ChangeEvent } from 'react';
 
 /**
  * Internal dependencies
  */
-import {
-	baseRestPath
-} from '../../javascript/util';
+import { searchObjects } from '../../javascript/util';
 
 import { EmbeddedSearch, PaginatedObjectList } from '../../components';
 
@@ -46,13 +42,6 @@ interface BasicSearchEditProps {
 	attributes: BasicSearchAttributes;
 	setAttributes: ( attributes: Partial<BasicSearchAttributes> ) => void;
 }
-
-// TODO(ts-migration): pre-existing prop mismatch — PaginatedObjectList expects
-// `mObjects` plus pagination props (currentPage, totalPages, searchCallback,
-// searchParams), but this block passes `objects`, `displayImages`, and
-// `columns`, so the list receives undefined mObjects and renders nothing.
-// Cast preserves current behavior.
-const UntypedPaginatedObjectList = PaginatedObjectList as ComponentType<any>;
 
 /**
  * Basic search of the catalogue.
@@ -77,6 +66,8 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 	} = attributes;
 
 	const [ searchResults, setSearchResults ] = useState<MuseumObject[]>( [] );
+	const [ currentPage, setCurrentPage ] = useState( 1 );
+	const [ totalPages, setTotalPages ] = useState( 0 );
 	const [ currentSearchParams, setCurrentSearchParams ] =
 		useState<MuseumObjectSearchParams>( {} );
 
@@ -87,14 +78,20 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 				break;
 			}
 		}
+		searchParams['per_page'] = resultsPerPage;
 		setCurrentSearchParams( searchParams );
-		apiFetch<MuseumObject[]>( {
-			path:   `${baseRestPath}/search`,
-			method: 'POST',
-			data:   searchParams
-		} ).then( result => {
-			setSearchResults( result );
-		} );
+		searchObjects( searchParams )
+			.then( results => {
+				setSearchResults( results.objects );
+				setCurrentPage( results.currentPage );
+				setTotalPages( results.totalPages );
+			} )
+			.catch( error => {
+				console.error( 'Search request failed:', error );
+				setSearchResults( [] );
+				setCurrentPage( 1 );
+				setTotalPages( 0 );
+			} );
 	}
 
 	return (
@@ -156,10 +153,13 @@ const BasicSearchEdit = ( props: BasicSearchEditProps ) => {
 				</a>
 			}
 			{ searchResults &&
-				<UntypedPaginatedObjectList
-					objects       = { searchResults }
-					displayImages = { true }
-					columns       = { columns }
+				<PaginatedObjectList
+					mObjects       = { searchResults }
+					displayImages  = { true }
+					currentPage    = { currentPage }
+					totalPages     = { totalPages }
+					searchCallback = { onSearch }
+					searchParams   = { currentSearchParams }
 				/>
 			}
 		</div>
