@@ -22,9 +22,9 @@ interface SearchFieldEntry {
 /**
  * Search values managed by AdvancedSearchUI.
  *
- * `selectedKind` is a number when seeded from kindsData or parsed from the
- * URL, but a string once the user picks a kind in the SelectControl (see the
- * TODO(ts-migration) note on the kind lookup below).
+ * `selectedKind` is always a number, whether it was seeded from kindsData,
+ * parsed from the URL, or picked in the SelectControl — the kind lookup
+ * matches it against the numeric `kind_id`.
  */
 interface AdvancedSearchValues {
   searchText?: string;
@@ -32,7 +32,7 @@ interface AdvancedSearchValues {
   selectedFlags?: string[];
   selectedCollections?: string[];
   selectedTags?: string[];
-  selectedKind?: number | string;
+  selectedKind?: number;
   searchFields?: SearchFieldEntry[];
 }
 
@@ -206,7 +206,7 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
 
     if (values.searchText) params.set("search", values.searchText);
     if (values.onlyTitle) params.set("titleOnly", "true");
-    if (values.selectedKind) params.set("kind", values.selectedKind as string);
+    if (values.selectedKind) params.set("kind", String(values.selectedKind));
     if (values.selectedFlags?.length)
       params.set("flags", values.selectedFlags.join(","));
     if (values.selectedCollections?.length)
@@ -290,16 +290,16 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
       !!kindsData &&
       kindsData.length > 0
     ) {
-      // TODO(ts-migration): pre-existing bug — selectedKind is a string once
-      // the user picks a kind in the SelectControl, while kind_id is a number,
-      // so this strict comparison never matches after user selection.
-      // Preserved as-is.
       const selectedKindData = kindsData.find(
         (kindItem) => kindItem.kind_id === selectedKind,
       );
-      // TODO(strict): possible null at runtime — see TODO(ts-migration) above;
-      // find() can return undefined and type_name can be null.
-      getFieldData(selectedKindData!.type_name!).then((result) =>
+      // A kind that isn't in kindsData (or has no post type yet) has no
+      // fields to search, so drop any fields left over from a previous kind.
+      if (!selectedKindData?.type_name) {
+        setFieldData({});
+        return;
+      }
+      getFieldData(selectedKindData.type_name).then((result) =>
         setFieldData(result),
       );
     }
@@ -307,11 +307,13 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
 
   useEffect(() => {
     if (!selectedKind && !!kindsData && kindsData.length > 0) {
-      setSearchValues({
-        ...searchValues,
-        // NOTE(wp-types): kind_id is typed number | null; preserved as-is.
-        selectedKind: kindsData[0].kind_id as number,
-      });
+      const firstKindId = kindsData[0].kind_id;
+      if (firstKindId !== null) {
+        setSearchValues({
+          ...searchValues,
+          selectedKind: firstKindId,
+        });
+      }
     }
   }, [kindsData]);
 
@@ -375,9 +377,15 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
   };
 
   const kindOptions = () => {
-    const opts: { value: number | null; label: string | null }[] = [];
+    // SelectControl round-trips option values as strings, so kind_id is
+    // stringified here and parsed back to a number in onChange — see the
+    // kind lookup effect above, which matches on the numeric kind_id.
+    const opts: { value: string; label: string }[] = [];
     kindsData.forEach((kindItem, index) => {
-      opts[index] = { value: kindItem.kind_id, label: kindItem.label };
+      opts[index] = {
+        value: String(kindItem.kind_id ?? ""),
+        label: kindItem.label ?? "",
+      };
     });
     return opts;
   };
@@ -444,17 +452,16 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
               (showObjectType ? " search-visible" : " search-hidden")
             }
           >
-            {/* NOTE(wp-types): SelectControl's types want string
-              value/option values, but kind_id values are numbers at runtime;
-              cast to keep the existing behavior. */}
             <SelectControl
               className="advanced-search-object-type-select"
               label="Object Type"
-              value={selectedKind as string}
-              onChange={(val) => updateSearchValues({ selectedKind: val })}
-              options={
-                kindOptions() as unknown as { value: string; label: string }[]
+              value={
+                typeof selectedKind === "undefined" ? "" : String(selectedKind)
               }
+              onChange={(val) =>
+                updateSearchValues({ selectedKind: parseInt(val, 10) })
+              }
+              options={kindOptions()}
             />
           </div>
         )}

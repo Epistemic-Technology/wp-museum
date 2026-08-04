@@ -13,3 +13,8 @@ if ( typeof global.TextEncoder === 'undefined' ) {
 if ( typeof global.TextDecoder === 'undefined' ) {
 	global.TextDecoder = TextDecoder;
 }
+
+// React 18 only treats act() as supported when this flag is set, and warns on
+// every render otherwise. @wordpress/jest-console turns those warnings into
+// test failures, so tests that drive a component with act() need it.
+global.IS_REACT_ACT_ENVIRONMENT = true;
