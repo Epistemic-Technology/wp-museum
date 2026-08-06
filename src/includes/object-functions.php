@@ -438,23 +438,20 @@ function do_advanced_search( $request ) {
  * intended to support REST requests and should only be used in that context.
  */
 function add_object_meta_query_filter( $search_terms, $kind ) {
-	global $wpdb;
-
-	$search_all_fields_sql = [];
-	$meta_fields_sql       = [];
 	if ( current_user_can( 'edit_posts' ) ) {
 		$public_fields_only = false;
 	} else {
 		$public_fields_only = true;
 	}
+
+	// (1) Does any of the object's field values match the search text? These
+	// are OR'd into WordPress's own title/excerpt/content search, so a post
+	// that matches on title alone has to survive them.
+	$search_all_fields_sql = '';
 	if (
 		empty( $search_terms['onlyTitle'] ) &&
 		! empty( $search_terms['searchText'] )
 	) {
-		$search_all_fields_args = [
-			'relation' => 'OR',
-		];
-
 		if ( is_array( $kind ) ) {
 			$mobject_fields = [];
 			foreach ( $kind as $single_kind ) {
@@ -469,120 +466,121 @@ function add_object_meta_query_filter( $search_terms, $kind ) {
 		} else {
 			$mobject_fields = get_mobject_fields( $kind->kind_id );
 		}
+		$field_clauses = [];
 		foreach ( $mobject_fields as $field ) {
-			$search_all_fields_args[] = [
-				'key'     => $field->slug,
-				'value'   => $search_terms['searchText'],
-				'compare' => 'LIKE',
-			];
+			$field_clauses[] = meta_value_exists_sql(
+				$field->slug,
+				$search_terms['searchText'],
+				'LIKE'
+			);
 		}
-		$search_all_fields_query = new \WP_Meta_Query( $search_all_fields_args );
-		$search_all_fields_sql   = $search_all_fields_query->get_sql(
-			'post',
-			$wpdb->posts,
-			'ID',
-			null
-		);
-		$join_clause             = $search_all_fields_sql['join'];
+		if ( ! empty( $field_clauses ) ) {
+			$search_all_fields_sql = '(' . implode( ' OR ', $field_clauses ) . ')';
+		}
 	}
-	$meta_filter_args = [
-		'relation' => 'AND',
-	];
+
+	// (2) Flags that must be set and (3) per-field filters. Unlike (1) these
+	// narrow the result set, so they are AND'd on.
+	$meta_filter_clauses = [];
 	if ( ! empty( $search_terms['selectedFlags'] ) ) {
 		foreach ( $search_terms['selectedFlags'] as $set_flag ) {
-			$meta_filter_args[] = [
-				'key'     => $set_flag,
-				'value'   => '1',
-				'compare' => '=',
-			];
+			$meta_filter_clauses[] = meta_value_exists_sql( $set_flag, '1', '=' );
 		}
 	}
 	if ( ! empty( $search_terms['searchFields'] ) ) {
 		foreach ( $search_terms['searchFields'] as $search_field ) {
-			$meta_filter_args[] = [
-				'key'     => $search_field['field'],
-				'value'   => $search_field['search'],
-				'compare' => 'LIKE',
-			];
+			$meta_filter_clauses[] = meta_value_exists_sql(
+				$search_field['field'],
+				$search_field['search'],
+				'LIKE'
+			);
 		}
 	}
-	if ( count( $meta_filter_args ) > 1 ) {
-		$meta_filter_query = new \WP_Meta_Query( $meta_filter_args );
-		$meta_fields_sql   = $meta_filter_query->get_sql(
-			'post',
-			$wpdb->posts,
-			'ID',
-			null
-		);
-		$join_clause       = $meta_fields_sql['join'];
+	$meta_filter_sql = empty( $meta_filter_clauses )
+		? ''
+		: ' AND ' . implode( ' AND ', $meta_filter_clauses );
+
+	if ( '' === $search_all_fields_sql && '' === $meta_filter_sql ) {
+		return;
 	}
-	if ( isset( $join_clause ) ) {
-		add_filter(
-			'posts_where',
-			function (
-				$where,
-				$query
-			) use (
-				$search_all_fields_sql,
-				$meta_fields_sql
-			) {
-				if ( ! is_object_query( $query ) ) {
+
+	add_filter(
+		'posts_where',
+		function (
+			$where,
+			$query
+		) use (
+			$search_all_fields_sql,
+			$meta_filter_sql
+		) {
+			if ( ! is_object_query( $query ) ) {
+				return $where;
+			}
+			global $wpdb;
+			$new_where = $where;
+			if ( '' !== $search_all_fields_sql ) {
+				/*
+				 * Splice the field clauses into WordPress's search
+				 * parenthetical, just ahead of its post_title comparison, so
+				 * they join that OR chain.
+				 */
+				$start_index = strpos( $where, $wpdb->posts . '.post_title' );
+				if ( false === $start_index ) {
 					return $where;
 				}
-				global $wpdb;
-				$new_where = '';
-				if ( ! empty( $search_all_fields_sql ) ) {
-					$start_index = strpos( $where, $wpdb->posts . '.post_title' );
-					if ( false === $start_index ) {
-						return $where;
-					}
-					$where_first_part  = substr( $where, 0, $start_index );
-					$where_last_part   = substr( $where, $start_index );
-					$where_middle_part = substr(
-						$search_all_fields_sql['where'],
-						7
-					);
-					$where_middle_part = substr( $where_middle_part, 0, -2 );
-					$new_where         =
-						$where_first_part .
-						$where_middle_part .
-						' OR ' .
-						$where_last_part;
-				}
-				if ( '' === $new_where ) {
-					$new_where = $where;
-				}
-				if ( ! empty( $meta_fields_sql ) ) {
-					$new_where .= $meta_fields_sql['where'];
-				}
-				return $new_where;
-			},
-			10,
-			2
-		);
-		add_filter(
-			'posts_join',
-			function ( $join, $query ) use ( $join_clause ) {
-				if ( ! is_object_query( $query ) ) {
-					return $join;
-				}
-				return $join . $join_clause;
-			},
-			10,
-			2
-		);
-		add_filter(
-			'posts_distinct',
-			function ( $distinct, $query ) {
-				if ( ! is_object_query( $query ) ) {
-					return $distinct;
-				}
-				return ' DISTINCT ';
-			},
-			10,
-			2
+				$new_where =
+					substr( $where, 0, $start_index ) .
+					$search_all_fields_sql .
+					' OR ' .
+					substr( $where, $start_index );
+			}
+			return $new_where . $meta_filter_sql;
+		},
+		10,
+		2
+	);
+}
+
+/**
+ * Builds an EXISTS clause matching one meta key/value against the post the
+ * outer query is considering.
+ *
+ * Correlated subqueries rather than a join: the field clauses for a full-text
+ * search are OR'd against the title and content comparisons, and a join would
+ * decide membership before that OR was ever evaluated — an object with no
+ * postmeta rows would be dropped however well its title matched. Subqueries
+ * also keep one row per post, so the query needs no DISTINCT.
+ *
+ * @param string $meta_key   The meta key to match.
+ * @param string $meta_value The value to match against.
+ * @param string $compare    Either '=' for an exact match or 'LIKE' for a
+ *                           substring match.
+ * @return string A SQL fragment, already prepared.
+ */
+function meta_value_exists_sql( $meta_key, $meta_value, $compare = '=' ) {
+	global $wpdb;
+
+	if ( 'LIKE' === strtoupper( $compare ) ) {
+		//phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared --Table names are not parameterizable.
+		return $wpdb->prepare(
+			"EXISTS ( SELECT 1 FROM {$wpdb->postmeta} AS wpm_match
+				WHERE wpm_match.post_id = {$wpdb->posts}.ID
+				AND wpm_match.meta_key = %s
+				AND wpm_match.meta_value LIKE %s )",
+			$meta_key,
+			'%' . $wpdb->esc_like( $meta_value ) . '%'
 		);
 	}
+
+	//phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared --Table names are not parameterizable.
+	return $wpdb->prepare(
+		"EXISTS ( SELECT 1 FROM {$wpdb->postmeta} AS wpm_match
+			WHERE wpm_match.post_id = {$wpdb->posts}.ID
+			AND wpm_match.meta_key = %s
+			AND wpm_match.meta_value = %s )",
+		$meta_key,
+		$meta_value
+	);
 }
 
 function is_object_query( \WP_Query $query ): bool {
