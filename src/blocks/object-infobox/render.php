@@ -48,7 +48,6 @@ $imgDimensions  = $attributes['imgDimensions'];
 $imgAlignment   = $attributes['imgAlignment'];
 $fontSize       = $attributes['fontSize'];
 $titleTag       = $attributes['titleTag'];
-xdebug_break();
 
 $width  = $imgDimensions['width'];
 $height = $imgDimensions['height'];
