@@ -111,20 +111,6 @@ function combine_post_data( $post ) {
 }
 
 /**
- * Combine post data for array of posts.
- *
- * @param Array $posts      Array of WP_Post objects.
- * @param Array $query_data Associative array of extra data to add to first post.
- */
-function combine_post_data_array( $posts, $query_data = null ) {
-	$post_data = array_map( __NAMESPACE__ . '\combine_post_data', $posts );
-	if ( ! empty( $query_data ) && count( $post_data ) > 0 ) {
-		$post_data[0]['query_data'] = $query_data;
-	}
-	return $post_data;
-}
-
-/**
  * Get data for images assoicated with a post and return as an array.
  *
  * @param WP_POST | int $post The post.
