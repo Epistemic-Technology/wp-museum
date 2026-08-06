@@ -16,6 +16,7 @@ import type { ChangeEvent, ReactNode } from "react";
 
 import { stripslashes, isEmpty } from "../../javascript/util";
 import LinksControl from "./links-control";
+import { allFieldErrors, fieldError } from "./validation";
 
 import type {
   MObjectField,
@@ -274,29 +275,16 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
   };
 
   const checkField = (fieldData: MObjectField) => {
-    const {
-      slug: fieldSlug,
-      field_schema: fieldSchema,
-      name: fieldName,
-      required,
-    } = fieldData;
-
-    const updatedFieldErrors = Object.assign({}, fieldErrors);
-
-    // clear existing errors
-    updatedFieldErrors[fieldSlug] = null;
+    const { slug: fieldSlug, name: fieldName } = fieldData;
 
     const fieldValue = attributes[fieldSlug];
 
-    if (required && !fieldValue) {
-      updatedFieldErrors[fieldSlug] = <span>Field is required but empty.</span>;
-    } else if (fieldSchema) {
-      const pattern = "^" + stripslashes(fieldSchema) + "$";
-      const regex = new RegExp(pattern);
-      if (!regex.test(fieldValue)) {
-        //updatedFieldErrors[ fieldSlug ] = ( <span>Value does not conform to schema.</span> );
-      }
-    }
+    // Functional update so this composes with any other field's result
+    // rather than overwriting it with the errors captured at render time.
+    setFieldErrors((previousErrors) => ({
+      ...previousErrors,
+      [fieldSlug]: fieldError(fieldData, fieldValue),
+    }));
 
     // Check to make sure catalogue ID field is unique.
     if (postData && fieldValue && postData.cat_field === fieldSlug) {
@@ -305,13 +293,11 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
         path: `${baseRestPath}/all?${fieldSlug}=${fieldValue}`,
       }).then(
         (result) => {
-          const updatedFieldErrors = Object.assign({}, fieldErrors);
-          let foundError = false;
+          let duplicateError: ReactNode = null;
           if (Array.isArray(result) && result.length > 0) {
             result.map((objectData) => {
               if (objectData.ID != postId) {
-                foundError = true;
-                updatedFieldErrors[fieldSlug] = (
+                duplicateError = (
                   <span>
                     {`${fieldName} must be unique, but is already used by `}
                     {/* NOTE(wp-types): edit_link is string | null on the wire;
@@ -324,8 +310,14 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
                 );
               }
             });
-            if (foundError) {
-              setFieldErrors(updatedFieldErrors);
+            if (duplicateError) {
+              // Functional update for the same reason as above, and because
+              // this lands asynchronously — the errors captured at call time
+              // are stale by now.
+              setFieldErrors((previousErrors) => ({
+                ...previousErrors,
+                [fieldSlug]: duplicateError,
+              }));
             } else {
               if (!catFieldIsGood) setCatFieldIsGood(true);
             }
@@ -333,20 +325,13 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
         },
       );
     }
-    setFieldErrors(updatedFieldErrors);
   };
 
   const checkAllFields = () => {
     // Non-null assertion: only called from the effect below after the
     // `!!fieldData` guard.
-    Object.entries(fieldData!).map((field) => {
-      // TODO(ts-migration): pre-existing bug — Object.entries yields
-      // [key, value] tuples, but checkField expects the field object itself,
-      // so every destructured property (slug, field_schema, name, required)
-      // is undefined here and the checks are no-ops. Cast preserves the
-      // current behavior.
-      checkField(field as unknown as MObjectField);
-    });
+    const errors = allFieldErrors(fieldData!, attributes);
+    setFieldErrors((previousErrors) => ({ ...previousErrors, ...errors }));
   };
 
   useEffect(() => {
