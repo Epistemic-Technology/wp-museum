@@ -63,11 +63,20 @@ if ( count( $fields ) === count( $fieldData ) ) {
 	);
 	$fieldList = array_map(
 		function ( $key ) use ( $fontSize, $fieldData ) {
+			$content = $fieldData[ $key ]['content'] ?? '';
+			/*
+			 * Flag fields are booleans. Blocks saved before the editor started
+			 * storing them as "Yes"/"No" still hold the raw boolean, which
+			 * esc_html() would render as "1" or as nothing at all.
+			 */
+			if ( is_bool( $content ) ) {
+				$content = $content ? 'Yes' : 'No';
+			}
 			ob_start();
 			?>
 			<li key="<?php echo esc_attr( $key ); ?>" style="font-size: <?php echo esc_attr( (float) $fontSize ); ?>em">
 				<span class="field-name"><?php echo esc_html( $fieldData[ $key ]['name'] ); ?>: </span>
-				<span class="field-data"><?php echo esc_html( $fieldData[ $key ]['content'] ?? '' ); ?> </span>
+				<span class="field-data"><?php echo esc_html( $content ); ?> </span>
 			</li>
 			<?php
 			$output = ob_get_contents();

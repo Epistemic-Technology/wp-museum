@@ -26,9 +26,12 @@ import {
 
 import InfoContent from "./info-content";
 
+import { processFieldData } from "./field-data";
+
+import type { InfoboxFieldData } from "./field-data";
+
 import type {
   MuseumObject,
-  MuseumObjectFieldValue,
   MObjectField,
   ObjectFieldsResponse,
 } from "../../types";
@@ -40,14 +43,7 @@ import type { ImageDimensions } from "../../components/image-size-panel/image-si
 // the currently-working call site unchanged.
 const ObjectEmbedPanelCompat = ObjectEmbedPanel as any;
 
-/**
- * Per-field display data stored in the fieldData attribute: the field's
- * display name and its (formatted) value for the embedded object.
- */
-export interface InfoboxFieldData {
-  name: string;
-  content: MuseumObjectFieldValue | string;
-}
+export type { InfoboxFieldData } from "./field-data";
 
 /**
  * Attributes of the Object Infobox block.
@@ -240,57 +236,6 @@ const ObjectInfoEdit = (props: ObjectInfoEditProps) => {
     []
   );
 
-  /**
-   * Processes object field data and updates component state
-   *
-   * @param {object} objectData The object data
-   * @param {object} fieldsMetadata Metadata about object fields
-   * @param {object} currentFields Current field selections
-   * @returns {object} Processed field data
-   */
-  const processFieldData = useCallback(
-    (
-      objectData: MuseumObject,
-      fieldsMetadata: Record<string, MObjectField>,
-      currentFields: Record<string, boolean>
-    ): ProcessedFieldData => {
-      if (!objectData || !fieldsMetadata) return {};
-
-      let newFields: Record<string, boolean> = {};
-      let fieldData: Record<string, InfoboxFieldData> = {};
-
-      for (let key in fieldsMetadata) {
-        // Preserve current field selections or default to false
-        newFields[key] =
-          typeof currentFields[key] === "undefined"
-            ? false
-            : currentFields[key];
-
-        // Format content based on field type
-        let content: MuseumObjectFieldValue = "";
-        // TODO(ts-migration): 'tinyint' is not a real field type (the boolean
-        // type is 'flag') and flag values arrive as JSON booleans, not 1, so
-        // this branch never matches. Preserved as-is; the cast keeps the
-        // no-overlap comparison compiling.
-        if ((fieldsMetadata[key]["type"] as string) === "tinyint") {
-          content =
-            objectData[fieldsMetadata[key]["slug"]] === 1 ? "Yes" : "No";
-        } else {
-          content = objectData[
-            fieldsMetadata[key]["slug"]
-          ] as MuseumObjectFieldValue;
-        }
-
-        fieldData[key] = {
-          name: fieldsMetadata[key]["name"],
-          content: content,
-        };
-      }
-
-      return { newFields, fieldData };
-    },
-    []
-  );
 
   /**
    * Fetches object data from WordPress REST api.
