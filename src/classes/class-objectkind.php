@@ -361,12 +361,20 @@ class ObjectKind {
 
 	/**
 	 * Returns array of kind arrays of children of this kind.
+	 *
+	 * `to_array()` deliberately omits block_template, since it is also used to
+	 * build the database insert array in save(). It is added back here because
+	 * the child objects block creates child posts through the WordPress REST
+	 * API, which does not apply the post type's template the way opening a new
+	 * post in the editor does — so the block has to seed the content itself.
 	 */
 	public function get_children_array() {
 		$children       = $this->get_children();
 		$children_array = array_map(
 			function ( $child ) {
-				return $child->to_array();
+				$child_array                   = $child->to_array();
+				$child_array['block_template'] = $child->block_template();
+				return $child_array;
 			},
 			$children
 		);

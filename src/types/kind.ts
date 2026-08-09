@@ -55,13 +55,25 @@ export interface OaiPmhAvailableField {
 }
 
 /**
+ * One entry of a post type's block template: `[ blockName, attributes?,
+ * innerBlocks? ]`. Mirrors the `template` post type argument registered in
+ * `ObjectPostType` and the `TemplateItem` type `@wordpress/blocks` uses (which
+ * it does not export).
+ */
+export type BlockTemplateItem = [
+	string,
+	Record< string, unknown >?,
+	BlockTemplateItem[]?
+];
+
+/**
  * A child kind inside `ObjectKind.children`.
  * GOTCHA: children use the raw DB-row serialization
- * (`ObjectKind::to_array()`) and skip schema sanitization entirely — so
- * `oai_pmh_mappings` is a JSON-encoded STRING and `cat_id_auto_generate` is
- * 0|1, and the private boolean flags ARE exposed even to public users.
- * Child items never include `available_fields_for_oai_pmh`, `children`, or
- * `block_template`.
+ * (`ObjectKind::to_array()`, plus `block_template`) and skip schema
+ * sanitization entirely — so `oai_pmh_mappings` is a JSON-encoded STRING and
+ * `cat_id_auto_generate` is 0|1, and the private boolean flags ARE exposed
+ * even to public users. Child items never include
+ * `available_fields_for_oai_pmh` or `children`.
  */
 export interface ObjectKindChild {
 	kind_id: number | null;
@@ -84,6 +96,13 @@ export interface ObjectKindChild {
 	cat_id_auto_generate: 0 | 1;
 	cat_id_prefix: string;
 	cat_id_pad_length: number;
+	/**
+	 * The post type's registered block template. Added by
+	 * `ObjectKind::get_children_array()` rather than `to_array()`, and — unlike
+	 * on the parent `ObjectKind` — it survives to the wire because child items
+	 * are not schema-filtered. `null` if the post type is not registered.
+	 */
+	block_template: BlockTemplateItem[] | null;
 }
 
 /**
@@ -100,7 +119,8 @@ export interface ObjectKindChild {
  *   `exclude_from_search`: effectively admin-only (require `edit_posts` for
  *   the data AND `manage_options` for the schema).
  * - `block_template` is built server-side but ALWAYS stripped by the schema
- *   whitelist — never on the wire.
+ *   whitelist — never on the wire at this level. It IS on the wire for the
+ *   entries of `children` (see ObjectKindChild), which skip schema filtering.
  */
 export interface ObjectKind {
 	/** In practice always a number for DB-loaded kinds. */
