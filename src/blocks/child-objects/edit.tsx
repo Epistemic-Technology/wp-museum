@@ -8,24 +8,32 @@ import {
 	useDispatch
 } from '@wordpress/data';
 
+import {
+	serialize,
+	synchronizeBlocksWithTemplate
+} from '@wordpress/blocks';
+
 import apiFetch from '@wordpress/api-fetch';
 import ChildKind from './child-kind';
 
-import type { MuseumObject, ObjectKind, ObjectKindChild } from '../../types';
+import {
+	addChild,
+	newChildRecord,
+	removeChild
+} from './child-object-state';
 
-/**
- * Minimal shape of a WP core REST (`/wp/v2`) create-post response, as used
- * here. Not a wp-museum/v1 wire shape, so defined locally rather than in
- * src/types.
- */
-interface WPCorePostResponse {
-	id: number;
-	[key: string]: unknown;
-}
+import type {
+	ChildObjectIds,
+	ChildObjectRecord,
+	ChildObjectRecords,
+	WPCorePostResponse
+} from './child-object-state';
+
+import type { ObjectKind, ObjectKindChild } from '../../types';
 
 interface ChildObjectsBlockAttributes {
 	/** Map of kind_id → array of child post IDs. */
-	childObjects?: Record<string, number[]>;
+	childObjects?: ChildObjectIds;
 	childObjectsStr?: string;
 }
 
@@ -40,9 +48,8 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 
 	const [ kindData, setKindData ] = useState<ObjectKind | null>( null );
 	// The wire type is MuseumObjectChildren, which may be a bare `[]`
-	// (empty-PHP-array quirk); the existing code treats it as the keyed-object
-	// shape throughout.
-	const [ childObjectData, setChildObjectData] = useState<Record<string, MuseumObject[]> | null>( null );
+	// (empty-PHP-array quirk); the state helpers normalize that away.
+	const [ childObjectData, setChildObjectData] = useState<ChildObjectRecords | null>( null );
 	const [ wasSaving, setWasSaving ] = useState( false );
 
 	const baseRestPath = '/wp-museum/v1';
@@ -107,61 +114,56 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 	}
 
 	const refreshChildObjectData = () => {
-		apiFetch<Record<string, MuseumObject[]>>( { path: `${baseRestPath}/all/${postId}/children` } ).then( setChildObjectData );
+		apiFetch<ChildObjectRecords>( { path: `${baseRestPath}/all/${postId}/children` } ).then( setChildObjectData );
+	}
+
+	/**
+	 * Persist the child ID map. `childObjectsStr` has no reader anywhere in the
+	 * plugin, but it is registered meta, so keep it a faithful serialization of
+	 * the same map rather than of whichever map the calling path had to hand.
+	 */
+	const saveChildObjects = ( ids: ChildObjectIds ) => {
+		setAttributes( {
+			childObjects    : ids,
+			childObjectsStr : JSON.stringify( ids )
+		} );
 	}
 
 	const addChildObject = ( child: WPCorePostResponse, kind: ObjectKindChild ) => {
-		// NOTE(wp-types): kind_id is number | null on the wire; a null here would
-		// index the "null" key at runtime. Asserted to preserve behavior.
-		const kind_id = kind.kind_id as number;
+		if ( kind.kind_id === null ) return;
 
-		const updatedChildObjectData: Record<string, MuseumObject[]> = childObjectData ? Object.assign( {}, childObjectData ) : {};
-		if ( typeof updatedChildObjectData[ kind_id ] === 'undefined' ) {
-			updatedChildObjectData[ kind_id ] = [];
-		}
-		// NOTE(wp-types): mixes shapes — `child` is a WP core REST response
-		// (lowercase `id`), pushed into a list of museum-shaped objects
-		// (uppercase `ID`) consumed by ChildObject.
-		updatedChildObjectData[ kind_id ].push( child as unknown as MuseumObject );
-		setChildObjectData( updatedChildObjectData );
+		const { ids, records } = addChild(
+			childObjects,
+			childObjectData,
+			kind.kind_id,
+			newChildRecord( child )
+		);
 
-		const updatedChildObjects: Record<string, number[]> = childObjects ? Object.assign( {}, childObjects ) : {};
-		if ( typeof updatedChildObjects[ kind_id ] === 'undefined' ) {
-			updatedChildObjects[ kind_id ] = [];
-		}
-		updatedChildObjects[ kind_id ].push( child.id );
-		setAttributes( {
-			childObjects : updatedChildObjects,
-			childObjectsStr : JSON.stringify( updatedChildObjectData )
-		} );
+		setChildObjectData( records );
+		saveChildObjects( ids );
 	}
 
-	const deleteChildObject = ( child: MuseumObject, kind: ObjectKindChild ) => {
-		if ( ! childObjects ) return;
-		const updatedChildObjects: Record<string, number[]> = Object.assign( {}, childObjects );
-		// NOTE(wp-types): kind_id is number | null on the wire; asserted to
-		// preserve the existing index behavior.
-		if ( typeof updatedChildObjects[ kind.kind_id as number ] === 'undefined' ) {
-			return;
-		}
-		// TODO(ts-migration): mixes shapes — the array elements are numeric
-		// post IDs (no `.id` property) and `child` is museum-shaped (uppercase
-		// `ID`, no `.id`), so this compares undefined === undefined and always
-		// matches index 0. Pre-existing behavior preserved.
-		const index = updatedChildObjects[ kind.kind_id as number ].findIndex( object => ( object as any ).id === ( child as any ).id );
-		if ( index === -1 ) return;
-		updatedChildObjects[ kind.kind_id as number ].splice( index, 1 );
-		setAttributes( {
-			childObjects : updatedChildObjects,
-			childObjectsStr : JSON.stringify( updatedChildObjects )
-		} );
+	const deleteChildObject = ( child: ChildObjectRecord, kind: ObjectKindChild ) => {
+		if ( kind.kind_id === null ) return;
+
+		const updated = removeChild(
+			childObjects,
+			childObjectData,
+			kind.kind_id,
+			child.ID
+		);
+		if ( ! updated ) return;
+
+		setChildObjectData( updated.records );
+		saveChildObjects( updated.ids );
+
 		apiFetch( {
 			path    :  `${wordpressRestPath}/${kind.type_name}/${child.ID}`,
 			method  : 'DELETE'
 		} ).then( result => console.log(result) );
 	}
 
-	const updateChildObject = ( child: MuseumObject, kind: ObjectKindChild, data: { title: string } ) => {
+	const updateChildObject = ( child: ChildObjectRecord, kind: ObjectKindChild, data: { title: string } ) => {
 		apiFetch( {
 			path   : `${wordpressRestPath}/${kind.type_name}/${child.ID}`,
 			method : 'POST',
@@ -174,31 +176,16 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 			type_name,
 			label,
 			block_template
-		// TODO(ts-migration): `block_template` is never present on child kinds
-		// on the wire (schema-stripped server-side), so this template-insertion
-		// path always operates on undefined. Asserted here to preserve the
-		// existing behavior.
-		} = kind as ObjectKindChild & {
-			block_template?: [ string, Record<string, unknown>? ][];
-		};
+		} = kind;
 
-		let postContent = '';
-		if ( block_template ) {
-			block_template.forEach( templateItem => {
-				postContent += '<!-- wp:' + templateItem[0];
-				if ( templateItem.length > 1 ) {
-					postContent += ' {'
-					// NOTE(wp-types): the tuple's second element is optional; the
-					// length check above guarantees it exists here.
-					Object.entries( templateItem[1] as Record<string, unknown> ).forEach( ( [ key, value ] ) => {
-						postContent += `"${key}": "${value}", `
-					} );
-					postContent = postContent.slice(0, -2 );
-					postContent += '}';
-				}
-				postContent += " /-->\n\n"
-			} );
-		}
+		// Children are created through the REST API rather than by opening a
+		// new post in the editor, so WordPress never applies the post type's
+		// template itself — and with `template_lock: 'all'` an empty child
+		// gives the editor nothing to work with. Seed the content with the
+		// same blocks the editor would have inserted.
+		const postContent = block_template
+			? serialize( synchronizeBlocksWithTemplate( [], block_template ) )
+			: '';
 
 		apiFetch<WPCorePostResponse>( {
 			path: `${wordpressRestPath}/${type_name}/`,
@@ -218,8 +205,8 @@ const ChildObjectsEdit = ( props: ChildObjectsEditProps ) => {
 		<ChildKind
 			key               = { kind.kind_id }
 			kind              = { kind }
-			kindObjects       = { childObjectData && childObjectData[ kind.kind_id as number ] ?
-				childObjectData[ kind.kind_id as number ] :
+			kindObjects       = { kind.kind_id !== null && childObjectData?.[ kind.kind_id ] ?
+				childObjectData[ kind.kind_id ] :
 				[]
 			}
 			newChildObject    = { newChildObject }

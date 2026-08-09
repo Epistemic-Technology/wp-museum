@@ -16,18 +16,13 @@ import {
 
 import { decodeHtmlEntities } from '../../javascript/util';
 
-import type { MuseumObject, ImageSizeTuple } from '../../types';
+import type { ChildObjectRecord } from './child-object-state';
+import type { ImageSizeTuple } from '../../types';
 
 interface ChildObjectProps {
-	/**
-	 * NOTE(wp-types): freshly-created children are WP core REST responses
-	 * (lowercase `id`, no `post_title`/`thumbnail`) mixed in with museum-shaped
-	 * records by edit.tsx — typed as MuseumObject to match how this component
-	 * reads the data.
-	 */
-	objectData: MuseumObject;
-	updateTitle: ( child: MuseumObject, newTitle: string ) => void;
-	deleteChildObject: ( child: MuseumObject ) => void;
+	objectData: ChildObjectRecord;
+	updateTitle: ( child: ChildObjectRecord, newTitle: string ) => void;
+	deleteChildObject: ( child: ChildObjectRecord ) => void;
 }
 
 const ChildObject = ( props: ChildObjectProps ) => {
@@ -41,7 +36,6 @@ const ChildObject = ( props: ChildObjectProps ) => {
 		edit_link,
 		link,
 		post_title,
-		ID,
 		thumbnail
 	} = objectData;
 

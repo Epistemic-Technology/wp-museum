@@ -1,20 +1,16 @@
 import ChildObject from './child-object';
 import { Button } from '@wordpress/components';
 
-import type { MuseumObject, ObjectKindChild } from '../../types';
+import type { ChildObjectRecord } from './child-object-state';
+import type { ObjectKindChild } from '../../types';
 
 interface ChildKindProps {
 	kind: ObjectKindChild;
-	/**
-	 * NOTE(wp-types): records freshly created through the editor are WP
-	 * core REST responses (lowercase `id`) rather than museum-shaped objects;
-	 * typed as MuseumObject[] to match how they are consumed.
-	 */
-	kindObjects: MuseumObject[];
+	kindObjects: ChildObjectRecord[];
 	newChildObject: ( kind: ObjectKindChild ) => void;
-	deleteChildObject: ( child: MuseumObject, kind: ObjectKindChild ) => void;
+	deleteChildObject: ( child: ChildObjectRecord, kind: ObjectKindChild ) => void;
 	updateChildObject: (
-		child: MuseumObject,
+		child: ChildObjectRecord,
 		kind: ObjectKindChild,
 		data: { title: string }
 	) => void;
@@ -34,13 +30,13 @@ const ChildKind = ( props: ChildKindProps ) => {
 		label,
 	} = kind;
 
-	const updateTitle = ( child: MuseumObject, newTitle: string ) => {
+	const updateTitle = ( child: ChildObjectRecord, newTitle: string ) => {
 		updateChildObject( child, kind, { title: newTitle } );
 	}
 
-	const childElements = kindObjects ? kindObjects.map( ( childObject, index ) => (
+	const childElements = kindObjects ? kindObjects.map( childObject => (
 		<ChildObject
-			key               = { index }
+			key               = { childObject.ID }
 			objectData        = { childObject }
 			deleteChildObject = { ( child ) => deleteChildObject( child, kind ) }
 			updateTitle       = { updateTitle }
