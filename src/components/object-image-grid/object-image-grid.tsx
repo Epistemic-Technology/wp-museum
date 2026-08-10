@@ -55,9 +55,7 @@ const ObjectImageBox = (props: ObjectImageBoxProps) => {
     width: 300,
   };
 
-  // TODO(strict): possible null at runtime — imgData may be an empty object,
-  // in which case getFirstObjectImage returns null and getBestImage crashes.
-  const bestImage = getBestImage(getFirstObjectImage(imgData)!, imgDimensions);
+  const bestImage = getBestImage(getFirstObjectImage(imgData), imgDimensions);
 
   // TODO(ts-migration): title/alt are read on the whole images map (keyed by
   // attachment ID), not on an individual image record — always undefined, so

@@ -55,55 +55,77 @@ export interface BestFitImage {
 	width: number;
 }
 
-export function getBestImage( imgData: ObjectImage, imgDimensions: { height: number; width: number } ): BestFitImage {
-	const bestFitImage: BestFitImage = {
+/**
+ * Whether a value from an image record is a usable size tuple.
+ *
+ * Every size slug is present on the record, but its value is null when
+ * `wp_get_attachment_image_src` fails for that size, and the record also
+ * carries scalar metadata (title, caption, sort_order, ...) under the same
+ * index signature.
+ */
+function isImageSizeTuple( value: unknown ): value is ImageSizeTuple {
+	return (
+		Array.isArray( value ) &&
+		typeof value[ 0 ] === 'string' &&
+		typeof value[ 1 ] === 'number' &&
+		typeof value[ 2 ] === 'number'
+	);
+}
+
+/**
+ * Pick the smallest attached image size that still covers imgDimensions,
+ * falling back to the full-size image when none does.
+ *
+ * Returns a URL of null when there is no image to choose from at all — either
+ * because imgData is missing, or because no size (including full) resolved to
+ * a usable tuple.
+ *
+ * @param imgData       An image record from the images response, or null.
+ * @param imgDimensions The size the image will be displayed at.
+ */
+export function getBestImage(
+	imgData: ObjectImage | null | undefined,
+	imgDimensions: { height: number; width: number }
+): BestFitImage {
+	const noImage: BestFitImage = {
 		'URL'    : null,
-		'height' : 99999999,
-		'width'  : 99999999
+		'height' : 0,
+		'width'  : 0
 	};
 
-	for ( let [ sizeSlug, dataArray ] of Object.entries( imgData ) ) {
-		if ( ! Array.isArray( dataArray ) || dataArray.length < 4 ) {
+	if ( ! imgData ) {
+		return noImage;
+	}
+
+	let bestFitImage: BestFitImage | null = null;
+
+	for ( const dataArray of Object.values( imgData ) ) {
+		if ( ! isImageSizeTuple( dataArray ) ) {
 			continue;
 		}
 
-		// TODO(ts-migration): the wire tuple order is [url, width, height,
-		// isResized] (see ImageSizeTuple), but this destructuring transposes
-		// width/height. Pre-existing bug preserved for zero behavior change.
-		let [
-			URL,
-			height,
-			width,
-			isIntermediate
-		] = dataArray as ImageSizeTuple;
+		const [ URL, width, height ] = dataArray;
 
-		if ( height >= imgDimensions.height &&
-			 height <  bestFitImage.height &&
-			 width  >= imgDimensions.width &&
-			 width  <  bestFitImage.width
+		if ( width  >= imgDimensions.width &&
+			 height >= imgDimensions.height &&
+			 ( bestFitImage === null ||
+			   ( width < bestFitImage.width && height < bestFitImage.height ) )
 		   ) {
-				bestFitImage.URL    = URL;
-			 	bestFitImage.height = height;
-			 	bestFitImage.width  = width;
+			bestFitImage = { URL, width, height };
 		}
 	}
 
-	if ( bestFitImage.URL === null ) {
-		// TODO(ts-migration): same width/height transposition as above; also
-		// imgData['full'] can be null on the wire, so the cast preserves the
-		// existing (crash-prone) runtime behavior.
-		const [
-			URL,
-			height,
-			width,
-			isIntermediate
-		] = imgData['full'] as ImageSizeTuple;
-		bestFitImage.URL    = URL;
-		bestFitImage.height = height;
-		bestFitImage.width  = width
+	if ( bestFitImage !== null ) {
+		return bestFitImage;
 	}
 
-	return bestFitImage;
+	const full = imgData['full'];
+	if ( isImageSizeTuple( full ) ) {
+		const [ URL, width, height ] = full;
+		return { URL, width, height };
+	}
+
+	return noImage;
 }
 
 export function getFirstObjectImage( imgData: ObjectImagesResponse ): ObjectImage | null {

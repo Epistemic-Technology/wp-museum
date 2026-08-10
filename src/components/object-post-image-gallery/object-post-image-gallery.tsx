@@ -98,6 +98,9 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 		getBestImage( imgArray[ imgIndex ], imgDimensions ) :
 		null;
 
+	// 'full' is null on the wire whenever the src lookup fails for that size.
+	const fullImage = imgArray[ imgIndex ]?.['full'] ?? null;
+
 	return (
 		<Modal
 			className      = 'wpm-object-post-image-modal'
@@ -125,16 +128,16 @@ const ObjectPostImageModal = ( props: ObjectPostImageModalProps ) => {
 							/>
 						}
 					</div>
-					<div className = 'image-modal-image-link'>
-						<a
-							// TODO(strict): possible null at runtime — 'full'
-							// can be null on the wire (see ImageSizeTuple).
-							href = { imgArray[ imgIndex ]['full']![0] }
-							target = '_blank'
-						>
-							View Full Image
-						</a>
-					</div>
+					{ fullImage &&
+						<div className = 'image-modal-image-link'>
+							<a
+								href = { fullImage[0] }
+								target = '_blank'
+							>
+								View Full Image
+							</a>
+						</div>
+					}
 					{ displayCaption &&
 						<div className = 'image-modal-caption'>
 							{ caption }

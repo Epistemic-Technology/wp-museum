@@ -154,9 +154,7 @@ const ObjectGridBoxDynamicImage = (props: ObjectGridBoxDynamicImageProps) => {
   let usePlaceholder = false;
   if (imgData !== null) {
     if (Object.entries(imgData).length > 0) {
-      // Non-null: imgData has entries here, so getFirstObjectImage cannot
-      // return null.
-      bestImage = getBestImage(getFirstObjectImage(imgData)!, {
+      bestImage = getBestImage(getFirstObjectImage(imgData), {
         width: targetWidthHeight,
         height: targetWidthHeight,
       });
