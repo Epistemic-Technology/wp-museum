@@ -405,11 +405,14 @@ const ObjectMetaEdit = (props: ObjectMetaEditProps) => {
       const range = doc.createRange();
       range.selectNodeContents(el);
       range.collapse(false);
-      // TODO(strict): possible null at runtime — defaultView/getSelection
-      // can be null per the DOM types; asserted to preserve behavior.
-      const selection = doc.defaultView!.getSelection();
-      selection!.removeAllRanges();
-      selection!.addRange(range);
+      // Either can be null (a detached document has no defaultView, and
+      // getSelection() returns null when the document is not rendered). The
+      // element has already been focused, so leaving the caret where the
+      // browser put it is the right fallback.
+      const selection = doc.defaultView?.getSelection();
+      if (!selection) return;
+      selection.removeAllRanges();
+      selection.addRange(range);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {

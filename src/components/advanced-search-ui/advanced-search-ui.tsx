@@ -88,14 +88,20 @@ const FieldSearchElement = (props: FieldSearchElementProps) => {
 
   let inputElement;
   if (type === "date") {
-    let searchVals;
+    // `search` is null until something is typed into the field (and
+    // JSON.parse( null ) returns null rather than throwing), so fall back to
+    // an empty date range for anything that is not a parsed JSON object.
+    let searchVals: { fromDate?: string; toDate?: string } = {};
 
-    try {
-      // TODO(strict): search may be null/undefined at runtime; JSON.parse
-      // failures are caught below, so the cast preserves existing behavior.
-      searchVals = JSON.parse(search as string);
-    } catch {
-      searchVals = {};
+    if (typeof search === "string" && search !== "") {
+      try {
+        const parsedSearch = JSON.parse(search);
+        if (!!parsedSearch && typeof parsedSearch === "object") {
+          searchVals = parsedSearch;
+        }
+      } catch {
+        // Not valid JSON: keep the empty date range.
+      }
     }
 
     const { fromDate, toDate } = searchVals;
@@ -427,16 +433,16 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
           >
             Reset Search
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              // TODO(strict): possible undefined at runtime if inEditor is set
-              // without setAttributes; preserved as-is.
-              setAttributes!({ defaultSearch: JSON.stringify(searchValues) })
-            }
-          >
-            Set Defaults
-          </Button>
+          {!!setAttributes && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setAttributes({ defaultSearch: JSON.stringify(searchValues) })
+              }
+            >
+              Set Defaults
+            </Button>
+          )}
         </div>
       )}
       <div
