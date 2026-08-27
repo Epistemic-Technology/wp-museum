@@ -42,12 +42,14 @@ const ObjectImageBox = (props: ObjectImageBoxProps) => {
     });
   }, [object]);
 
+  const placeholder = (
+    <div className="grid-image-wrapper" style={imgStyle}>
+      <div className="placeholder-box"></div>
+    </div>
+  );
+
   if (imgData === null) {
-    return (
-      <div className="grid-image-wrapper" style={imgStyle}>
-        <div className="placeholder-box"></div>
-      </div>
-    );
+    return placeholder;
   }
 
   const imgDimensions = {
@@ -55,23 +57,28 @@ const ObjectImageBox = (props: ObjectImageBoxProps) => {
     width: 300,
   };
 
-  const bestImage = getBestImage(getFirstObjectImage(imgData), imgDimensions);
+  const image = getFirstObjectImage(imgData);
+  const bestImage = getBestImage(image, imgDimensions);
 
-  // TODO(ts-migration): title/alt are read on the whole images map (keyed by
-  // attachment ID), not on an individual image record — always undefined, so
-  // these fall through to "". Preserving existing (buggy) behavior.
-  const imgAttrs = {
-    src: bestImage.URL as string,
-    title: (imgData as any).title || "",
-    alt: (imgData as any).alt || "",
-  };
+  // An object can reach here with no gallery image to show: the grid filters
+  // on the object's thumbnail, which is its featured image, and that is set
+  // independently of the gallery fetched above. Hold the slot rather than
+  // emitting an <img> with no src.
+  if (bestImage.URL === null) {
+    return placeholder;
+  }
 
   return (
     <div className="grid-image-wrapper" style={imgStyle}>
       <MaybeLink href={object.URL} doLink={linkToObjects}>
-        {/* TODO(strict): possible undefined at runtime — onClickCallback is an
-            optional prop; clicking with no callback provided would crash. */}
-        <img {...imgAttrs} onClick={() => onClickCallback!(object.ID) || null} />
+        <img
+          src={bestImage.URL}
+          title={image?.title || ""}
+          alt={image?.alt || ""}
+          onClick={
+            onClickCallback ? () => onClickCallback(object.ID) : undefined
+          }
+        />
       </MaybeLink>
     </div>
   );
