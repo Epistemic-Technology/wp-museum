@@ -114,11 +114,14 @@ const ObjectImageAttachmentEdit = ( props: ObjectImageAttachmentEditProps ) => {
 	} );
 
 	const updateImgData = ( imgId: number, title: string, caption: string, description: string, alt: string ) => {
-		// TODO(strict): possible null at runtime
-		imgData![imgId].title       = title;
-		imgData![imgId].caption     = caption;
-		imgData![imgId].description = description;
-		imgData![imgId].alt         = alt;
+		const itemData = imgData?.[ imgId ];
+		if ( ! itemData ) {
+			return;
+		}
+		itemData.title       = title;
+		itemData.caption     = caption;
+		itemData.description = description;
+		itemData.alt         = alt;
 	}
 
 	const updateImgAttach = ( updatedImgAttach: number[] ) => {
@@ -176,9 +179,16 @@ const ObjectImageAttachmentEdit = ( props: ObjectImageAttachmentEditProps ) => {
 		}
 		imgAttach[ imgIndex ] = imgAttach[ newIndex ];
 		imgAttach[ newIndex ] = imgId;
-		// TODO(strict): possible null at runtime
-		imgData![ imgId ].sort_order = newIndex;
-		imgData![ otherId ].sort_order = imgIndex;
+		// Image data may not have loaded (or may not contain a record for one
+		// of the swapped attachments); the attribute reorder still stands.
+		const movedItem = imgData?.[ imgId ];
+		const otherItem = imgData?.[ otherId ];
+		if ( movedItem ) {
+			movedItem.sort_order = newIndex;
+		}
+		if ( otherItem ) {
+			otherItem.sort_order = imgIndex;
+		}
 
 		const updatedImgAttach = ( Array.isArray(imgAttach) ? [ ...imgAttach ] : [] );
 		setAttributes( {

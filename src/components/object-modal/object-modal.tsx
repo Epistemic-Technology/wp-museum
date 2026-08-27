@@ -20,7 +20,12 @@ import type { ObjectImage, ObjectImagesResponse } from '../../types';
 
 
 interface ImageScrollProps {
-	images: ObjectImagesResponse;
+	/**
+	 * The object's images, or null while the fetch is still pending. An
+	 * object with no attached images arrives as an empty array (see
+	 * EmptyPhpArray), so neither case can be assumed away.
+	 */
+	images: ObjectImagesResponse | null;
 }
 
 const ImageScroll = ( props: ImageScrollProps ) => {
@@ -28,7 +33,7 @@ const ImageScroll = ( props: ImageScrollProps ) => {
 		images
 	} = props;
 
-	const imgArray: ObjectImage[] = Object.values( images );
+	const imgArray: ObjectImage[] = !! images ? Object.values( images ) : [];
 	imgArray.sort( (a, b) => a['sort_order'] - b['sort_order'] );
 
 	const [ imgIndex, setImgIndex ] = useState( 0 );
@@ -51,6 +56,18 @@ const ImageScroll = ( props: ImageScrollProps ) => {
 		setImgIndex( targetIndex );
 	}
 
+	// Nothing to scroll through: the images are still loading, or the object
+	// has none. The modal's title, excerpt and link are still worth showing,
+	// so render the frame without an image rather than refusing to open.
+	if ( imgArray.length === 0 ) {
+		return (
+			<div
+				className  = 'object-modal-image-scroll'
+				aria-label = 'Image gallery showing 0 images'
+			/>
+		);
+	}
+
 	const bestImage = getBestImage( imgArray[ imgIndex ], imgDimensions );
 
 	return (
@@ -70,11 +87,13 @@ const ImageScroll = ( props: ImageScrollProps ) => {
 				onClick   = { () => updateImgIndex( 1 ) }
 			/>
 			<div className = 'img-wrapper' aria-live='polite' aria-atomic='true'>
-				<img
-					src   = { bestImage.URL as string }
-					title = { imgArray[imgIndex].title || '' }
-					alt   = { imgArray[imgIndex].alt || imgArray[imgIndex].title || 'Museum object image' }
-				/>
+				{ !! bestImage.URL &&
+					<img
+						src   = { bestImage.URL }
+						title = { imgArray[imgIndex].title || '' }
+						alt   = { imgArray[imgIndex].alt || imgArray[imgIndex].title || 'Museum object image' }
+					/>
+				}
 			</div>
 		</div>
 	);
@@ -85,7 +104,7 @@ interface ObjectModalProps {
 	content: ReactNode;
 	url: string;
 	linkText: ReactNode;
-	images: ObjectImagesResponse;
+	images: ObjectImagesResponse | null;
 	close: () => void;
 }
 
