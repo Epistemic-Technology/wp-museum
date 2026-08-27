@@ -125,11 +125,12 @@ const Collection = (props: CollectionProps) => {
         apiFetch<MuseumObject[]>({ path: objectsRestPath }).then((result) => {
           if (Array.isArray(result) && result.length > 0) {
             const newCollectionObjects: CollectionObjectData[] = result.map((result) => {
-              // TODO(strict): possible null at runtime
-              const objImgURL =
-                result["thumbnail"]!.length > 0
-                  ? (result["thumbnail"]![0] as string)
-                  : null;
+              // thumbnail is `[]` when the object has no image and null when
+              // the src lookup failed.
+              const objThumbnail = result["thumbnail"];
+              const objImgURL = Array.isArray(objThumbnail)
+                ? (objThumbnail[0] ?? null)
+                : null;
               return {
                 imgURL: objImgURL,
                 title: result["post_title"],

@@ -131,4 +131,20 @@ describe( 'ObjectList', () => {
 		expect( markup ).not.toContain( '<img' );
 		expect( markup ).toContain( 'An excerpt.' );
 	} );
+
+	// `thumbnail` is `[]` for an object with no featured image, and null when
+	// the attachment lookup failed; the row used to index into both.
+	it.each( [
+		[ 'an empty thumbnail', [] as unknown as MuseumObject[ 'thumbnail' ] ],
+		[ 'a null thumbnail', null as unknown as MuseumObject[ 'thumbnail' ] ],
+	] )( 'renders a row with %s and no image', ( _label, thumbnail ) => {
+		const markup = renderToStaticMarkup(
+			<ObjectList
+				mObjects={ [ museumObject( { ID: 2, thumbnail } ) ] }
+				displayImages={ true }
+			/>
+		);
+		expect( markup ).not.toContain( '<img' );
+		expect( markup ).toContain( 'An excerpt.' );
+	} );
 } );

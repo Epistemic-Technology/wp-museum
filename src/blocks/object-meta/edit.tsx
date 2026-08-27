@@ -33,7 +33,7 @@ interface ObjectMetaFieldProps {
   onBlur: (fieldData: MObjectField) => void;
 }
 
-const ObjectMetaField = (props: ObjectMetaFieldProps) => {
+export const ObjectMetaField = (props: ObjectMetaFieldProps) => {
   const { fieldData, fieldValue, errorText, onChange, onFocus, onBlur } = props;
 
   const {
@@ -135,19 +135,21 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
       />
     );
   } else if (fieldType == "measure") {
-    // TODO(strict): possible null at runtime — dimensions is
-    // FieldDimensions | null on the wire; asserted to preserve behavior.
-    if (fieldData.dimensions!.n == 1) {
+    // `dimensions` is null on the wire when the stored JSON was malformed.
+    // Fall back to a single unlabeled measurement rather than throwing while
+    // rendering the block.
+    const dimensions = fieldData.dimensions;
+    if (!dimensions || !dimensions.n || dimensions.n == 1) {
       inputElement = (
         <input
           name={fieldSlug}
           type="number"
-          value={fieldValue[0]}
+          value={fieldValue?.[0] ?? ""}
           onChange={(event) => onMeasureChange(event, 0)}
         />
       );
     } else {
-      const dimensionElements = fieldData.dimensions!.labels.map(
+      const dimensionElements = dimensions.labels.map(
         (dimensionLabel, index) => (
           <label key={index}>
             <div className="input-element-dimension-label">
@@ -156,7 +158,7 @@ const ObjectMetaField = (props: ObjectMetaFieldProps) => {
             <input
               name={fieldSlug}
               type="number"
-              value={fieldValue[index]}
+              value={fieldValue?.[index] ?? ""}
               onChange={(event) => onMeasureChange(event, index)}
             />
           </label>
