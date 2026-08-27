@@ -13,10 +13,20 @@ import { registerBlockType } from '@wordpress/blocks';
 
 import type { ComponentType, ReactElement } from 'react';
 
+/** The attribute types the block API recognises. */
+type BlockAttributeType =
+	| 'string'
+	| 'boolean'
+	| 'object'
+	| 'null'
+	| 'array'
+	| 'integer'
+	| 'number';
+
 /**
  * Block settings as this plugin actually uses them.
  *
- * Differs from BlockConfiguration in four ways, each load-bearing:
+ * Differs from BlockConfiguration in three ways, each load-bearing:
  *
  *  1. `icon` may be a plain JSX element. BlockConfiguration admits only a
  *     dashicon slug or an icon descriptor object, but WordPress renders a
@@ -27,17 +37,16 @@ import type { ComponentType, ReactElement } from 'react';
  *     every museum block's edit component, so it rejects them all.
  *  3. `title`, `category` and `attributes` are optional. Dynamic blocks
  *     register those server-side from block.json and pass only edit/save.
- *  4. `attributes` values carry a loose `type`. object-image declares
- *     `fontSize` as `'float'`, which is not one of the types the block API
- *     documents — WordPress treats the unknown type as untyped and the
- *     attribute has always round-tripped correctly.
  */
 export interface MuseumBlockSettings {
 	title?: string;
 	icon?: ReactElement | string | { src: ReactElement | string };
 	category?: string;
 	supports?: Record< string, unknown >;
-	attributes?: Record< string, { type: string; default?: unknown } >;
+	attributes?: Record<
+		string,
+		{ type: BlockAttributeType; default?: unknown }
+	>;
 	/**
 	 * The block's edit component.
 	 *

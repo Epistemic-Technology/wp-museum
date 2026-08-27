@@ -59,12 +59,10 @@ export interface ObjectImageAttributes {
 	displayCaption: boolean;
 	linkToObject: boolean;
 	imgDimensions: ImageDimensions;
+	/** Alignment of the image within the block ( left | center | right ). */
+	imgAlignment: string;
 	fontSize: number;
 	titleTag: string;
-	// TODO(ts-migration): imgAlignment is read by save() but is never
-	// registered as a block attribute and never set, so it is always
-	// undefined at runtime (pre-existing bug, preserved).
-	imgAlignment?: string;
 }
 
 /**
@@ -175,6 +173,7 @@ const ObjectImageEdit = (props: ObjectImageEditProps) => {
 		imgHeight,
 		imgWidth,
 		imgDimensions,
+		imgAlignment,
 		imgIndex,
 		totalImages,
 		imgURL,
@@ -277,7 +276,7 @@ const ObjectImageEdit = (props: ObjectImageEditProps) => {
 					imgHeight={null}
 					imgWidth={null}
 					imgDimensions={imgDimensions}
-					imgAlignment={null}
+					imgAlignment={imgAlignment}
 					initialOpen={true}
 				/>
 				<FontSizePanel

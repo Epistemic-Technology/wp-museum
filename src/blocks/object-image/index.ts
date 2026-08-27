@@ -18,7 +18,8 @@
  *  - displayCaption {boolean} Whether to display a caption for the object.
  *  - linkToObject   {boolean} Whether clicking on image should link to the object.
  *  - imgDimensions  {object}  The dimensions of the image for *display*.
- *  - fontSize       {string}  Font size for the image's caption and catalogue ID (em).
+ *  - imgAlignment   {string}  Alignment of the image within the block ( left | center | right ).
+ *  - fontSize       {number}  Font size for the image's caption and catalogue ID (em).
  *  - titleTag       {string}  Tag name for the title.
  */
 
@@ -38,6 +39,7 @@ import { museum } from '../../icons';
  */
 import edit from './edit';
 import save from './save';
+import deprecated from './deprecated';
 
 registerMuseumBlock( 'wp-museum/object-image', {
 	title      : __( 'Object Image'),
@@ -115,8 +117,12 @@ registerMuseumBlock( 'wp-museum/object-image', {
 				size   : 'medium' //options: thumbnail, medium, large, full
 			}
 		},
+		imgAlignment: {
+			type    : 'string',
+			default : 'left'
+		},
 		fontSize: {
-			type    : 'float',
+			type    : 'number',
 			default : 0.7
 		},
 		titleTag: {
@@ -125,5 +131,6 @@ registerMuseumBlock( 'wp-museum/object-image', {
 		},
 	},
 	edit,
-	save
+	save,
+	deprecated
 } );

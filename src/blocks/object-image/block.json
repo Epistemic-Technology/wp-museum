@@ -83,6 +83,10 @@
 				"size"   : "medium"
 			}
 		},
+		"imgAlignment": {
+			"type"    : "string",
+			"default" : "left"
+		},
 		"fontSize": {
 			"type"    : "number",
 			"default" : 0.7
