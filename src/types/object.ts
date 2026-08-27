@@ -86,7 +86,9 @@ export interface MuseumObject {
 	/** Slug of the kind's catalogue-ID field, or null if the kind has none. */
 	cat_field: string | null;
 	/**
-	 * Map of wpm_collection_tax term_id (numeric-string key) → term NAME.
+	 * Map of wpm_collection post ID (numeric-string key) → collection TITLE.
+	 * The key is a post ID, so it can be passed straight to
+	 * `/wp-museum/v1/collections/{id}`.
 	 * GOTCHA: serializes as JSON `[]` (array) when the object is in no
 	 * collection.
 	 */

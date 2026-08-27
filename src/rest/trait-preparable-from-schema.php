@@ -184,14 +184,18 @@ trait Preparable_From_Schema {
 			}
 		}
 
-		// Handle special case for collections property
+		/*
+		 * Handle special case for collections property.
+		 *
+		 * Keyed by collection *post* ID, not taxonomy term ID: the only
+		 * consumers of this field look the collection up through
+		 * /wp-museum/v1/collections/<id>, which takes a post ID.
+		 */
 		if ( isset( $schema['properties']['collections'] ) && isset( $item['ID'] ) ) {
-			$collection_terms    = get_object_collection_terms( $item['ID'] );
+			$collection_posts    = get_object_collections( $item['ID'] );
 			$data['collections'] = [];
-			if ( ! empty( $collection_terms ) ) {
-				foreach ( $collection_terms as $term ) {
-					$data['collections'][ $term->term_id ] = $term->name;
-				}
+			foreach ( $collection_posts as $collection_post ) {
+				$data['collections'][ $collection_post->ID ] = $collection_post->post_title;
 			}
 			$sanitized_properties[] = 'collections';
 		}

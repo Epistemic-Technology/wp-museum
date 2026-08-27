@@ -29,7 +29,7 @@ const FeaturedCollection = ( props: FeaturedCollectionProps ) => {
 	useEffect( () => {
 		apiFetch<Collection>( { path: `${baseRestPath}/collections/${collectionID}` } )
 			.then( result => setCollectionData( result ) );
-	} );
+	}, [ collectionID ] );
 
 	return (
 		<div className = 'wpm-featured-collection'>
@@ -37,10 +37,7 @@ const FeaturedCollection = ( props: FeaturedCollectionProps ) => {
 				<img
 					className = 'wpm-featured-collection-image'
 					src       = { collectionData.featured_image[0] }
-					// TODO(ts-migration): `title` never exists on the wire (only
-					// `post_title`), so the fallback string is always used —
-					// pre-existing bug preserved via type assertion.
-					alt       = { ( collectionData as { title?: string } ).title || 'Featured collection' }
+					alt       = { collectionData.post_title || 'Featured collection' }
 				/>
 			}
 			<h2>

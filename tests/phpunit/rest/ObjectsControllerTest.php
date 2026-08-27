@@ -178,6 +178,67 @@ class ObjectsControllerTest extends BaseRESTTest {
 	}
 
 	/**
+	 * Test the collections field is keyed by collection post ID.
+	 *
+	 * It was previously keyed by taxonomy term ID, which no consumer can use:
+	 * the /collections/<id> route takes a post ID.
+	 *
+	 * @see https://github.com/Epistemic-Technology/wp-museum/issues/138
+	 */
+	public function test_object_collections_are_keyed_by_post_id() {
+		$telescope_id  = $this->test_data['telescope']->ID;
+		$collection    = $this->test_data['collection'];
+		$collection_id = $collection->ID;
+		$term_id       = (int) get_post_meta(
+			$collection_id,
+			'wpm_collection_term_id',
+			true
+		);
+
+		$request  = new \WP_REST_Request(
+			'GET',
+			TEST_REST_NAMESPACE . '/all/' . $telescope_id
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertArrayHasKey( 'collections', $data );
+		$this->assertArrayHasKey( $collection_id, $data['collections'] );
+		$this->assertSame(
+			$collection->post_title,
+			$data['collections'][ $collection_id ]
+		);
+
+		// The term ID is a different number, and must not be the key.
+		if ( $term_id !== $collection_id ) {
+			$this->assertArrayNotHasKey( $term_id, $data['collections'] );
+		}
+	}
+
+	/**
+	 * Test the collections field is empty for an object in no collection.
+	 */
+	public function test_object_collections_empty_when_uncollected() {
+		$loose_object = $this->factory->post->create_and_get(
+			[
+				'post_type'   => 'wpm_instrument',
+				'post_title'  => 'Uncollected Instrument',
+				'post_status' => 'publish',
+			]
+		);
+
+		$request  = new \WP_REST_Request(
+			'GET',
+			TEST_REST_NAMESPACE . '/all/' . $loose_object->ID
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertArrayHasKey( 'collections', $data );
+		$this->assertEmpty( $data['collections'] );
+	}
+
+	/**
 	 * Test GET /all/{id}/children returns children.
 	 */
 	public function test_object_children_route() {

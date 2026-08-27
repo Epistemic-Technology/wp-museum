@@ -809,7 +809,7 @@ class Objects_Controller extends \WP_REST_Controller {
 				],
 				'collections'       => [
 					'description'          => __(
-						'Collection terms associated with this object.',
+						'Collections associated with this object, keyed by collection post ID.',
 						'wp-museum'
 					),
 					'type'                 => 'object',
