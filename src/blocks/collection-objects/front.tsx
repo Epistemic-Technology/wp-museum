@@ -95,9 +95,14 @@ const collectionObjectsBlockElements = document.getElementsByClassName('wpm-coll
 if ( !! collectionObjectsBlockElements ) {
 	for ( let i = 0; i < collectionObjectsBlockElements.length; i++ ) {
 		const collectionObjectsBlockElement = collectionObjectsBlockElements[i] as HTMLElement;
-		// TODO(strict): dataset values may be undefined at runtime
-		const postID = parseInt( collectionObjectsBlockElement.dataset.postId as string );
-		const parsedResultsPerPage = parseInt( collectionObjectsBlockElement.dataset.resultsPerPage as string );
+		const postID = parseInt( collectionObjectsBlockElement.dataset.postId ?? '' );
+		if ( ! Number.isFinite( postID ) ) {
+			// Without a post ID there is no collection to search, so leave the
+			// block's container untouched rather than mounting a search that
+			// cannot resolve.
+			continue;
+		}
+		const parsedResultsPerPage = parseInt( collectionObjectsBlockElement.dataset.resultsPerPage ?? '' );
 		const resultsPerPage = Number.isFinite( parsedResultsPerPage ) ? parsedResultsPerPage : 20;
 		const root = createRoot( collectionObjectsBlockElement );
 		root.render (

@@ -53,8 +53,10 @@ const embeddedSearchElements = document.getElementsByClassName('wpm-embedded-sea
 if ( !! embeddedSearchElements ) {
 	for ( let i = 0; i < embeddedSearchElements.length; i++ ) {
 		const embeddedElement = embeddedSearchElements[i] as HTMLElement;
-		// TODO(strict): dataset value may be undefined at runtime
-		const attributes = attributesFromJSON( embeddedElement.dataset.attributes as string ) as unknown as EmbeddedSearchBlockAttributes;
+		// The data attribute is missing (or empty) if render.php could not
+		// encode the block attributes; fall back to an empty set so the block
+		// still mounts with its defaults rather than throwing out of JSON.parse.
+		const attributes = attributesFromJSON( embeddedElement.dataset.attributes || '{}' ) as unknown as EmbeddedSearchBlockAttributes;
 		const root = createRoot( embeddedElement );
 		root.render (
 			<EmbeddedSearchFront

@@ -136,10 +136,11 @@ const basicSearchElements = document.getElementsByClassName(
 if (!!basicSearchElements) {
   for (let i = 0; i < basicSearchElements.length; i++) {
     const basicSearchElement = basicSearchElements[i] as HTMLElement;
-    // TODO(strict): dataset.attributes may be undefined at runtime if the
-    // data attribute is missing; cast preserves existing behavior.
+    // The data attribute is missing (or empty) if render.php could not encode
+    // the block attributes; fall back to an empty set so the block still
+    // mounts with its defaults rather than throwing out of JSON.parse.
     const attributes = attributesFromJSON(
-      basicSearchElement.dataset.attributes as string,
+      basicSearchElement.dataset.attributes || "{}",
     ) as BasicSearchFrontAttributes;
     const root = createRoot(basicSearchElement);
     root.render(<BasicSearchFront attributes={attributes} />);
