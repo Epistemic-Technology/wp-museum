@@ -116,10 +116,9 @@ const Edit = (props: EditProps) => {
   });
 
   const refreshFieldData = useCallback(() => {
-    // TODO(ts-migration): pre-existing bug — comparing against the string
-    // literal "null", but the wire value of type_name is string | JSON null,
-    // never the string "null". Preserved as-is (no behavior change).
-    if (!kindPostType || kindPostType === "null") {
+    // A kind that has not been saved yet has no type_name, and there is no
+    // fields endpoint to ask for until it does.
+    if (!kindPostType) {
       return;
     }
 
