@@ -719,6 +719,15 @@ class Objects_Controller extends \WP_REST_Controller {
 					'enum'        => array_keys( get_post_stati( [ 'internal' => false ] ) ),
 					'context'     => [ 'view', 'edit' ],
 				],
+				'post_status_label' => [
+					'description' => __(
+						"The display label for the object's status, as registered with the status itself.",
+						'wp-museum'
+					),
+					'type'        => 'string',
+					'context'     => [ 'view', 'edit' ],
+					'readonly'    => true,
+				],
 				'post_name'         => [
 					'description' => __(
 						'An alphanumeric identifier for the object unique to its type.',

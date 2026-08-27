@@ -255,4 +255,76 @@ class ObjectsControllerTest extends BaseRESTTest {
 		$data = $response->get_data();
 		$this->assertIsArray( $data );
 	}
+
+	/**
+	 * Test the object response carries the display label for its status.
+	 *
+	 * combine_post_data has always computed post_status_label, but the schema
+	 * never named it and Preparable_From_Schema drops whatever the schema does
+	 * not name, so it never reached the wire.
+	 *
+	 * @see https://github.com/Epistemic-Technology/wp-museum/issues/140
+	 */
+	public function test_object_response_includes_post_status_label() {
+		$telescope_id = $this->test_data['telescope']->ID;
+
+		$request  = new \WP_REST_Request(
+			'GET',
+			TEST_REST_NAMESPACE . '/all/' . $telescope_id
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertArrayHasKey( 'post_status_label', $data );
+		$this->assertSame( 'publish', $data['post_status'] );
+		$this->assertSame( 'Published', $data['post_status_label'] );
+	}
+
+	/**
+	 * Test the label follows the status rather than being a fixed string.
+	 */
+	public function test_post_status_label_tracks_the_status() {
+		wp_set_current_user( $this->admin_id );
+
+		$draft = $this->factory->post->create_and_get(
+			[
+				'post_type'   => 'wpm_instrument',
+				'post_title'  => 'Unfinished Orrery',
+				'post_status' => 'draft',
+			]
+		);
+
+		$request  = new \WP_REST_Request(
+			'GET',
+			TEST_REST_NAMESPACE . '/all/' . $draft->ID
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 'draft', $data['post_status'] );
+		$this->assertSame( 'Draft', $data['post_status_label'] );
+	}
+
+	/**
+	 * Test the label survives the collection objects route.
+	 *
+	 * That is the route behind the Associated Objects table in the collection
+	 * editor, whose Status column is what went blank.
+	 */
+	public function test_collection_objects_include_post_status_label() {
+		$collection_id = $this->test_data['collection']->ID;
+
+		$request  = new \WP_REST_Request(
+			'GET',
+			TEST_REST_NAMESPACE . '/collections/' . $collection_id . '/objects'
+		);
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		$this->assertNotEmpty( $data );
+		foreach ( $data as $object ) {
+			$this->assertArrayHasKey( 'post_status_label', $object );
+			$this->assertNotEmpty( $object['post_status_label'] );
+		}
+	}
 }

@@ -68,6 +68,11 @@ export interface MuseumObject {
 	excerpt: string;
 	/** "publish" | "draft" | "pending" | "private" | "future" | ... */
 	post_status: string;
+	/**
+	 * Display label for post_status, e.g. "Published". Translated, and
+	 * supplied by whatever registered the status.
+	 */
+	post_status_label: string;
 	/** Slug. */
 	post_name: string;
 	post_modified: string;

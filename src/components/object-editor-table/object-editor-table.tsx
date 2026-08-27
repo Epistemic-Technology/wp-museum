@@ -13,11 +13,8 @@ const ObjectEditorTableRow = ( props: ObjectEditorTableRowProps ) => {
 		link,
 		edit_link         : editLink,
 		post_title        : postTitle,
-		// TODO(ts-migration): post_status_label is stripped by the REST
-		// schema and never exists on the wire — always undefined. Preserving
-		// existing (buggy) behavior.
 		post_status_label : postStatus
-	} = mObject as MuseumObject & { post_status_label?: string };
+	} = mObject;
 
 	return (
 		<tr>
