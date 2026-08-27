@@ -217,6 +217,12 @@ const Edit = (props: EditProps) => {
     fieldItem: string,
     changeEventOrValue: any,
   ) => {
+    // Every caller comes from a row rendered out of `fieldData`, so the
+    // edited field is loaded and present; skip rather than dereference a
+    // field that is not.
+    const currentField = fieldData?.[fieldId];
+    if (!currentField) return;
+
     // Handle both event objects and direct values for compatibility
     const newValue =
       changeEventOrValue && changeEventOrValue.target
@@ -229,8 +235,7 @@ const Edit = (props: EditProps) => {
     if (fieldItem.startsWith("dimension")) {
       const newFieldData = Object.assign({}, fieldData);
       const [dimension, key, index] = fieldItem.split(".");
-      // TODO(strict): possible null at runtime if called before fields load
-      const dimensionsField = fieldData![fieldId]["dimensions"];
+      const dimensionsField = currentField["dimensions"];
       const newDimensionData = dimensionsField
         ? dimensionsField
         : dimensionsDefault;
@@ -249,11 +254,9 @@ const Edit = (props: EditProps) => {
 
     // Update field data immediately
     const newFieldData = Object.assign({}, fieldData);
-    // TODO(strict): possible null at runtime if called before fields load
     if (
-      (fieldData![fieldId] as unknown as Record<string, unknown>)[
-        fieldItem
-      ] !== newValue
+      (currentField as unknown as Record<string, unknown>)[fieldItem] !==
+      newValue
     ) {
       (newFieldData[fieldId] as unknown as Record<string, unknown>)[
         fieldItem
@@ -285,10 +288,12 @@ const Edit = (props: EditProps) => {
   };
 
   const updateFactors = (fieldId: number, newFactors: string[]) => {
+    // As in updateField: the row being edited was rendered from `fieldData`.
+    const currentField = fieldData?.[fieldId];
+    if (!currentField) return;
+
     if (
-      // TODO(strict): possible null at runtime if called before fields load
-      JSON.stringify(fieldData![fieldId]["factors"]) !==
-      JSON.stringify(newFactors)
+      JSON.stringify(currentField["factors"]) !== JSON.stringify(newFactors)
     ) {
       const newFieldData = Object.assign({}, fieldData);
       newFieldData[fieldId]["factors"] = newFactors;
@@ -303,8 +308,10 @@ const Edit = (props: EditProps) => {
   ) => {
     if (sourceFieldId === targetFieldId) return;
 
-    // TODO(strict): possible null at runtime if called before fields load
-    const fieldValues = Object.values(fieldData!);
+    // Dragging is only possible between rows rendered from `fieldData`; if
+    // it somehow isn't loaded, the source/target lookups below fail the
+    // existing guard and the drop is a no-op.
+    const fieldValues = Object.values(fieldData ?? {});
     const sourceField = fieldValues.find((f) => f.field_id === sourceFieldId);
     const targetField = fieldValues.find((f) => f.field_id === targetFieldId);
 
@@ -366,11 +373,15 @@ const Edit = (props: EditProps) => {
     setDragOverField(null);
   };
 
-  const defaultFieldData: EditableField = {
+  /**
+   * Template for a newly added field. `kind_id` is deliberately absent: it is
+   * supplied by `addField`, which refuses to add a field to a kind that has
+   * not been saved yet. Every fields request interpolates `type_name` into
+   * its path, so acting on an unsaved kind would address `/null/fields`.
+   */
+  const defaultFieldData: Omit<EditableField, "kind_id"> = {
     field_id: 0,
     slug: "",
-    // TODO(strict): possible null at runtime — wire kind_id is number | null
-    kind_id: kindId as number,
     name: "",
     type: "plain",
     display_order: 0,
@@ -388,8 +399,16 @@ const Edit = (props: EditProps) => {
   };
 
   const addField = async () => {
+    if (!kindPostType || kindId === null) {
+      setFieldsSaveState((prev) => ({
+        ...prev,
+        saveError: "Save this object type before adding fields.",
+      }));
+      return;
+    }
+
     const updatedFieldData = fieldData ? Object.assign({}, fieldData) : {};
-    updatedFieldData[nextFieldId] = { ...defaultFieldData };
+    updatedFieldData[nextFieldId] = { ...defaultFieldData, kind_id: kindId };
     updatedFieldData[nextFieldId]["field_id"] = nextFieldId;
 
     if (fieldData && Object.values(fieldData).length > 0) {

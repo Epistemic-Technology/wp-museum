@@ -179,13 +179,20 @@ const ObjectAdminControl = () => {
     }
   }, [objectKinds]);
 
+  // The kind mutation handlers below all need `objectKinds` to have loaded.
+  // The render path guarantees it: `Main` renders no controls at all until
+  // the fetch resolves, `Edit` is only rendered for a `kindItem` picked out
+  // of an already-loaded list, and `objectKinds` is never set back to null
+  // once loaded. Their `if (!objectKinds)` guards are therefore no-ops that
+  // keep that invariant checked rather than asserted away.
+
   const updateKind = (
     kindId: number | null,
     field: string,
     event: { target: { type: string; value: any; checked: any } },
   ) => {
-    // TODO(strict): possible null at runtime if called before kinds load
-    const kinds = objectKinds!;
+    if (!objectKinds) return;
+    const kinds = objectKinds;
     const kindIndex = kinds.findIndex(
       (kindItem) => kindItem.kind_id == kindId,
     );
@@ -215,6 +222,7 @@ const ObjectAdminControl = () => {
   };
 
   const importKind = async (file: File): Promise<boolean> => {
+    if (!objectKinds) return false;
     try {
       const text = await file.text();
       const importedData = JSON.parse(text);
@@ -227,8 +235,7 @@ const ObjectAdminControl = () => {
       kindData.cat_field_id = null;
 
       // Add the new kind to the list
-      // TODO(strict): possible null at runtime if called before kinds load
-      const newObjectKinds = objectKinds!.concat([kindData]);
+      const newObjectKinds = objectKinds.concat([kindData]);
       setObjectKinds(newObjectKinds);
 
       // Save the kind first
@@ -304,34 +311,36 @@ const ObjectAdminControl = () => {
   };
 
   const newKind = () => {
+    if (!objectKinds) return;
+
     // Track existing kind IDs before creating new one
-    // TODO(strict): possible null at runtime if called before kinds load
     const currentKindIds = new Set(
-      objectKinds!
+      objectKinds
         .filter((kind) => kind.kind_id! > 0)
         .map((kind) => kind.kind_id!),
     );
     setExistingKindIds(currentKindIds);
 
     const newKind = Object.assign({}, defaultKind);
-    const newObjectKinds = objectKinds!.concat([newKind]);
+    const newObjectKinds = objectKinds.concat([newKind]);
     setObjectKinds(newObjectKinds);
     setNavigateToNewKind(true);
     saveKindData();
   };
 
   const deleteKind = (kindItem: AdminKind) => {
+    if (!objectKinds) return;
+
     // TODO: Replace with accessible modal dialog for better accessibility
     let confirmDelete = confirm(
       "Really delete this kind? Kinds with associated objects cannot be deleted — delete those objects first.",
     );
     if (confirmDelete) {
-      // TODO(strict): possible null at runtime if called before kinds load
-      const kindIndex = objectKinds!.findIndex(
+      const kindIndex = objectKinds.findIndex(
         (item) => item.kind_id == kindItem.kind_id,
       );
       if (kindIndex !== -1) {
-        const newKindArray = objectKinds!.concat([]);
+        const newKindArray = objectKinds.concat([]);
         newKindArray[kindIndex].delete = true;
         setObjectKinds(newKindArray);
         saveKindData();
