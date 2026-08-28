@@ -312,15 +312,22 @@ const AdvancedSearchUI = (props: AdvancedSearchUIProps) => {
   }, [selectedKind, kindsData]);
 
   useEffect(() => {
-    if (!selectedKind && !!kindsData && kindsData.length > 0) {
-      const firstKindId = kindsData[0].kind_id;
-      if (firstKindId !== null) {
-        setSearchValues({
-          ...searchValues,
-          selectedKind: firstKindId,
-        });
-      }
+    if (!kindsData || kindsData.length === 0) {
+      return;
     }
+    const firstKindId = kindsData[0].kind_id;
+    if (firstKindId === null) {
+      return;
+    }
+    // Decide from the current values rather than this render's copy of them:
+    // when kinds are already loaded on the first render, this effect runs in
+    // the same commit as the one that restores the URL or default search, and
+    // spreading the stale (empty) values would drop everything it just set.
+    setSearchValues((currentValues) =>
+      currentValues.selectedKind
+        ? currentValues
+        : { ...currentValues, selectedKind: firstKindId },
+    );
   }, [kindsData]);
 
   const updateSearchValues = (updatedValues: Partial<AdvancedSearchValues>) => {
