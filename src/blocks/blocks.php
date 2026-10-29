@@ -107,14 +107,20 @@ function calculate_post_type_in_editor(): string|false {
  * Enqueues component scripts and styles.
  */
 function enqueue_components() {
-	$asset_file = include WPM_BUILD_DIR . '/components.asset.php';
-	wp_enqueue_script(
-		WPM_PREFIX . 'components',
-		WPM_BUILD_URL . '/components.js',
-		$asset_file['dependencies'],
-		$asset_file['version'],
-		true
-	);
+	// The shared component bundle depends on wp-components, wp-element and
+	// React. Nothing on the public site reads it (the view scripts bundle
+	// their own copies), so it only goes out with the editor; otherwise every
+	// front-end page would load the whole React stack.
+	if ( is_admin() ) {
+		$asset_file = include WPM_BUILD_DIR . '/components.asset.php';
+		wp_enqueue_script(
+			WPM_PREFIX . 'components',
+			WPM_BUILD_URL . '/components.js',
+			$asset_file['dependencies'],
+			$asset_file['version'],
+			true
+		);
+	}
 
 	wp_enqueue_style(
 		WPM_PREFIX . 'component-styles',
@@ -167,16 +173,6 @@ function enqueue_block_frontend_scripts() {
 		true
 	);
 	*/
-	$asset_file = include WPM_BUILD_DIR .
-		'/blocks/embedded-search/front.asset.php';
-	wp_enqueue_script(
-		WPM_PREFIX . 'embedded-search-frontend',
-		WPM_BUILD_URL . 'blocks/embedded-search/front.js',
-		$asset_file['dependencies'],
-		$asset_file['version'],
-		true
-	);
-
 	wp_enqueue_style(
 		WPM_PREFIX . 'museum-frontend',
 		WPM_BUILD_URL . 'museum-block-front.css',

@@ -104,11 +104,6 @@ describe.each( [
 		'../../src/blocks/basic-search/front',
 		'wpm-basic-search-block-frontend',
 	],
-	[
-		'embedded-search',
-		'../../src/blocks/embedded-search/front',
-		'wpm-embedded-search-block-frontend',
-	],
 ] )( '%s view script', ( _name, modulePath, className ) => {
 	it( 'reads the block attributes off the data attribute', () => {
 		markup(

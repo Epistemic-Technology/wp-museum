@@ -18,7 +18,9 @@ if ( isset( $_GET['searchText'] ) ) {
 	$attributes['searchText'] = sanitize_text_field( wp_unslash( $_GET['searchText'] ) );
 }
 if ( isset( $_GET['onlyTitle'] ) ) {
-	$attributes['onlyTitle'] = sanitize_text_field( wp_unslash( $_GET['onlyTitle'] ) );
+	// Arrives as "0"/"1" (the embedded-search form) or "true"/"false" (older
+	// links); the view script wants a real boolean, and "false" is truthy.
+	$attributes['onlyTitle'] = rest_sanitize_boolean( sanitize_text_field( wp_unslash( $_GET['onlyTitle'] ) ) );
 }
 
 $encoded_attributes = wp_json_encode( $attributes );

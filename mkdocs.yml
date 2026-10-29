@@ -58,10 +58,22 @@ plugins:
 
 nav:
   - Home: index.md
-  - Installation: installation.md
-  - Dashboard: dashboard.md
-  - Object Kinds & Fields: object-kinds.md
-  - Collections: collections.md
-  - Blocks: blocks.md
-  - REST API: rest-api.md
-  - Museum Remote: museum-remote.md
+  - Getting started:
+      - Installation: installation.md
+      - Dashboard: dashboard.md
+  - Cataloguing:
+      - Object Kinds & Fields: object-kinds.md
+      - Objects: objects.md
+      - Collections: collections.md
+      - Import & Export: import-export.md
+  - Public site:
+      - Blocks: blocks.md
+      - Search: search.md
+      - Appearance & Settings: appearance.md
+  - Administration:
+      - Roles & Capabilities: roles.md
+      - Troubleshooting: troubleshooting.md
+  - Integrations:
+      - REST API: rest-api.md
+      - OAI-PMH: oai-pmh.md
+      - Museum Remote: museum-remote.md
