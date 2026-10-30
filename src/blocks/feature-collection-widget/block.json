@@ -5,7 +5,7 @@
     "title": "Featured Collection",
     "category": "widgets",
     "icon": "wp-museum",
-    "description": "Display a featured collection.",
+    "description": "Lists the collections the current museum object belongs to, with image and description. Renders only on museum object pages.",
     "textdomain": "wp-museum",
     "editorScript": "file:./index.js",
     "render": "file:./render.php",
