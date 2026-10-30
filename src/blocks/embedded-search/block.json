@@ -13,7 +13,6 @@
     "textdomain": "wp-museum",
     "editorScript": "file:./index.js",
     "editorStyle": "file:./index.css",
-    "viewScript": "file:./front.js",
     "style": "file:./style-index.css",
     "render": "file:./render.php",
     "attributes": {

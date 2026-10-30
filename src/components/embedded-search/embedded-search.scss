@@ -53,3 +53,25 @@
 		}
 	}
 }
+
+// Styles for the server-rendered form (embedded-search block). The editor
+// preview uses wp-components, which brings its own button and checkbox CSS;
+// the public form gets only what the theme provides plus this.
+.wpm-embedded-search-form {
+	.embedded-search-input {
+		align-items: flex-start;
+	}
+
+	.wpm-embedded-search-button {
+		cursor: pointer;
+		padding: 0.4em 1em;
+		line-height: 1.5;
+	}
+
+	.wpm-embedded-search-title-toggle label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		font-size: 0.9em;
+	}
+}

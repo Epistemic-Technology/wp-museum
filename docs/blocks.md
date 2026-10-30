@@ -14,7 +14,7 @@ A faceted search interface with filters for object kind, custom field values, an
 
 ### Embedded Search
 
-A pre-configured search result list you can embed inside posts and pages — useful for landing pages that surface specific subsets of the catalog.
+A compact search box for a sidebar, header, or landing page. It has no results of its own: submitting it sends the visitor to the search page you point it at (a page containing a Basic Search or Advanced Search block). Options: the search page URL, an optional Advanced Search link, a heading, a maximum width, and whether to show the "Only search titles" toggle.
 
 ## Display blocks
 
