@@ -61,3 +61,31 @@
 		color: transparent;
 	}
 }
+
+// The server-rendered block uses a plain <button>; the editor preview's
+// wp-components Button brings its own reset.
+.wpm-collection-main-navigation-collection-box-info-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 6px;
+	margin: 0;
+	border: 0;
+	border-radius: 2px;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+
+	svg {
+		width: 24px;
+		height: 24px;
+		fill: currentColor;
+	}
+
+	&:hover,
+	&:focus-visible {
+		background-color: rgba(0, 0, 0, 0.06);
+	}
+}
