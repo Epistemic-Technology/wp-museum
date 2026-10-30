@@ -252,67 +252,13 @@ class Collections_Controller extends \WP_REST_Controller {
 			$args['post_title'] = $title_search;
 		}
 
-		// If tags param is set, do a taxonomy query that finds collections with
-		// the corresponding tags. There are two special tags: _all, which when
-		// set matches all tags (bypassing the tax query); and _untagged, which
-		// matches collections that have no tags set.
+		// If tags param is set, restrict to collections with those tags. The
+		// special `_all` and `_untagged` slugs are handled by the helper.
 		$tag_list = $request->get_param( 'tags' );
 		if ( ! empty( $tag_list ) ) {
-			$tag_array = explode( ',', $tag_list );
-			if ( ! in_array( '_all', $tag_array, true ) ) {
-				if ( in_array( '_untagged', $tag_array, true ) ) {
-					unset( $tag_array['_untagged'] );
-					$all_terms = get_terms(
-						[
-							'taxonomy'   => 'collection_tag',
-							'hide_empty' => false,
-						]
-					);
-
-					$all_tags = array_map(
-						function ( $a ) {
-							return $a->slug;
-						},
-						$all_terms
-					);
-
-					if ( count( $tag_array ) > 1 ) {
-						//phpcs:ignore WordPress.DB.SlowDBQuery
-						$args['tax_query'] = [
-							'relation' => 'OR',
-							[
-								'taxonomy' => 'collection_tag',
-								'field'    => 'slug',
-								'terms'    => $tag_array,
-							],
-							[
-								'taxonomy' => 'collection_tag',
-								'field'    => 'slug',
-								'terms'    => $all_tags,
-								'operator' => 'NOT IN',
-							],
-						];
-					} else {
-						//phpcs:ignore WordPress.DB.SlowDBQuery
-						$args['tax_query'] = [
-							[
-								'taxonomy' => 'collection_tag',
-								'field'    => 'slug',
-								'terms'    => $all_tags,
-								'operator' => 'NOT IN',
-							],
-						];
-					}
-				} else {
-					//phpcs:ignore WordPress.DB.SlowDBQuery
-					$args['tax_query'] = [
-						[
-							'taxonomy' => 'collection_tag',
-							'field'    => 'slug',
-							'terms'    => $tag_array,
-						],
-					];
-				}
+			$tax_query = collection_tag_tax_query( explode( ',', $tag_list ) );
+			if ( null !== $tax_query ) {
+				$args['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 			}
 		}
 

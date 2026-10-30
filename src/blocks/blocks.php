@@ -132,47 +132,14 @@ function enqueue_components() {
 add_action( 'enqueue_block_assets', __NAMESPACE__ . '\enqueue_components' );
 
 /**
- * Enqueue block frontend scripts
+ * Enqueue the shared frontend block stylesheet.
+ *
+ * Block view scripts are declared in each block.json (`viewScript`), so
+ * WordPress loads them only on pages that contain the block. They used to be
+ * enqueued here as well, on every page, which pulled wp-components and React
+ * onto pages with no interactive block at all.
  */
 function enqueue_block_frontend_scripts() {
-	$asset_file = include WPM_BUILD_DIR .
-		'/blocks/advanced-search/front.asset.php';
-	wp_enqueue_script(
-		WPM_PREFIX . 'advanced-search-frontend',
-		WPM_BUILD_URL . '/blocks/advanced-search/front.js',
-		$asset_file['dependencies'],
-		$asset_file['version'],
-		true
-	);
-
-	// $asset_file = include WPM_BUILD_DIR . '/blocks/basic-search/front.asset.php';
-	// wp_enqueue_script(
-	//  WPM_PREFIX . 'basic-search-frontend',
-	//  WPM_BUILD_URL . '/blocks/basic-search/front.js',
-	//  $asset_file['dependencies'],
-	//  $asset_file['version'],
-	//  true
-	// );
-
-	$asset_file = include WPM_BUILD_DIR .
-		'/blocks/collection-main-navigation/front.asset.php';
-	wp_enqueue_script(
-		WPM_PREFIX . 'collection-main-navigation-frontend',
-		WPM_BUILD_URL . '/blocks/collection-main-navigation/front.js',
-		$asset_file['dependencies'],
-		$asset_file['version'],
-		true
-	);
-	/*
-	$asset_file = include WPM_BUILD_DIR . '/blocks/collection-objects/front.asset.php';
-	wp_enqueue_script(
-		WPM_PREFIX . 'collection-objects-frontend',
-		WPM_BUILD_URL . '/blocks/collection-objects/front.js',
-		$asset_file['dependencies'],
-		$asset_file['version'],
-		true
-	);
-	*/
 	wp_enqueue_style(
 		WPM_PREFIX . 'museum-frontend',
 		WPM_BUILD_URL . 'museum-block-front.css',

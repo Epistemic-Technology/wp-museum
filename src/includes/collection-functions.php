@@ -28,6 +28,191 @@ function get_collections( $post_status = 'any' ) {
 }
 
 /**
+ * Build a tax_query clause selecting collections by collection_tag slug.
+ *
+ * Two slugs are special: `_all` matches everything (no clause at all), and
+ * `_untagged` matches collections that have no tag. The REST collections
+ * route and the collection-main-navigation block share this.
+ *
+ * @param string[] $tags Tag slugs, possibly including `_all` / `_untagged`.
+ * @return array|null A tax_query array, or null when no clause is needed.
+ */
+function collection_tag_tax_query( array $tags ): ?array {
+	$tags = array_values( array_filter( array_map( 'strval', $tags ), 'strlen' ) );
+	if ( empty( $tags ) || in_array( '_all', $tags, true ) ) {
+		return null;
+	}
+
+	$wants_untagged = in_array( '_untagged', $tags, true );
+	$tag_slugs      = array_values( array_diff( $tags, [ '_untagged' ] ) );
+
+	if ( ! $wants_untagged ) {
+		return [
+			[
+				'taxonomy' => 'collection_tag',
+				'field'    => 'slug',
+				'terms'    => $tag_slugs,
+			],
+		];
+	}
+
+	$all_terms = get_terms(
+		[
+			'taxonomy'   => 'collection_tag',
+			'hide_empty' => false,
+		]
+	);
+	$all_slugs = is_wp_error( $all_terms ) ? [] : wp_list_pluck( $all_terms, 'slug' );
+
+	$untagged_clause = [
+		'taxonomy' => 'collection_tag',
+		'field'    => 'slug',
+		'terms'    => $all_slugs,
+		'operator' => 'NOT IN',
+	];
+
+	if ( empty( $all_slugs ) ) {
+		// No tags exist at all, so every collection is untagged.
+		return null;
+	}
+
+	if ( empty( $tag_slugs ) ) {
+		return [ $untagged_clause ];
+	}
+
+	return [
+		'relation' => 'OR',
+		[
+			'taxonomy' => 'collection_tag',
+			'field'    => 'slug',
+			'terms'    => $tag_slugs,
+		],
+		$untagged_clause,
+	];
+}
+
+/**
+ * Published collections matching a set of collection_tag slugs.
+ *
+ * @param string[] $tags Tag slugs; see collection_tag_tax_query().
+ * @return \WP_Post[]
+ */
+function get_collections_by_tags( array $tags = [ '_all' ] ): array {
+	$args = [
+		'post_type'        => WPM_PREFIX . 'collection',
+		'post_status'      => 'publish',
+		'posts_per_page'   => -1,
+		'suppress_filters' => false,
+	];
+
+	$tax_query = collection_tag_tax_query( $tags );
+	if ( null !== $tax_query ) {
+		$args['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+	}
+
+	return get_posts( $args );
+}
+
+/**
+ * Order collections for a navigation tree.
+ *
+ * Sorts by menu_order first and then by $sort_by, then nests each collection
+ * under its parent, keeping siblings in sorted order. A collection whose
+ * parent is not in the list (eg. the parent did not match the tag filter) is
+ * shown at the top level.
+ *
+ * @param \WP_Post[] $collections Collections to arrange.
+ * @param string     $sort_by     'Alphabetical' | 'Date Created' | 'Date Uploaded'.
+ * @param string     $sort_order  'Ascending' | 'Descending'.
+ * @return array[] Each item is [ 'post' => \WP_Post, 'indent_level' => int ].
+ */
+function sort_collections_for_navigation( array $collections, string $sort_by = 'Alphabetical', string $sort_order = 'Descending' ): array {
+	$multiplier = ( 'Descending' === $sort_order ) ? -1 : 1;
+
+	usort(
+		$collections,
+		function ( $a, $b ) use ( $sort_by, $multiplier ) {
+			if ( (int) $a->menu_order !== (int) $b->menu_order ) {
+				return $multiplier * ( (int) $a->menu_order < (int) $b->menu_order ? -1 : 1 );
+			}
+			switch ( $sort_by ) {
+				case 'Alphabetical':
+					$cmp = strcasecmp( $a->post_title, $b->post_title );
+					break;
+				case 'Date Created':
+					$cmp = strcmp( (string) $a->post_date_gmt, (string) $b->post_date_gmt );
+					break;
+				case 'Date Uploaded':
+				case 'Date Updated':
+					$cmp = strcmp( (string) $a->post_modified_gmt, (string) $b->post_modified_gmt );
+					break;
+				default:
+					$cmp = 0;
+			}
+			return $multiplier * ( $cmp <=> 0 );
+		}
+	);
+
+	$ids   = array_map( fn( $c ) => (int) $c->ID, $collections );
+	$tree  = [];
+	$queue = [];
+	foreach ( $collections as $collection ) {
+		$parent = (int) $collection->post_parent;
+		if ( $parent && ! in_array( $parent, $ids, true ) ) {
+			$parent = 0;
+		}
+		$item = [
+			'post'         => $collection,
+			'indent_level' => 0,
+			'parent'       => $parent,
+		];
+		if ( 0 === $parent ) {
+			$tree[] = $item;
+		} else {
+			$queue[] = $item;
+		}
+	}
+
+	$placed_one = true;
+	while ( $placed_one && ! empty( $queue ) ) {
+		$placed_one = false;
+		$remaining  = [];
+		foreach ( $queue as $item ) {
+			$parent_index = null;
+			foreach ( $tree as $i => $placed ) {
+				if ( (int) $placed['post']->ID === $item['parent'] ) {
+					$parent_index = $i;
+					break;
+				}
+			}
+			if ( null === $parent_index ) {
+				$remaining[] = $item;
+				continue;
+			}
+			$placed_one           = true;
+			$item['indent_level'] = $tree[ $parent_index ]['indent_level'] + 1;
+			// Insert after the parent's existing descendants so siblings keep
+			// their sort order.
+			$insert_at = $parent_index + 1;
+			$count     = count( $tree );
+			while ( $insert_at < $count && $tree[ $insert_at ]['indent_level'] > $tree[ $parent_index ]['indent_level'] ) {
+				++$insert_at;
+			}
+			array_splice( $tree, $insert_at, 0, [ $item ] );
+		}
+		$queue = $remaining;
+	}
+
+	return array_map(
+		fn( $item ) => [
+			'post'         => $item['post'],
+			'indent_level' => $item['indent_level'],
+		],
+		$tree
+	);
+}
+
+/**
  * Gets a collection by its slug.
  *
  * @param string $slug The slug of the collection to retrieve.
