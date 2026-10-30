@@ -66,6 +66,14 @@
 		cursor: pointer;
 		padding: 0.4em 1em;
 		line-height: 1.5;
+		margin-right: 1em;
+	}
+
+	a.wpm-embedded-search-button {
+		display: inline-block;
+		text-decoration: none;
+		border: 1px solid currentColor;
+		border-radius: 2px;
 	}
 
 	.wpm-embedded-search-title-toggle label {

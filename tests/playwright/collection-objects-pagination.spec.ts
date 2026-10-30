@@ -106,10 +106,8 @@ test.describe("Collection Objects pagination (#137)", () => {
     await page.waitForLoadState("domcontentloaded");
     const block = page.locator(".wpm-collection-objects-block");
     await expect(block).toHaveCount(1);
-    // The grid appears only once the REST search resolves.
-    await expect(block.locator(".wpm-object-grid")).toBeVisible({
-      timeout: 30000,
-    });
+    // The grid is in the server-rendered HTML.
+    await expect(block.locator(".wpm-object-grid")).toBeVisible();
     return block;
   };
 
@@ -117,14 +115,14 @@ test.describe("Collection Objects pagination (#137)", () => {
     page,
   }) => {
     const block = await openCollection(page);
-    // withPagination renders the control both above and below the grid.
+    // The control renders both above and below the grid.
     await expect(block.locator(".pagination").first()).toBeVisible();
     // Two pages for 25 objects at 20 per page.
     await expect(
-      block.locator(".pagination button[aria-label='Go to page 2']").first(),
+      block.locator(".pagination a[aria-label='Go to page 2']").first(),
     ).toBeVisible();
     await expect(
-      block.locator(".pagination button[aria-label='Go to page 3']"),
+      block.locator(".pagination a[aria-label='Go to page 3']"),
     ).toHaveCount(0);
   });
 
@@ -143,7 +141,7 @@ test.describe("Collection Objects pagination (#137)", () => {
       .allInnerTexts();
 
     await block
-      .locator(".pagination button[aria-label='Go to page 2']")
+      .locator(".pagination a[aria-label='Go to page 2']")
       .first()
       .click();
 

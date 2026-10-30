@@ -337,7 +337,7 @@ function get_object_thumbnail_id( int $post_id ): int|false {
  * shouldn't be called on any page that queries standard WordPress posts. It is
  * intended to support REST requests and should only be used in that context.
  */
-function add_object_meta_query_filter( $search_terms, $kind ) {
+function add_object_meta_query_filter( $search_terms, $kind ): ?callable {
 	if ( current_user_can( 'edit_posts' ) ) {
 		$public_fields_only = false;
 	} else {
@@ -401,44 +401,221 @@ function add_object_meta_query_filter( $search_terms, $kind ) {
 		: ' AND ' . implode( ' AND ', $meta_filter_clauses );
 
 	if ( '' === $search_all_fields_sql && '' === $meta_filter_sql ) {
-		return;
+		return null;
 	}
 
-	add_filter(
-		'posts_where',
-		function (
-			$where,
-			$query
-		) use (
-			$search_all_fields_sql,
-			$meta_filter_sql
-		) {
-			if ( ! is_object_query( $query ) ) {
+	$where_filter = function (
+		$where,
+		$query
+	) use (
+		$search_all_fields_sql,
+		$meta_filter_sql
+	) {
+		if ( ! is_object_query( $query ) ) {
+			return $where;
+		}
+		global $wpdb;
+		$new_where = $where;
+		if ( '' !== $search_all_fields_sql ) {
+			/*
+			 * Splice the field clauses into WordPress's search
+			 * parenthetical, just ahead of its post_title comparison, so
+			 * they join that OR chain.
+			 */
+			$start_index = strpos( $where, $wpdb->posts . '.post_title' );
+			if ( false === $start_index ) {
 				return $where;
 			}
-			global $wpdb;
-			$new_where = $where;
-			if ( '' !== $search_all_fields_sql ) {
-				/*
-				 * Splice the field clauses into WordPress's search
-				 * parenthetical, just ahead of its post_title comparison, so
-				 * they join that OR chain.
-				 */
-				$start_index = strpos( $where, $wpdb->posts . '.post_title' );
-				if ( false === $start_index ) {
-					return $where;
-				}
-				$new_where =
-					substr( $where, 0, $start_index ) .
-					$search_all_fields_sql .
-					' OR ' .
-					substr( $where, $start_index );
+			$new_where =
+				substr( $where, 0, $start_index ) .
+				$search_all_fields_sql .
+				' OR ' .
+				substr( $where, $start_index );
+		}
+		return $new_where . $meta_filter_sql;
+	};
+
+	add_filter( 'posts_where', $where_filter, 10, 2 );
+
+	// Returned so a caller that runs one query inside a page render can take
+	// the filter off again; the REST handler is the whole request and leaves
+	// it in place.
+	return $where_filter;
+}
+
+/**
+ * Translate search parameters into WP_Query arguments for museum objects.
+ *
+ * Shared by the REST search route and the server-rendered blocks, so both
+ * answer a search the same way. Recognised keys in $params: `page`,
+ * `per_page`, `status`, `onlyTitle`, `searchText` (or `s`), `post_title`,
+ * `post_content`, `selectedCollections`, `selectedTags`, and any field slug
+ * (an exact match, or a substring match when the value starts with `~`).
+ *
+ * @param array        $params Search parameters, eg. WP_REST_Request::get_params().
+ * @param ObjectKind[] $kinds  Kinds to search.
+ * @return array {
+ *     @type array         $args         Arguments for WP_Query.
+ *     @type callable|null $where_filter The posts_where filter that was added
+ *                                       for full-text field matching, if any.
+ * }
+ */
+function prepare_object_search( array $params, array $kinds ): array {
+	$kind_type_list = array_map( fn( $x ) => $x->type_name, $kinds );
+
+	$paged = intval( $params['page'] ?? 0 );
+	if ( empty( $paged ) ) {
+		$paged = 1;
+	}
+	$per_page = intval( $params['per_page'] ?? 0 );
+	if ( empty( $per_page ) ) {
+		$per_page = DEFAULT_NUMBERPOSTS;
+	}
+
+	if ( current_user_can( 'edit_posts' ) ) {
+		$post_status        = 'any';
+		$public_fields_only = false;
+	} else {
+		$post_status        = 'publish';
+		$public_fields_only = true;
+	}
+	$requested_status = sanitize_text_field( (string) ( $params['status'] ?? '' ) );
+	if ( $requested_status ) {
+		if ( 'any' === $requested_status && current_user_can( 'edit_posts' ) ) {
+			$post_status = 'any';
+		} elseif ( 'publish' === $requested_status ) {
+			$post_status = 'publish';
+		}
+	}
+
+	$only_title = ! empty( $params['onlyTitle'] );
+
+	$query_args = [
+		'post_type'        => $kind_type_list,
+		'post_status'      => $post_status,
+		'paged'            => $paged,
+		'posts_per_page'   => $per_page,
+		'suppress_filters' => false,
+	];
+
+	if ( ! $only_title ) {
+		$kinds_field_slugs = [];
+		foreach ( $kinds as $kind ) {
+			$kind_fields       = get_mobject_fields( $kind->kind_id, $public_fields_only );
+			$kinds_field_slugs = array_merge(
+				$kinds_field_slugs,
+				array_map( fn( $x ) => $x->slug, $kind_fields )
+			);
+		}
+		$meta_query = [ 'relation' => 'AND' ];
+		foreach ( $kinds_field_slugs as $slug ) {
+			$field_query = sanitize_text_field( (string) ( $params[ $slug ] ?? '' ) );
+			if ( substr( $field_query, 0, 1 ) === '~' ) {
+				$comparator  = 'LIKE';
+				$field_query = substr( $field_query, 1 );
+			} else {
+				$comparator = '=';
 			}
-			return $new_where . $meta_filter_sql;
-		},
-		10,
-		2
-	);
+			if ( ! empty( $field_query ) ) {
+				$meta_query[] = [
+					'key'     => $slug,
+					'value'   => $field_query,
+					'compare' => $comparator,
+				];
+			}
+		}
+		if ( count( $meta_query ) > 1 ) {
+			//phpcs:ignore WordPress.DB.SlowDBQuery --Slow query is not avoidable.
+			$query_args['meta_query'] = $meta_query;
+		}
+	}
+
+	$where_filter  = null;
+	$search_string = sanitize_text_field( (string) ( $params['searchText'] ?? '' ) );
+	if ( ! $search_string ) {
+		$search_string = sanitize_text_field( (string) ( $params['s'] ?? '' ) );
+	}
+	if ( $search_string ) {
+		$query_args['s'] = $search_string;
+		$where_filter    = add_object_meta_query_filter(
+			[
+				'searchText' => $search_string,
+				'onlyTitle'  => $only_title,
+			],
+			$kinds
+		);
+	}
+	if ( $only_title ) {
+		$query_args['search_columns']   = [ 'post_title' ];
+		$query_args['suppress_filters'] = true;
+	}
+	$title_query = sanitize_text_field( (string) ( $params['post_title'] ?? '' ) );
+	if ( ! empty( $title_query ) ) {
+		$query_args['post_title'] = $title_query;
+	}
+	$content_query = sanitize_text_field( (string) ( $params['post_content'] ?? '' ) );
+	if ( ! empty( $content_query ) && ! $only_title ) {
+		$query_args['post_content'] = $content_query;
+	}
+
+	// Filter by collection. Collections flagged to include sub-collections
+	// match descendants of their term as well.
+	$selected_collections = $params['selectedCollections'] ?? null;
+	$tax_query            = false;
+	if ( ! empty( $selected_collections ) && is_array( $selected_collections ) ) {
+		$include_children_terms = [];
+		$regular_terms          = [];
+
+		foreach ( $selected_collections as $collection_id ) {
+			$collection_id = intval( $collection_id );
+			$term_id       = get_collection_term_id( $collection_id );
+			if ( ! $term_id ) {
+				continue;
+			}
+			if ( get_post_meta( $collection_id, 'include_sub_collections', true ) ) {
+				$include_children_terms[] = intval( $term_id );
+			} else {
+				$regular_terms[] = intval( $term_id );
+			}
+		}
+
+		$children_clause = [
+			'taxonomy'         => WPM_PREFIX . 'collection_tax',
+			'field'            => 'term_id',
+			'terms'            => $include_children_terms,
+			'include_children' => true,
+		];
+		$regular_clause  = [
+			'taxonomy'         => WPM_PREFIX . 'collection_tax',
+			'field'            => 'term_id',
+			'terms'            => $regular_terms,
+			'include_children' => false,
+		];
+		if ( ! empty( $include_children_terms ) && ! empty( $regular_terms ) ) {
+			$tax_query = [
+				'relation' => 'OR',
+				$children_clause,
+				$regular_clause,
+			];
+		} elseif ( ! empty( $include_children_terms ) ) {
+			$tax_query = $children_clause;
+		} elseif ( ! empty( $regular_terms ) ) {
+			$tax_query = $regular_clause;
+		}
+	}
+	if ( $tax_query ) {
+		$query_args['tax_query'] = [ $tax_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+	}
+
+	$tags = $params['selectedTags'] ?? null;
+	if ( ! empty( $tags ) && is_array( $tags ) ) {
+		$query_args['tag_slug__in'] = $tags;
+	}
+
+	return [
+		'args'         => $query_args,
+		'where_filter' => $where_filter,
+	];
 }
 
 /**
