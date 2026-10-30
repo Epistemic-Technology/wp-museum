@@ -404,3 +404,335 @@ function render_links_field( $links ) {
 	}
 	return '<ul class="wpm-links">' . $items_html . '</ul>';
 }
+
+/**
+ * Render a search form that submits by GET.
+ *
+ * Used by the embedded-search block (which sends the visitor to a search
+ * page) and by blocks that filter their own results (which submit back to the
+ * page they are on). The class names match the EmbeddedSearch React component
+ * so theme CSS written for it still applies.
+ *
+ * @param array $args {
+ *     @type string $action             URL to submit to; '' submits to the current URL.
+ *     @type string $search_text        Current search text to prefill.
+ *     @type bool   $show_title_toggle  Show the "only search titles" checkbox.
+ *     @type bool   $only_title         Initial state of the toggle, or the value
+ *                                      sent when the toggle is hidden.
+ *     @type string $advanced_search_url Optional link to an advanced search page.
+ *     @type string $reset_url          Optional "Reset" link target.
+ *     @type string $class              Extra class for the <form>.
+ * }
+ * @return string HTML.
+ */
+function render_search_form( array $args ): string {
+	$defaults = [
+		'action'              => '',
+		'search_text'         => '',
+		'show_title_toggle'   => false,
+		'only_title'          => true,
+		'advanced_search_url' => '',
+		'reset_url'           => '',
+		'class'               => '',
+	];
+	$args     = array_merge( $defaults, $args );
+
+	// A GET form replaces the action URL's query string with its own fields, so
+	// any existing parameters (eg. `?page_id=5` under plain permalinks) have to
+	// be carried as hidden inputs or the destination page would be lost.
+	$carried_params = [];
+	if ( '' !== $args['action'] ) {
+		$query_string = wp_parse_url( $args['action'], PHP_URL_QUERY );
+		if ( $query_string ) {
+			parse_str( $query_string, $carried_params );
+		}
+	}
+
+	$input_id   = wp_unique_id( 'wpm-embedded-search-input-' );
+	$form_class = trim( 'wpm-embedded-search wpm-embedded-search-form ' . $args['class'] );
+
+	ob_start();
+	?>
+	<form
+		class="<?php echo esc_attr( $form_class ); ?>"
+		role="search"
+		method="get"
+		<?php if ( '' !== $args['action'] ) : ?>
+			action="<?php echo esc_url( $args['action'] ); ?>"
+		<?php endif; ?>
+	>
+		<?php foreach ( $carried_params as $param_name => $param_value ) : ?>
+			<?php if ( is_scalar( $param_value ) && ! in_array( $param_name, [ 'searchText', 'onlyTitle', 'wpm_page' ], true ) ) : ?>
+				<input type="hidden" name="<?php echo esc_attr( $param_name ); ?>" value="<?php echo esc_attr( $param_value ); ?>" />
+			<?php endif; ?>
+		<?php endforeach; ?>
+		<div class="embedded-search-input">
+			<div class="main-input-area">
+				<label for="<?php echo esc_attr( $input_id ); ?>" class="screen-reader-text"><?php esc_html_e( 'Search', 'wp-museum' ); ?></label>
+				<input
+					id="<?php echo esc_attr( $input_id ); ?>"
+					type="text"
+					name="searchText"
+					value="<?php echo esc_attr( $args['search_text'] ); ?>"
+					aria-label="<?php esc_attr_e( 'Search', 'wp-museum' ); ?>"
+				/>
+				<div class="wpm-embedded-search-controls">
+					<?php if ( $args['show_title_toggle'] ) : ?>
+						<div class="wpm-embedded-search-title-toggle">
+							<?php // The hidden field is what gets sent when the box is unchecked. ?>
+							<input type="hidden" name="onlyTitle" value="0" />
+							<label>
+								<input type="checkbox" name="onlyTitle" value="1"<?php echo $args['only_title'] ? ' checked' : ''; ?> />
+								<?php esc_html_e( 'Only search titles', 'wp-museum' ); ?>
+							</label>
+						</div>
+					<?php else : ?>
+						<input type="hidden" name="onlyTitle" value="<?php echo $args['only_title'] ? '1' : '0'; ?>" />
+					<?php endif; ?>
+					<?php if ( '' !== $args['advanced_search_url'] ) : ?>
+						<div class="wpm-embedded-search-advanced-search-link">
+							<a href="<?php echo esc_url( $args['advanced_search_url'] ); ?>" aria-label="<?php esc_attr_e( 'Go to advanced search page', 'wp-museum' ); ?>"><?php esc_html_e( 'Advanced Search', 'wp-museum' ); ?></a>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+			<button
+				type="submit"
+				class="wpm-embedded-search-button is-primary"
+				aria-label="<?php esc_attr_e( 'Search museum objects', 'wp-museum' ); ?>"
+			><?php esc_html_e( 'Search', 'wp-museum' ); ?></button>
+			<?php if ( '' !== $args['reset_url'] ) : ?>
+				<a
+					class="wpm-embedded-search-button is-secondary wpm-embedded-search-reset"
+					href="<?php echo esc_url( $args['reset_url'] ); ?>"
+					aria-label="<?php esc_attr_e( 'Clear search and reset results', 'wp-museum' ); ?>"
+				><?php esc_html_e( 'Reset', 'wp-museum' ); ?></a>
+			<?php endif; ?>
+		</div>
+	</form>
+	<?php
+	return (string) ob_get_clean();
+}
+
+/**
+ * Image data for an object's grid thumbnail, or the plugin placeholder.
+ *
+ * @param int $post_id Object post ID.
+ * @return array{0:string,1:int,2:int} URL, width, height.
+ */
+function object_grid_image( int $post_id ): array {
+	$attach_id = get_object_thumbnail_id( $post_id );
+	if ( false !== $attach_id ) {
+		$img = wp_get_attachment_image_src( $attach_id, 'medium' );
+		if ( is_array( $img ) && ! empty( $img[0] ) ) {
+			return [ $img[0], (int) $img[1], (int) $img[2] ];
+		}
+	}
+	return [ WPM_BASE_URL . 'assets/museum-icon-darkgray-1024.png', 1024, 1024 ];
+}
+
+/**
+ * Render a grid of museum objects.
+ *
+ * Mirrors the ObjectGrid React component's markup and class names.
+ *
+ * @param \WP_Post[] $posts   Objects to show.
+ * @param array      $options {
+ *     @type int  $columns         Grid columns (default 3).
+ *     @type bool $display_title   Show the title (default true).
+ *     @type bool $display_date    Show the post date (default false).
+ *     @type bool $display_excerpt Show the excerpt (default false).
+ *     @type bool $link_to_objects Link each box to its object (default true).
+ * }
+ * @return string HTML, or '' when there are no objects.
+ */
+function render_object_grid( array $posts, array $options = [] ): string {
+	if ( empty( $posts ) ) {
+		return '';
+	}
+	$options = array_merge(
+		[
+			'columns'         => 3,
+			'display_title'   => true,
+			'display_date'    => false,
+			'display_excerpt' => false,
+			'link_to_objects' => true,
+		],
+		$options
+	);
+
+	$columns       = max( 1, (int) $options['columns'] );
+	$percent_width = round( 1 / $columns * 100 );
+	$box_style     = 'flex-basis: calc(' . $percent_width . '% - 10px)';
+
+	ob_start();
+	?>
+	<div class="wpm-object-grid">
+		<?php foreach ( $posts as $object ) : ?>
+			<?php
+			$object_title = get_the_title( $object );
+			$object_link  = get_permalink( $object );
+			$image        = object_grid_image( $object->ID );
+			$excerpt      = $options['display_excerpt'] ? wp_strip_all_tags( get_the_excerpt( $object ) ) : '';
+			?>
+			<div class="object-grid-box-wrapper" style="<?php echo esc_attr( $box_style ); ?>">
+				<?php if ( $options['link_to_objects'] ) : ?>
+					<a href="<?php echo esc_url( $object_link ); ?>">
+				<?php endif; ?>
+				<div class="object-grid-box">
+					<div class="object-grid-thumbnail-div">
+						<img
+							src="<?php echo esc_url( $image[0] ); ?>"
+							width="<?php echo (int) $image[1]; ?>"
+							height="<?php echo (int) $image[2]; ?>"
+							alt="<?php echo esc_attr( $object_title ); ?>"
+							title="<?php echo esc_attr( $object_title ); ?>"
+							loading="lazy"
+						/>
+					</div>
+					<div class="object-grid-caption-div">
+						<?php if ( $options['display_date'] ) : ?>
+							<div class="ogc-date"><?php echo esc_html( get_the_date( '', $object ) ); ?></div>
+						<?php endif; ?>
+						<?php if ( $options['display_title'] && '' !== $object_title ) : ?>
+							<h3><?php echo esc_html( $object_title ); ?></h3>
+						<?php endif; ?>
+						<?php if ( '' !== $excerpt ) : ?>
+							<div class="ogc-excerpt"><?php echo esc_html( $excerpt ); ?></div>
+						<?php endif; ?>
+					</div>
+				</div>
+				<?php if ( $options['link_to_objects'] ) : ?>
+					</a>
+				<?php endif; ?>
+			</div>
+		<?php endforeach; ?>
+	</div>
+	<?php
+	return (string) ob_get_clean();
+}
+
+/**
+ * Which page numbers a pagination control shows.
+ *
+ * Same window as the withPagination React component: up to $pages_to_show
+ * numbers centred on the current page, with first/last links and ellipses
+ * when the window does not reach the ends.
+ *
+ * @param int $current_page  1-based current page.
+ * @param int $total_pages   Total pages.
+ * @param int $pages_to_show Width of the window.
+ * @return array{start:int,end:int}
+ */
+function pagination_window( int $current_page, int $total_pages, int $pages_to_show = 5 ): array {
+	if ( $total_pages <= $pages_to_show ) {
+		return [
+			'start' => 1,
+			'end'   => $total_pages,
+		];
+	}
+	if ( $current_page <= $pages_to_show - 1 ) {
+		return [
+			'start' => 1,
+			'end'   => $pages_to_show,
+		];
+	}
+	if ( $total_pages - $current_page + 1 >= $pages_to_show ) {
+		$start = max( 1, $current_page - (int) floor( $pages_to_show / 2 ) );
+		return [
+			'start' => $start,
+			'end'   => min( $start + $pages_to_show - 1, $total_pages ),
+		];
+	}
+	return [
+		'start' => $total_pages - $pages_to_show + 1,
+		'end'   => $total_pages,
+	];
+}
+
+/**
+ * Render a pagination control as links.
+ *
+ * Mirrors the withPagination React component's markup, with <a> in place of
+ * <button> so every page has a URL.
+ *
+ * @param int      $current_page  1-based current page.
+ * @param int      $total_pages   Total pages.
+ * @param callable $url_for_page  fn( int $page ): string.
+ * @param int      $pages_to_show Width of the numbered window.
+ * @return string HTML, or '' when there is a single page.
+ */
+function render_pagination( int $current_page, int $total_pages, callable $url_for_page, int $pages_to_show = 5 ): string {
+	if ( $total_pages <= 1 ) {
+		return '';
+	}
+	$window    = pagination_window( $current_page, $total_pages, $pages_to_show );
+	$show_ends = $total_pages > $pages_to_show;
+
+	$page_link = function ( int $page, string $label, string $text, bool $current = false, bool $disabled = false ) use ( $url_for_page ): string {
+		if ( $disabled ) {
+			return '<span aria-disabled="true" aria-label="' . esc_attr( $label ) . '">' . $text . '</span>';
+		}
+		return '<a href="' . esc_url( $url_for_page( $page ) ) . '" aria-label="' . esc_attr( $label ) . '"' .
+			( $current ? ' aria-current="page"' : '' ) . '>' . $text . '</a>';
+	};
+
+	ob_start();
+	?>
+	<div class="pagination">
+		<ol aria-label="<?php esc_attr_e( 'Pagination Navigation', 'wp-museum' ); ?>">
+			<?php if ( $show_ends ) : ?>
+				<li><?php echo $page_link( 1, __( 'Go to first page', 'wp-museum' ), '<span class="pagination-symbol" aria-hidden="true">&laquo;</span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></li>
+				<li><?php echo $page_link( max( 1, $current_page - 1 ), __( 'Go to previous page', 'wp-museum' ), '<span class="pagination-symbol" aria-hidden="true">&lsaquo;</span>', false, $current_page <= 1 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></li>
+			<?php endif; ?>
+			<?php if ( $show_ends && $window['start'] > 1 ) : ?>
+				<li><?php echo $page_link( 1, __( 'Go to page 1', 'wp-museum' ), '1' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></li>
+			<?php endif; ?>
+			<?php if ( $show_ends && $window['start'] > 2 ) : ?>
+				<li aria-hidden="true">...</li>
+			<?php endif; ?>
+			<?php for ( $page = $window['start']; $page <= $window['end']; $page++ ) : ?>
+				<li class="<?php echo $page === $current_page ? 'page-list-selected' : 'page-list-unselected'; ?>">
+					<?php
+					/* translators: %d: page number */
+					echo $page_link( $page, sprintf( __( 'Go to page %d', 'wp-museum' ), $page ), (string) $page, $page === $current_page ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					?>
+				</li>
+			<?php endfor; ?>
+			<?php if ( $show_ends && $window['end'] < $total_pages ) : ?>
+				<li aria-hidden="true">...</li>
+				<li>
+					<?php
+					/* translators: %d: page number */
+					echo $page_link( $total_pages, sprintf( __( 'Go to page %d', 'wp-museum' ), $total_pages ), (string) $total_pages ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					?>
+				</li>
+			<?php endif; ?>
+			<?php if ( $show_ends ) : ?>
+				<li><?php echo $page_link( min( $total_pages, $current_page + 1 ), __( 'Go to next page', 'wp-museum' ), '<span class="pagination-symbol" aria-hidden="true">&rsaquo;</span>', false, $current_page >= $total_pages ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></li>
+				<li><?php echo $page_link( $total_pages, __( 'Go to last page', 'wp-museum' ), '<span class="pagination-symbol" aria-hidden="true">&raquo;</span>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></li>
+			<?php endif; ?>
+		</ol>
+	</div>
+	<?php
+	return (string) ob_get_clean();
+}
+
+/**
+ * An object grid with a pagination control above and below it.
+ *
+ * @param \WP_Post[] $posts        Objects on the current page.
+ * @param int        $current_page 1-based current page.
+ * @param int        $total_pages  Total pages.
+ * @param callable   $url_for_page fn( int $page ): string.
+ * @param array      $grid_options Options for render_object_grid().
+ * @return string HTML.
+ */
+function render_paginated_object_grid( array $posts, int $current_page, int $total_pages, callable $url_for_page, array $grid_options = [] ): string {
+	$pagination = render_pagination( $current_page, $total_pages, $url_for_page );
+	return '<div class="paginated-component">' .
+		$pagination .
+		render_object_grid( $posts, $grid_options ) .
+		$pagination .
+		'</div>';
+}

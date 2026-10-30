@@ -63,41 +63,6 @@ describe( 'object-meta view script', () => {
 	} );
 } );
 
-describe( 'collection-objects view script', () => {
-	it( 'mounts the search for the collection named in the data attribute', () => {
-		markup(
-			`<div class="wpm-collection-objects-block" data-post-ID="8" data-results-per-page="5"></div>`
-		);
-
-		loadViewScript( '../../src/blocks/collection-objects/front' );
-
-		expect( mockRenders ).toHaveLength( 1 );
-		const { props } = mockRenders[ 0 ].node as any;
-		expect( props.postID ).toBe( 8 );
-		expect( props.resultsPerPage ).toBe( 5 );
-	} );
-
-	it( 'leaves a container with no collection id alone', () => {
-		markup( `<div class="wpm-collection-objects-block"></div>` );
-
-		loadViewScript( '../../src/blocks/collection-objects/front' );
-
-		expect( mockRenders ).toHaveLength( 0 );
-	} );
-
-	it( 'falls back to the default page size', () => {
-		markup(
-			`<div class="wpm-collection-objects-block" data-post-ID="8"></div>`
-		);
-
-		loadViewScript( '../../src/blocks/collection-objects/front' );
-
-		expect( ( mockRenders[ 0 ].node as any ).props.resultsPerPage ).toBe(
-			20
-		);
-	} );
-} );
-
 describe.each( [
 	[
 		'basic-search',
