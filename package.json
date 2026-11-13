@@ -71,7 +71,7 @@
     "@wordpress/i18n": "^6.5.0",
     "@wordpress/plugins": "^7.32.0",
     "@wordpress/primitives": "^4.32.0",
-    "@wordpress/scripts": "^30.25.0",
+    "@wordpress/scripts": "^37.1.0",
     "eslint": "^9.37.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
