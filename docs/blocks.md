@@ -6,7 +6,7 @@ Museum for WordPress ships a set of Gutenberg blocks for searching, displaying, 
 
 ### Basic Search
 
-A simple search bar restricted to museum objects.
+A search box with a results grid, for a dedicated search page. Visitors type a term, choose whether to search titles only or all fields, and get a paginated grid of matching objects. The form submits by GET, so every search and every results page has its own URL, and an Embedded Search block elsewhere on the site can send visitors here with a term filled in. Options: results per page, grid columns, and an optional link to an Advanced Search page.
 
 ### Advanced Search
 
