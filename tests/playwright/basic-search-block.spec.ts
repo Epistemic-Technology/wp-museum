@@ -1,21 +1,40 @@
+/**
+ * The basic-search block on the public site.
+ *
+ * The block is rendered in PHP: a GET form whose `searchText` and `onlyTitle`
+ * fields come back as the query string, and a results grid built on the
+ * server. Each submit is a real navigation, so the tests wait for the URL
+ * rather than for a REST response.
+ */
+
 import { test, expect } from "@playwright/test";
 import {
   setupMuseumTest,
   createSimpleObjectKind,
   createMuseumObject,
   createPageWithBlock,
-  dismissEditorModals,
   postTypeFromSlug,
 } from "./utils";
 
+const SEARCH_INPUT = ".wpm-basic-search-block .main-input-area input[type='text']";
+const SEARCH_BUTTON = ".wpm-basic-search-block .wpm-embedded-search-button.is-primary";
+const TITLE_TOGGLE =
+  ".wpm-basic-search-block .wpm-embedded-search-title-toggle input[type='checkbox']";
+const RESULT = ".wpm-basic-search-block .object-grid-box-wrapper";
+
+async function submitSearch(page: import("@playwright/test").Page, term: string) {
+  await page.fill(SEARCH_INPUT, term);
+  await page.click(SEARCH_BUTTON);
+  await page.waitForURL(new RegExp(`searchText=${encodeURIComponent(term).replace(/%20/g, "(\\+|%20)")}`));
+  await page.waitForLoadState("domcontentloaded");
+}
+
 test.describe("Basic Search Block", () => {
   test.beforeEach(async ({ page }) => {
-    // Setup: login and activate plugin
     await setupMuseumTest(page);
   });
 
-  test("can add basic search block to a page", async ({ page }) => {
-    // Create a page with the basic search block using utility function
+  test("renders a GET form with no script and no results", async ({ page }) => {
     const pageUrl = await createPageWithBlock(
       page,
       "Test Search Page",
@@ -23,47 +42,29 @@ test.describe("Basic Search Block", () => {
       ".wp-block-wp-museum-basic-search",
     );
 
-    // Visit the published page
     await page.goto(pageUrl);
     await page.waitForLoadState("domcontentloaded");
 
-    // Verify the search block is rendered
-    const searchBlock = await page
-      .locator(".wpm-basic-search-block")
-      .isVisible();
-    expect(searchBlock).toBe(true);
+    const form = page.locator(".wpm-basic-search-block form.wpm-embedded-search-form");
+    await expect(form).toBeVisible();
+    await expect(form).toHaveAttribute("method", "get");
+    await expect(page.locator(SEARCH_INPUT)).toBeVisible();
+    await expect(page.locator(SEARCH_BUTTON)).toBeVisible();
+    await expect(page.locator(TITLE_TOGGLE)).toBeChecked();
+    await expect(page.locator(RESULT)).toHaveCount(0);
 
-    // Verify search input exists
-    const searchInput = await page
-      .locator(".wpm-embedded-search .main-input-area input[type='text']")
-      .isVisible();
-    expect(searchInput).toBe(true);
-
-    // Verify search button exists
-    const searchButton = await page
-      .locator(".wpm-embedded-search-button.is-primary")
-      .isVisible();
-    expect(searchButton).toBe(true);
-
-    // Verify title toggle checkbox exists
-    const titleToggle = await page
-      .locator(".wpm-embedded-search-title-toggle input[type='checkbox']")
-      .isVisible();
-    expect(titleToggle).toBe(true);
+    // No React mount point and none of the old view-script stack.
+    await expect(page.locator(".wpm-basic-search-block-frontend")).toHaveCount(0);
+    const scripts = await page.locator("script[src]").evaluateAll((nodes) =>
+      nodes.map((n) => (n as HTMLScriptElement).src),
+    );
+    expect(scripts.filter((src) => /basic-search\/front|components\.min\.js/.test(src))).toEqual([]);
   });
 
-  test("search with 'Only search titles' checked (default)", async ({
-    page,
-  }) => {
-    // Create object kind and test objects
-    const kindSlug = await createSimpleObjectKind(
-      page,
-      "Scientific Instrument",
-    );
-
+  test("search with 'Only search titles' checked (default)", async ({ page }) => {
+    const kindSlug = await createSimpleObjectKind(page, "Scientific Instrument");
     const postType = postTypeFromSlug(kindSlug);
 
-    // Create test objects with searchable content
     await createMuseumObject(page, postType, {
       title: "Persian Astrolabe",
       content:
@@ -97,7 +98,6 @@ test.describe("Basic Search Block", () => {
       },
     });
 
-    // Create a search page
     const pageUrl = await createPageWithBlock(
       page,
       "Search Test Page",
@@ -105,53 +105,31 @@ test.describe("Basic Search Block", () => {
       ".wp-block-wp-museum-basic-search",
     );
 
-    // Visit the page
     await page.goto(pageUrl);
     await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator(TITLE_TOGGLE)).toBeChecked();
 
-    // Verify the checkbox is checked by default
-    const checkbox = page.locator('.wpm-embedded-search-title-toggle input[type="checkbox"]');
-    const isChecked = await checkbox.isChecked();
-    expect(isChecked).toBe(true);
+    // "Persian" is in a title.
+    await submitSearch(page, "Persian");
+    expect(await page.locator(RESULT).count()).toBeGreaterThan(0);
+    await expect(
+      page.locator(".object-grid-caption-div h3:has-text('Persian Astrolabe')"),
+    ).toBeVisible();
+    // The search is in the URL and the form keeps the term and the toggle.
+    expect(page.url()).toContain("searchText=Persian");
+    await expect(page.locator(SEARCH_INPUT)).toHaveValue("Persian");
+    await expect(page.locator(TITLE_TOGGLE)).toBeChecked();
 
-    // Search for "Persian" which is only in the title
-    await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "Persian");
-    await page.click(".wpm-embedded-search-button.is-primary");
-
-    // Wait for search results
-    await page.waitForTimeout(1000);
-
-    // Should find the Persian Astrolabe
-    let results = await page.locator(".object-grid-box-wrapper").count();
-    expect(results).toBeGreaterThan(0);
-
-    const persianAstrolabe = await page
-      .locator(".object-grid-caption-div h3:has-text('Persian Astrolabe')")
-      .isVisible();
-    expect(persianAstrolabe).toBe(true);
-
-    // Clear and search for "brass" which is in materials field, not title
-    await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "brass");
-    await page.click(".wpm-embedded-search-button.is-primary");
-
-    // Wait for potential results
-    await page.waitForTimeout(1000);
-
-    // Should not find any results when searching only titles
-    results = await page.locator(".object-grid-box-wrapper").count();
-    expect(results).toBe(0);
+    // "inlay" is only in content and fields, so a title-only search finds nothing.
+    await submitSearch(page, "inlay");
+    await expect(page.locator(RESULT)).toHaveCount(0);
+    await expect(page.locator(".wpm-basic-search-block .wpm-no-results")).toBeVisible();
   });
 
   test("search with 'Only search titles' unchecked", async ({ page }) => {
-    // Use existing objects from previous test or create new ones
-    const kindSlug = await createSimpleObjectKind(
-      page,
-      "Scientific Instrument",
-    );
-
+    const kindSlug = await createSimpleObjectKind(page, "Scientific Instrument");
     const postType = postTypeFromSlug(kindSlug);
 
-    // Check if objects exist, if not create them
     await page.goto(`/wp-admin/edit.php?post_type=${postType}`);
     const hasObjects = await page
       .locator(".no-items")
@@ -164,13 +142,11 @@ test.describe("Basic Search Block", () => {
         content:
           "An exquisite 18th century Persian astrolabe with intricate Islamic geometric patterns. Made of brass with silver inlay.",
       });
-
       await createMuseumObject(page, postType, {
         title: "Victorian Microscope",
         content:
           "An elegant Victorian-era compound microscope featuring brass construction. Manufactured by Ernst Leitz.",
       });
-
       await createMuseumObject(page, postType, {
         title: "Surveyor's Compass",
         content:
@@ -178,7 +154,6 @@ test.describe("Basic Search Block", () => {
       });
     }
 
-    // Create a search page
     const pageUrl = await createPageWithBlock(
       page,
       "Full Search Test Page",
@@ -186,56 +161,30 @@ test.describe("Basic Search Block", () => {
       ".wp-block-wp-museum-basic-search",
     );
 
-    // Visit the page
     await page.goto(pageUrl);
     await page.waitForLoadState("domcontentloaded");
 
-    // Uncheck the "Only search titles" checkbox
-    const checkbox = page.locator('.wpm-embedded-search-title-toggle input[type="checkbox"]');
-    await checkbox.uncheck();
-    const isChecked = await checkbox.isChecked();
-    expect(isChecked).toBe(false);
+    await page.locator(TITLE_TOGGLE).uncheck();
+    await expect(page.locator(TITLE_TOGGLE)).not.toBeChecked();
 
-    // Search for "brass" which appears in content/materials
-    await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "brass");
-    await page.click(".wpm-embedded-search-button.is-primary");
+    // "brass" is in several descriptions.
+    await submitSearch(page, "brass");
+    expect(await page.locator(RESULT).count()).toBeGreaterThan(0);
+    // The unchecked toggle survives the round trip.
+    await expect(page.locator(TITLE_TOGGLE)).not.toBeChecked();
 
-    // Wait for search results
-    await page.waitForTimeout(1000);
+    await submitSearch(page, "Ernst Leitz");
+    await expect(
+      page.locator(".object-grid-caption-div h3:has-text('Victorian Microscope')"),
+    ).toBeVisible();
 
-    // Should find multiple objects with brass in their content
-    const results = await page.locator(".object-grid-box-wrapper").count();
-    expect(results).toBeGreaterThan(0);
-
-    // Clear and search for "Ernst Leitz" which is in content
-    await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "Ernst Leitz");
-    await page.click(".wpm-embedded-search-button.is-primary");
-
-    // Wait for search results
-    await page.waitForTimeout(1000);
-
-    // Should find the Victorian Microscope
-    const microscope = await page
-      .locator(".object-grid-caption-div h3:has-text('Victorian Microscope')")
-      .isVisible();
-    expect(microscope).toBe(true);
-
-    // Clear and search for "Islamic" which appears in description
-    await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "Islamic");
-    await page.click(".wpm-embedded-search-button.is-primary");
-
-    // Wait for search results
-    await page.waitForTimeout(1000);
-
-    // Should find the Persian Astrolabe
-    const astrolabe = await page
-      .locator(".object-grid-caption-div h3:has-text('Persian Astrolabe')")
-      .isVisible();
-    expect(astrolabe).toBe(true);
+    await submitSearch(page, "Islamic");
+    await expect(
+      page.locator(".object-grid-caption-div h3:has-text('Persian Astrolabe')"),
+    ).toBeVisible();
   });
 
   test("search with Enter key", async ({ page }) => {
-    // Create a search page (assumes objects exist from previous tests)
     const pageUrl = await createPageWithBlock(
       page,
       "Enter Key Search Test",
@@ -243,24 +192,17 @@ test.describe("Basic Search Block", () => {
       ".wp-block-wp-museum-basic-search",
     );
 
-    // Visit the page
     await page.goto(pageUrl);
     await page.waitForLoadState("domcontentloaded");
 
-    // Type search term and press Enter
-    await page.fill(".wpm-embedded-search .main-input-area input[type='text']", "Victorian");
-    await page.press(".wpm-embedded-search .main-input-area input[type='text']", "Enter");
+    await page.fill(SEARCH_INPUT, "Victorian");
+    await page.press(SEARCH_INPUT, "Enter");
+    await page.waitForURL(/searchText=Victorian/);
 
-    // Wait for search results
-    await page.waitForTimeout(1000);
-
-    // Should find results
-    const results = await page.locator(".object-grid-box-wrapper").count();
-    expect(results).toBeGreaterThan(0);
+    expect(await page.locator(RESULT).count()).toBeGreaterThan(0);
   });
 
   test("empty search returns no results", async ({ page }) => {
-    // Create a search page
     const pageUrl = await createPageWithBlock(
       page,
       "Empty Search Test",
@@ -268,18 +210,39 @@ test.describe("Basic Search Block", () => {
       ".wp-block-wp-museum-basic-search",
     );
 
-    // Visit the page
     await page.goto(pageUrl);
     await page.waitForLoadState("domcontentloaded");
 
-    // Click search without entering any text
-    await page.click(".wpm-embedded-search-button.is-primary");
+    await page.click(SEARCH_BUTTON);
+    await page.waitForURL(/searchText=/);
 
-    // Wait a moment for potential results
-    await page.waitForTimeout(1000);
+    await expect(page.locator(RESULT)).toHaveCount(0);
+    await expect(page.locator(".wpm-basic-search-block .wpm-no-results")).toHaveCount(0);
+  });
 
-    // Should have no results
-    const results = await page.locator(".object-grid-box-wrapper").count();
-    expect(results).toBe(0);
+  test("a results page is a shareable URL", async ({ page }) => {
+    const pageUrl = await createPageWithBlock(
+      page,
+      "Direct Link Search Test",
+      "Basic Search",
+      ".wp-block-wp-museum-basic-search",
+    );
+
+    const url = new URL(pageUrl);
+    url.searchParams.set("searchText", "Microscope");
+    url.searchParams.set("onlyTitle", "1");
+    await page.goto(url.toString());
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page.locator(SEARCH_INPUT)).toHaveValue("Microscope");
+    await expect(
+      page.locator(".object-grid-caption-div h3:has-text('Victorian Microscope')"),
+    ).toBeVisible();
+    // Object links are in the HTML, not fetched afterwards.
+    const href = await page
+      .locator(`${RESULT} a`)
+      .first()
+      .getAttribute("href");
+    expect(href).toBeTruthy();
   });
 });
